@@ -1,0 +1,81 @@
+{
+  "name": "Vantage AI Wallet",
+  "short_name": "Vantage AI Wallet",
+  "description": "A streamlined financial platform designed to simplify money management and bring absolute clarity to your daily life.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FFFFFF",
+  "theme_color": "#FFFFFF",
+  "orientation": "portrait",
+  "categories": ["finance", "productivity"],
+  "id": "com.mevantage.analytics",
+  "shortcuts": [
+    {
+      "name": "View Budgets",
+      "short_name": "Budgets",
+      "description": "Check real-time budget thresholds",
+      "url": "/?tab=budgets"
+    },
+    {
+      "name": "Quick Add Outflow",
+      "short_name": "Quick Add",
+      "description": "Instantly log an expense to your connected envelopes",
+      "url": "/?quickadd=true"
+    }
+  ],
+  "widgets": [
+    {
+      "name": "Quick Add Transaction",
+      "short_name": "Quick Add",
+      "description": "Deduct money and record outflows directly into your active envelopes",
+      "tag": "quick_add_outflow",
+      "template": "/widgets/quick-add",
+      "ms_ac_template": "/widgets/quick-add-ac.json",
+      "data": "/widgets/quick-add-data.json",
+      "type": "application/json",
+      "icons": [
+        {
+          "src": "icons/Vantage-Wallet-Logo-192x192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "screenshots/mobile-dashboard.png",
+      "sizes": "338x587",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Vantage Financial Workspace"
+    },
+    {
+      "src": "screenshots/desktop-dashboard.png",
+      "sizes": "1363x584",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Vantage Analytics Matrix Dashboard"
+    }
+  ],
+  "icons": [
+    {
+      "src": "icons/Vantage-Wallet-Logo-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/Vantage-Wallet-Logo-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/Vantage-Wallet-Logo-512x512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

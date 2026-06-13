@@ -1,0 +1,9 @@
+{
+  "defaultWidgetId": "none",
+  "choices": [
+    {
+      "title": "No widgets linked. Configure in Vantage App first",
+      "value": "none"
+    }
+  ]
+}

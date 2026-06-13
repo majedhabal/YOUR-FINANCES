@@ -1,0 +1,257 @@
+{
+  "entities": {
+    "Transaction": {
+      "title": "Transaction",
+      "description": "Financial transaction record with AI tagging.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "amount": { "type": "number" },
+        "category": { "type": "string" },
+        "subcategory": { "type": "string" },
+        "type": { "type": "string", "enum": ["income", "expense", "transfer"] },
+        "accountId": { "type": "string" },
+        "toAccountId": { "type": "string" },
+        "notes": { "type": "string" },
+        "emoji": { "type": "string" },
+        "status": { "type": "string", "enum": ["confirmed", "draft"] },
+        "aiTag": { "type": "string" },
+        "budgetId": { "type": "string" },
+        "userId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["date", "amount", "type", "userId", "accountId"]
+    },
+    "RecurringTransaction": {
+      "title": "Recurring Transaction",
+      "description": "Template for automated recurring transactions.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "type": { "type": "string", "enum": ["income", "expense"] },
+        "amount": { "type": "number" },
+        "accountId": { "type": "string" },
+        "category": { "type": "string" },
+        "subcategory": { "type": "string" },
+        "emoji": { "type": "string" },
+        "notes": { "type": "string" },
+        "recurrency": { "type": "string", "enum": ["daily", "weekly", "monthly", "yearly"] },
+        "interval": { "type": "number" },
+        "dayOption": { "type": "string", "enum": ["sameDay", "sameDate"] },
+        "duration": { "type": "string", "enum": ["forever", "numEvents", "untilDate"] },
+        "durationLimit": { "type": "string" },
+        "eventsRemaining": { "type": "number" },
+        "notification": { "type": "string", "enum": ["sameDay", "1DayBefore", "3DaysBefore"] },
+        "lastGeneratedDate": { "type": "string" },
+        "nextGenerationDate": { "type": "string" },
+        "isActive": { "type": "boolean" },
+        "userId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["type", "amount", "accountId", "recurrency", "interval", "userId"]
+    },
+    "User": {
+      "title": "User Profile",
+      "description": "User account and preference data.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "fullName": { "type": "string" },
+        "displayName": { "type": "string" },
+        "email": { "type": "string" },
+        "dob": { "type": "string", "format": "date" },
+        "maritalStatus": { "type": "string" },
+        "dependents": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "relationship": { "type": "string" },
+              "age": { "type": "number" }
+            }
+          }
+        },
+        "baseCurrency": { "type": "string" },
+        "enabledCurrencies": { "type": "array", "items": { "type": "string" } },
+        "financialExperience": { "type": "number" },
+        "financialGoals": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "geminiInsightsEnabled": { "type": "boolean" },
+        "hasAcceptedTerms": { "type": "boolean" },
+        "onboardedAt": { "type": "string", "format": "date-time" },
+        "lastLogin": { "type": "string", "format": "date-time" },
+        "subscriptionTier": { "type": "string" }
+      },
+      "required": ["uid", "fullName", "email"]
+    },
+    "Account": {
+      "title": "Financial Account",
+      "description": "Represents different types of financial accounts (Cash, Bank, etc.)",
+      "type": "object",
+      "properties": {
+        "accountId": { "type": "string" },
+        "userId": { "type": "string" },
+        "name": { "type": "string" },
+        "type": { "type": "string", "enum": ["cash", "bank", "investment", "credit", "loan", "mortgage", "Cash", "Bank"] },
+        "bankAccountType": { "type": "string", "enum": ["Checking", "Savings", "Cash"] },
+        "startingBalance": { "type": "number" },
+        "currentBalance": { "type": "number" },
+        "currency": { "type": "string" },
+        "interestRate": { "type": "number" },
+        "minBalanceFloor": { "type": "number" },
+        "defaultTransferFee": { "type": "number" },
+        "atmAutoSync": { "type": "boolean" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["accountId", "userId", "name", "type", "currency"]
+    },
+    "Category": {
+      "title": "Category",
+      "description": "User-defined financial category with subcategories.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "nature": { "type": "string", "enum": ["Need", "Want", "Must", "Income"] },
+        "subcategories": { "type": "array", "items": { "type": "string" } },
+        "emoji": { "type": "string" }
+      },
+      "required": ["name", "nature", "subcategories"]
+    },
+    "MiniBudget": {
+      "title": "Mini Budget",
+      "description": "User-defined daily spending protocol template based on specific budget categories.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "maxBudget": { "type": "number" },
+        "currency": { "type": "string" },
+        "spent": { "type": "number" },
+        "category": { "type": "string" },
+        "emoji": { "type": "string" },
+        "period": { "type": "string", "enum": ["daily", "weekly", "monthly"] },
+        "lastHistorySnapshotDate": { "type": "string", "format": "date-time" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "maxBudget", "currency", "category"]
+    },
+    "Milestone": {
+      "title": "Milestone Goal",
+      "description": "User-defined long-term financial target milestone.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "targetAmount": { "type": "number" },
+        "monthsToTarget": { "type": "number" },
+        "linkedAccountIds": { "type": "array", "items": { "type": "string" } },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "targetAmount", "monthsToTarget", "linkedAccountIds"]
+    },
+    "QuickAddVector": {
+      "title": "Quick Add Vector",
+      "description": "Template for frequent transactions.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "accountId": { "type": "string" },
+        "category": { "type": "string" },
+        "subcategory": { "type": "string" },
+        "emoji": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "accountId", "category", "emoji"]
+    },
+    "GlobalConfig": {
+      "title": "Global Config",
+      "description": "Global settings and config metadata such as currency exchange rates.",
+      "type": "object",
+      "properties": {
+        "rates": {
+          "type": "object",
+          "properties": {
+            "AED": { "type": "number" },
+            "USD": { "type": "number" },
+            "PHP": { "type": "number" }
+          }
+        },
+        "lastUpdated": { "type": "number" }
+      },
+      "required": ["rates", "lastUpdated"]
+    },
+    "GlobalOnboardingPreset": {
+      "title": "Global Onboarding Preset",
+      "description": "Global configuration document holding standardized taxonomy profiles of categories.",
+      "type": "object",
+      "properties": {
+        "defaultCategoryMap": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "nature": { "type": "string" },
+              "emoji": { "type": "string" },
+              "subcategories": { "type": "array", "items": { "type": "string" } }
+            }
+          }
+        }
+      },
+      "required": ["defaultCategoryMap"]
+    }
+  },
+  "firestore": {
+    "/global_config/{configId}": {
+      "schema": "GlobalConfig",
+      "description": "Collection of global app configurations."
+    },
+    "/global_configurations/{presetId}": {
+      "schema": "GlobalOnboardingPreset",
+      "description": "Collection for master onboarding configurations."
+    },
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profile document."
+    },
+    "/users/{userId}/transactions/{transactionId}": {
+      "schema": "Transaction",
+      "description": "Collection of user-specific transactions."
+    },
+    "/users/{userId}/accounts/{accountId}": {
+      "schema": "Account",
+      "description": "Collection of user-specific financial accounts."
+    },
+    "/users/{userId}/categories/{categoryId}": {
+      "schema": "Category",
+      "description": "Collection of old user-specific financial categories."
+    },
+    "/users/{userId}/custom_categories/{categoryId}": {
+      "schema": "Category",
+      "description": "Collection of user's custom categorized objects mutating master onboarding preset."
+    },
+    "/users/{userId}/miniBudgets/{budgetId}": {
+      "schema": "MiniBudget",
+      "description": "Collection of user-specific mini budget protocols."
+    },
+    "/users/{userId}/quickAddVectors/{vectorId}": {
+      "schema": "QuickAddVector",
+      "description": "Collection of user-specific quick-add transaction templates."
+    },
+    "/users/{userId}/recurringTransactions/{recurringId}": {
+      "schema": "RecurringTransaction",
+      "description": "Collection of user-specific recurring transaction rules."
+    },
+    "/users/{userId}/milestones/{milestoneId}": {
+      "schema": "Milestone",
+      "description": "Collection of user-specific long-term targets and milestone goals."
+    }
+  }
+}

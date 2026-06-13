@@ -1,0 +1,239 @@
+/* ==========================================================================
+   YOUR FINANCES BY ME VANTAGE - OFFICIAL MASTER STYLESHEET (REFACTORED)
+   ========================================================================== */
+
+@import url('https://fonts.cdnfonts.com/css/google-sans');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-vantage-black: var(--color-background);
+  --color-vantage-card: var(--color-card);
+  --color-vantage-green: var(--color-green);
+  --color-vantage-muted-green: #2D3A30;
+  --color-vantage-silver: #E0E6ED;
+  --color-vantage-blue-grey: var(--color-muted);
+  --color-luxury-border: var(--color-border);
+  --color-vantage-text: var(--color-text);
+  --color-vantage-nav-inactive: var(--color-nav-inactive);
+  --font-luxury: "Google Sans", "Plus Jakarta Sans", sans-serif;
+  --font-sans: "Google Sans", "Plus Jakarta Sans", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+  --shadow-luxury: var(--shadow-card);
+}
+
+/* ==========================================================================
+   1. CORE LIGHT MODE DESIGN TOKENS
+   ========================================================================== */
+:root {
+  --color-background: #F8FAFC;
+  --color-card: #FFFFFF;
+  --color-green: #A6DDB1;
+  --color-muted: #64748B;
+  --color-border: rgba(30, 34, 41, 0.08);
+  --color-text: #1E2229;
+  --color-nav-inactive: #94A3B8;
+  --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.05);
+
+  /* Light System Glass Profiles */
+  --glass-bg: rgba(255, 255, 255, 0.75);
+  --glass-blur: blur(16px);
+  --glass-border: 1px solid rgba(30, 34, 41, 0.08);
+}
+
+/* ==========================================================================
+   2. 🌙 CORE DARK MODE GLASSMORPHIC OVERRIDES (useTheme.ts Integration)
+   ========================================================================== */
+.dark {
+  --color-background: #1E2229;
+  --color-card: rgba(255, 255, 255, 0.08);
+  --color-green: #A6DDB1;
+  --color-muted: #94A3B8;
+  --color-border: rgba(255, 255, 255, 0.15);
+  --color-text: #FFFFFF;
+  --color-nav-inactive: #64748B;
+  --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.3);
+
+  /* Premium High-Fidelity Glass Elements */
+  --glass-bg: rgba(255, 255, 255, 0.12) !important;
+  --glass-blur: blur(25px) saturate(180%) !important;
+  --glass-border: 1px solid rgba(255, 255, 255, 0.22) !important;
+}
+
+/* ==========================================================================
+   3. ANVIL COMPONENT REPAIR - HEIGHT ENFORCEMENTS & BOX MODEL FIXES
+   ========================================================================== */
+/* Prevent layout wrappers and flexible container cells from collapsing to 0px */
+html, body, #root, main, .dashboard-container, div[class*="panel"] {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: auto;
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background-color: var(--color-background) !important;
+  color: var(--color-text) !important;
+  font-family: "Google Sans", sans-serif !important;
+  text-transform: none !important; /* Forces strict global Sentence Case */
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Dynamic Ambient Glow Backlight Generation for the Premium Dark State */
+.dark body {
+  background-image: 
+    radial-gradient(circle at 15% 20%, rgba(166, 221, 177, 0.15) 0%, transparent 45%),
+    radial-gradient(circle at 85% 80%, rgba(166, 221, 177, 0.1) 0%, transparent 50%) !important;
+  background-attachment: fixed !important;
+  background-repeat: no-repeat !important;
+}
+
+/* Prevent inputs or flex children from squishing components layout */
+input, select, textarea, button {
+  font-family: inherit !important;
+  box-sizing: border-box;
+}
+
+/* ==========================================================================
+   4. FLUID TYPOGRAPHY SCALING MOTOR (CSS CLAMP ENGINE)
+   ========================================================================== */
+h1, .text-headline-main {
+  font-size: clamp(1.3rem, 3.2vw, 1.75rem) !important;
+  font-weight: 600 !important;
+  color: var(--color-text) !important;
+  margin: 0 0 1rem 0;
+}
+
+h2, h3, .text-section-heading {
+  font-size: clamp(1.15rem, 2.6vw, 1.4rem) !important;
+  font-weight: 600 !important;
+  color: var(--color-text) !important;
+  margin: 0 0 0.75rem 0;
+}
+
+p, span, label, .text-body-standard {
+  font-size: clamp(0.95rem, 2.2vw, 1.1rem) !important;
+  font-weight: 400 !important;
+  line-height: 1.5;
+}
+
+.text-micro-caption {
+  font-size: clamp(0.8rem, 1.8vw, 0.95rem) !important;
+  font-weight: 500 !important;
+}
+
+/* ==========================================================================
+   5. UNIFIED GLASSMORPHIC WIDGET MODULES
+   ========================================================================== */
+.card,
+.bento-capsule,
+.anvil-role-card {
+  background: var(--glass-bg) !important;
+  backdrop-filter: var(--glass-blur) !important;
+  -webkit-backdrop-filter: var(--glass-blur) !important;
+  border: var(--glass-border) !important;
+  border-radius: 24px !important;
+  box-shadow: var(--shadow-card) !important;
+  padding: clamp(1rem, 2.5vw, 1.5rem) !important;
+  color: var(--color-text) !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+/* Interactive item list cell selections (e.g., accounts, category entries) */
+.interactive-item-row {
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  flex-wrap: nowrap !important;
+  padding: 0.75rem 1rem !important;
+  border-bottom: 1px solid var(--color-border) !important;
+}
+
+.interactive-item-row:last-child {
+  border-bottom: none !important;
+}
+
+/* Bottom Navigation Capsule Bar Layout Normalization */
+.navigation-dock-bar {
+  display: flex !important;
+  flex-direction: row !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto !important;
+  background: var(--glass-bg) !important;
+  backdrop-filter: var(--glass-blur) !important;
+  border: var(--glass-border) !important;
+  border-radius: 50px !important;
+  padding: 0.5rem 1rem !important;
+}
+
+.nav-item-cell {
+  flex: 1 !important;
+  text-align: center !important;
+}
+
+/* ==========================================================================
+   6. GLOBAL APP INTRODUCTION TOUR COMPONENT OVERRIDES
+   ========================================================================== */
+.introjs-tooltip, 
+.shepherd-element, 
+.tour-step-card,
+.anvil-role-tour-bubble {
+  background: rgba(255, 255, 255, 0.45) !important;
+  backdrop-filter: blur(30px) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(30px) saturate(190%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.55) !important;
+  border-radius: 24px !important;
+  box-shadow: 0 12px 40px rgba(30, 34, 41, 0.25) !important;
+  padding: 1.5rem !important;
+  color: #1E2229 !important; /* Retain absolute reading readability */
+}
+
+/* Tour Content Configuration Controls */
+.introjs-tooltip-title, .tour-title-node {
+  font-size: clamp(1.15rem, 2.6vw, 1.4rem) !important;
+  font-weight: 600 !important;
+  color: #1E2229 !important;
+}
+
+.introjs-tooltip-text, .tour-body-text {
+  font-size: clamp(0.95rem, 2.2vw, 1.1rem) !important;
+  font-weight: 400 !important;
+  line-height: 1.5 !important;
+  color: #1E2229 !important;
+}
+
+/* Buttons Engine Standardization */
+.introjs-nextbutton, .tour-btn-primary {
+  background-color: #A6DDB1 !important;
+  color: #1E2229 !important;
+  font-size: clamp(0.9rem, 2vw, 1.1rem) !important;
+  font-weight: 500 !important;
+  border-radius: 50px !important;
+  border: none !important;
+  padding: 0.5rem 1.25rem !important;
+  cursor: pointer !important;
+}
+
+.introjs-prevbutton, .tour-btn-secondary {
+  background-color: rgba(255, 255, 255, 0.25) !important;
+  color: #1E2229 !important;
+  font-size: clamp(0.9rem, 2vw, 1.1rem) !important;
+  font-weight: 500 !important;
+  border: 1px solid rgba(255, 255, 255, 0.45) !important;
+  border-radius: 50px !important;
+  padding: 0.5rem 1.25rem !important;
+  cursor: pointer !important;
+}
+
+/* Remove visual pointer anomalies that tear geometric glass layouts */
+.introjs-arrow, .shepherd-arrow, .introjs-bullets {
+  display: none !important;
+}

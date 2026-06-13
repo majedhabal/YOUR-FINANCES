@@ -1,0 +1,46 @@
+{
+  "type": "AdaptiveCard",
+  "body": [
+    {
+      "type": "TextBlock",
+      "text": "Vantage Quick Outflow",
+      "fontType": "Default",
+      "size": "Medium",
+      "weight": "Bolder",
+      "color": "Accent"
+    },
+    {
+      "type": "TextBlock",
+      "text": "Deduct money and record outflows directly.",
+      "isSubtle": true,
+      "wrap": true,
+      "size": "Small",
+      "spacing": "None"
+    },
+    {
+      "type": "Input.ChoiceSet",
+      "id": "selectedWidgetId",
+      "style": "compact",
+      "value": "${defaultWidgetId}",
+      "choices": "${choices}",
+      "spacing": "Medium"
+    },
+    {
+      "type": "Input.Number",
+      "id": "amount",
+      "placeholder": "Enter amount...",
+      "min": 0.01,
+      "spacing": "Medium"
+    }
+  ],
+  "actions": [
+    {
+      "type": "Action.Execute",
+      "title": "Log Outflow",
+      "id": "log_outflow",
+      "verb": "log_outflow"
+    }
+  ],
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+  "version": "1.5"
+}

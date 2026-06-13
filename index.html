@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <script>
+      (function() {
+        try {
+          const size = localStorage.getItem('vantage_font_size') || 'normal';
+          let sizePx = '16px';
+          if (size === 'small') sizePx = '14px';
+          else if (size === 'normal') sizePx = '16px';
+          else if (size === 'large') sizePx = '18px';
+          else if (size === 'xlarge') sizePx = '20px';
+          document.documentElement.style.fontSize = sizePx;
+          document.documentElement.style.setProperty('--app-base-font-size', sizePx);
+
+          const font = localStorage.getItem('vantage_font_family') || 'Google Sans';
+          let fontFamilyVal = "'Google Sans', sans-serif";
+          if (font === 'Plus Jakarta Sans') {
+            fontFamilyVal = "'Plus Jakarta Sans', sans-serif";
+          } else if (font === 'JetBrains Mono') {
+            fontFamilyVal = "'JetBrains Mono', monospace";
+          } else if (font === 'System Sans') {
+            fontFamilyVal = "sans-serif";
+          } else if (font === 'System Serif') {
+            fontFamilyVal = "serif";
+          }
+          document.documentElement.style.setProperty('--app-font-family', fontFamilyVal);
+        } catch (e) {
+          console.warn(e);
+        }
+      })();
+    </script>
+    <meta name="theme-color" content="#20c997" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="manifest" href="/manifest.json?v=1.0.1" />
+    <link rel="icon" type="image/jpeg" href="/Vantage Wallet Logo.jpg?v=1.0.1" />
+    <link rel="apple-touch-icon" href="/Vantage Wallet Logo.jpg?v=1.0.1" />
+    <title>YOUR FINANCES</title>
+    <style>
+      #splash-screen {
+        position: fixed;
+        inset: 0;
+        background: #06090a;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        transition: opacity 0.5s ease-out, visibility 0.5s;
+      }
+      .logo-container {
+        width: 140px;
+        height: 140px;
+        position: relative;
+        margin-bottom: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .logo-img {
+        width: 100%;
+        height: 100%;
+        border-radius: 32px;
+        box-shadow: 0 0 50px rgba(32, 201, 151, 0.15);
+        object-fit: cover;
+      }
+      .fallback-logo {
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle at center, #1a1a1a 0%, #06090a 100%);
+        border: 1px solid rgba(32, 201, 151, 0.3);
+        border-radius: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+      }
+      .fallback-logo::before {
+        content: "VA";
+        color: #20c997;
+        font-weight: 900;
+        font-size: 56px;
+        letter-spacing: -4px;
+        font-family: Georgia, serif;
+        text-shadow: 0 0 20px rgba(32, 201, 151, 0.5);
+      }
+      .loader-bar {
+        width: 180px;
+        height: 2px;
+        background: rgba(32, 201, 151, 0.05);
+        border-radius: 1px;
+        overflow: hidden;
+        position: relative;
+      }
+      .loader-progress {
+        position: absolute;
+        inset: 0;
+        background: #20c997;
+        width: 0%;
+        animation: progress 2s ease-in-out infinite;
+        box-shadow: 0 0 10px #20c997;
+      }
+      @keyframes progress {
+        0% { width: 0%; left: 0%; }
+        50% { width: 50%; left: 25%; }
+        100% { width: 0%; left: 100%; }
+      }
+      #splash-screen.fade-out {
+        opacity: 0;
+        visibility: hidden;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="splash-screen">
+      <div class="logo-container">
+        <img src="/Vantage Wallet Logo.jpg?v=1.0.1" alt="Vantage AI Wallet" class="logo-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+        <div class="fallback-logo" style="display:none;"></div>
+      </div>
+      <div class="loader-bar">
+        <div class="loader-progress"></div>
+      </div>
+    </div>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+
