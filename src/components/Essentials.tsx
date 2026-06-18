@@ -12,7 +12,14 @@ import {
   Building2 as BankIcon,
   HandCoins,
   Archive,
-  Calendar
+  Calendar,
+  Shield,
+  Plane,
+  Car,
+  Sparkles,
+  TrendingUp,
+  Bot,
+  Lightbulb
 } from 'lucide-react';
 import { 
   collection, 
@@ -37,6 +44,14 @@ import { DEFAULT_RATES, syncExchangeRates } from '../lib/exchangeRates';
 import { calculateAccountBalances } from '../lib/trendUtils';
 import { DebtMilestoneConfigModal } from './DebtMilestoneConfigModal';
 import { SalaryBreakdownModal } from './SalaryBreakdownModal';
+import { BudgetSection } from './BudgetSection';
+import { BudgetDetailView } from './BudgetDetailView';
+import { SavingsSection } from './SavingsSection';
+import { DebtSection } from './DebtSection';
+import { GoalTransactionModal } from './GoalTransactionModal';
+import { DebtTransactionModal } from './DebtTransactionModal';
+import { BudgetTransactionModal } from './BudgetTransactionModal';
+
 
 interface BudgetCategory {
   id: string;
@@ -98,12 +113,12 @@ interface DailyLogProps {
 }
 
 const NAVIGATION_TABS = [
-  { id: 'daily' as const, label: 'Budget Tracking' },
-  { id: 'savings' as const, label: 'Saving Goals' },
-  { id: 'debt' as const, label: 'Debt Management' }
+  { id: 'daily' as const, label: 'Budget allocation' },
+  { id: 'savings' as const, label: 'Savings goals' },
+  { id: 'debt' as const, label: 'Debt management' }
 ];
 
-export const DailyLog: React.FC<DailyLogProps> = ({ profile }) => {
+export const Essentials: React.FC<DailyLogProps> = ({ profile }) => {
   const [budgets, setBudgets] = useState<BudgetCategory[]>([]);
   const [accounts, setAccounts] = useState<any[]>([]);
   const [recentTransactions, setRecentTransactions] = useState<any[]>([]);
@@ -143,6 +158,7 @@ export const DailyLog: React.FC<DailyLogProps> = ({ profile }) => {
   const [budgetToDelete, setBudgetToDelete] = useState<BudgetCategory | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
   const [selectedBudgetId, setSelectedBudgetId] = useState<string | null>(null);
+  const [targetForTx, setTargetForTx] = useState<{ type: 'milestone' | 'debt', target: any } | null>(null);
 
   // Salary Breakdown Blueprints State & Helpers
   const [isSalaryModalOpen, setIsSalaryModalOpen] = useState(false);
@@ -391,10 +407,21 @@ useEffect(() => {
         setActiveSubTab(subtab);
       }
     };
+    const handleTriggerSavings = () => {
+      setIsMilestoneModalOpen(true);
+    };
+    const handleTriggerDebtConfig = () => {
+      setIsDebtMilestoneModalOpen(true);
+    };
+
     window.addEventListener('trigger-daily-log-budget-config', handleTrigger);
+    window.addEventListener('trigger-savings-goal-config', handleTriggerSavings);
+    window.addEventListener('trigger-debt-config', handleTriggerDebtConfig);
     window.addEventListener('set-daily-log-subtab', handleSetSubtab);
     return () => {
       window.removeEventListener('trigger-daily-log-budget-config', handleTrigger);
+      window.removeEventListener('trigger-savings-goal-config', handleTriggerSavings);
+      window.removeEventListener('trigger-debt-config', handleTriggerDebtConfig);
       window.removeEventListener('set-daily-log-subtab', handleSetSubtab);
     };
   }, []);
@@ -581,11 +608,24 @@ useEffect(() => {
           updatedAt: serverTimestamp()
         }, { merge: true });
       } else if (type === 'delete') {
-        await deleteDoc(doc(db, `users/${profile.uid}/debtMilestones`, ms.id));
+        const acc = ms;
+        const accRef = doc(db, `users/${profile.uid}/accounts`, acc.id);
+        
+        const batch = writeBatch(db);
+        batch.delete(accRef);
+
+        const txsToDelete = allTransactions.filter(tx => tx.sourceAccountId === acc.id || tx.toAccountId === acc.id || tx.fromAccountId === acc.id);
+        
+        txsToDelete.forEach(tx => {
+          const txRef = doc(db, `users/${profile.uid}/transactions`, tx.id);
+          batch.delete(txRef);
+        });
+
+        await batch.commit();
       }
       setDebtMilestoneAction(null);
     } catch (err) {
-      handleFirestoreError(err, type === 'delete' ? OperationType.DELETE : OperationType.WRITE, `users/${profile.uid}/debtMilestones`);
+      handleFirestoreError(err, type === 'delete' ? OperationType.DELETE : OperationType.WRITE, `users/${profile.uid}/accounts/${ms.id}`);
     } finally {
       setIsLoading(false);
     }
@@ -788,7 +828,7 @@ useEffect(() => {
   };
 
   return (
-    <div className="flex flex-col bg-vantage-background min-h-screen text-vantage-text px-0 pb-[10vh] gap-6 relative transition-colors duration-300">
+    <div className="flex flex-col bg-[#F8FAFC] min-h-screen text-black pb-[10vh] gap-6 relative transition-colors duration-300 px-[15px]">
       <AnimatePresence>
         {showSuccess && (
           <motion.div 
@@ -797,7 +837,7 @@ useEffect(() => {
             exit={{ opacity: 0, scale: 0.5 }}
             className="fixed inset-0 z-[500] flex items-center justify-center pointer-events-none"
           >
-            <div className="w-32 h-32 bg-vantage-green/20 backdrop-blur-xl border-4 border-vantage-green rounded-full flex items-center justify-center shadow-[0_0_50px_rgba(32,201,151,0.5)]">
+            <div className="w-32 h-32 bg-white dark:bg-[#252932] border-4 border-vantage-green rounded-full flex items-center justify-center shadow-lg">
               <Check size={64} className="text-vantage-green animate-bounce" strokeWidth={4} />
             </div>
           </motion.div>
@@ -805,564 +845,106 @@ useEffect(() => {
       </AnimatePresence>
 
       {/* Header - Sticky */}
-      <div className="sticky top-0 z-40 bg-vantage-background/80 backdrop-blur-xl flex flex-col pt-12 pb-4 px-1 gap-4">
-        <div className="w-full flex justify-between items-end">
-          <div className="flex flex-col gap-1">
-            <h2 className="font-black uppercase tracking-tighter text-black leading-none animate-fade-in">
-              <span style={{ fontFamily: "'Google Sans', sans-serif", fontSize: '26px', lineHeight: '26px' }}>Essentials</span>
-            </h2>
-          </div>
-          
-          <button
-            onClick={() => {
-              triggerHaptic(hapticPresets.medium);
-              setIsSalaryModalOpen(true);
-            }}
-            style={{ 
-              fontFamily: "'Google Sans', sans-serif", 
-              fontWeight: 400,
-              backgroundColor: '#A6DDB1',
-              color: '#1E293B'
-            }}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl uppercase tracking-wider text-[10px] sm:text-[11px] hover:brightness-95 active:scale-95 transition-all text-center cursor-pointer shrink-0 border border-transparent select-none shadow-sm"
-          >
-            <Calendar size={12} />
-            <span>Income Allocation</span>
-          </button>
+      <div className="sticky top-0 z-40 bg-[#F8FAFC] flex justify-between items-center p-[5px]">
+        <h2 className="font-bold tracking-tighter text-black">
+          <span style={{ fontFamily: "'Google Sans', sans-serif", fontSize: '26px' }}>Essentials</span>
+        </h2>
+        <button
+          onClick={() => {
+            triggerHaptic(hapticPresets.medium);
+            setIsSalaryModalOpen(true);
+          }}
+          style={{ 
+            fontFamily: "'Google Sans', sans-serif", 
+            fontWeight: 700,
+            backgroundColor: '#A6DDB1',
+            color: '#1E293B'
+          }}
+          className="flex items-center gap-1.5 px-4 py-2 rounded-full text-[12px] hover:brightness-95 active:scale-95 transition-all cursor-pointer border-none shadow-sm"
+        >
+          <Calendar size={14} />
+          <span>Income allocation</span>
+        </button>
+      </div>
 
+      {/* Unified Grid Layout */}
+      <div className="flex flex-col gap-6 p-[5px] border-0 h-auto">
+        {/* Column 1: Budget Allocation */}
+        <BudgetSection 
+          budgets={budgets} 
+          accounts={accounts} 
+          transactions={recentTransactions} 
+          onDelete={(b) => setBudgetToDelete(b)} 
+          onBudgetClick={(b) => setSelectedBudgetId(b.id)} 
+          onAddExpense={(b) => setActiveBudgetForTx(b)} 
+        />
+
+        {/* Budget Insight Card */}
+        <div 
+          id="essentials-budget-insight"
+          className="relative overflow-hidden flex flex-col transition-all bg-[#F0F9F4] border border-[#DCFCE7] rounded-2xl p-6"
+        >
+          <div className="flex items-center gap-2 text-[#366945] mb-3">
+            <Lightbulb size={20} />
+            <span className="font-bold text-sm">Vantage Insight</span>
+          </div>
+          <p className="text-[#366945] text-sm leading-relaxed">
+            Your total budget allocation this month is 5% higher than last month. 
+            This increase is primarily driven by adjustments in your discretionary spending categories.
+          </p>
         </div>
 
-        {/* --- Three-Way Sub-Navigation Selector Labels Header --- */}
-        <div className="flex bg-[#E1E8ED]/30 p-1 rounded-xl w-full md:w-[35%] md:max-w-[35%] mx-auto gap-x-1 sm:gap-x-2 select-none border border-[#E1E8ED]/50 transition-all">
-          {NAVIGATION_TABS.map((item, idx) => {
-  const isActive = activeSubTab === item.id;
-  return (
-    <button
-      key={`essentials-sub-tab-item-${item.id}-${idx}`}
-      onClick={() => {
-        triggerHaptic(hapticPresets.light);
-        setActiveSubTab(item.id);
-      }}
-      style={{
-        fontFamily: "'Google Sans', sans-serif",
-        fontWeight: 400,
-        fontSize: 'clamp(9px, 2.1vw, 12px)',
-        backgroundColor: isActive ? '#A6DDB1' : 'rgba(255, 255, 255, 0.05)',
-        color: isActive ? '#1E293B' : '#64748B'
-      }}
-      className={`flex-1 py-1.5 sm:py-2 px-1 sm:px-2 uppercase tracking-wider rounded-lg transition-all duration-300 text-center cursor-pointer whitespace-nowrap overflow-hidden text-ellipsis border border-transparent ${
-        isActive ? 'shadow-sm font-normal' : 'hover:text-black hover:bg-neutral-100/30'
-      }`}
-    >
-      {item.label}
-    </button>
-  );
-})}
+        {/* Column 2: Savings Goals */}
+        <SavingsSection milestones={milestones}
+        accounts={accounts}
+        accountBalances={accountBalances}
+        transactions={allTransactions}
+        onDeleteMilestone={(ms) => setSavingsGoalAction({ type: 'delete', ms })}
+        onAddTransaction={(ms) => setTargetForTx({ type: 'milestone', target: ms })}
+         />
+
+        {/* Column 3: Debt Management */}
+        <DebtSection                
+          accounts={accounts} 
+          transactions={allTransactions} 
+          onDeleteDebt={(acc) => setDebtMilestoneAction({ type: 'delete', ms: acc })}                
+          onAddDebtTransaction={(acc) => setTargetForTx({ type: 'debt', target: acc })}
+        />
+
+        {/* Debt Insight Card */}
+        <div 
+          id="essentials-debt-insight"
+          className="relative overflow-hidden flex flex-col transition-all bg-[#FEF2F2] border border-[#FECACA] rounded-2xl p-6"
+        >
+          <div className="flex items-center gap-2 text-[#B91C1C] mb-3">
+            <Lightbulb size={20} />
+            <span className="font-bold text-sm">Vantage Insight</span>
+          </div>
+          <p className="text-[#B91C1C] text-sm leading-relaxed">
+            { (() => {
+              const debtNow = accounts.filter(a => ['Credit Card', 'Personal Loan', 'Mortgage'].includes(a.type)).reduce((sum, a) => sum + Math.abs(a.currentBalance || 0), 0);
+              const debtPast = accounts.filter(a => ['Credit Card', 'Personal Loan', 'Mortgage'].includes(a.type)).reduce((sum, a) => sum + Math.abs(a.startingBalance || 0), 0);
+              const diff = debtNow - debtPast;
+              const pct = debtPast > 0 ? (Math.abs(diff) / debtPast) * 100 : 0;
+              
+              return `Your total debt ${diff > 0 ? 'increased' : diff < 0 ? 'decreased' : 'remained stable'} by ${pct.toFixed(1)}% this month compared to last month.`;
+            })() }
+          </p>
         </div>
       </div>
 
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={activeSubTab}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.15, ease: 'easeOut' }}
-          className="w-full flex flex-col gap-5 px-1"
-        >
-          {/* DAILY SUB-VIEW */}
-          {activeSubTab === 'daily' && (
-            <div className="flex flex-col gap-4">
-              {/* Active Operational Date Span Banner for the Salary Period */}
-              <div 
-                style={{ fontFamily: "'Google Sans', sans-serif" }}
-                className="mx-1 p-3.5 bg-[#A6DDB1]/5 border border-[#A6DDB1]/20 rounded-2xl flex flex-col gap-1 select-none shrink-0 animate-fade-in"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-[11px] text-neutral-800 font-medium uppercase tracking-wider">
-                    {getSalaryBreakdownTitle(getCurrentPeriodYearMonth())}
-                  </span>
-                  <span 
-                    style={{ backgroundColor: '#A6DDB1', color: '#1E293B', fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} 
-                    className="text-[9px] font-normal uppercase tracking-widest px-2.5 py-0.5 rounded-full"
-                  >
-                    Active Salary Cycle
-                  </span>
-                </div>
-                <span className="text-[10px] text-neutral-550 font-normal mt-0.5 leading-none">
-                  {getOperationalDateSpanText(getCurrentPeriodYearMonth(), dbPayday)}
-                </span>
-              </div>
-
-              {/* Main Budget framework and transaction drill-down container */}
-              <div className="flex flex-col lg:flex-row gap-5 items-start w-full mt-2">
-                
-                {/* Left Panel: Budget List - 100% width on Mobile, 60% wide when side-by-side on desktop */}
-                <div className={`flex flex-col transition-all duration-300 w-full ${selectedBudgetId ? 'lg:w-[60%]' : 'w-full'}`}>
-                  <div className="flex flex-col md:flex-row md:flex-wrap gap-y-2 md:gap-x-[4%] md:gap-y-4 w-full justify-start">
-                    {budgets.length > 0 ? (
-                      budgets.map((budget, idx) => {
-                        const spent = calculateSpent(budget, 'current');
-                        const isSelected = selectedBudgetId === budget.id;
-
-                        return (
-                          <div 
-                            key={`budget-envelope-card-${budget.id}-${idx}`} 
-                            className={`flex flex-col transition-all duration-300 ${
-                              selectedBudgetId 
-                                ? 'w-full shrink-0' 
-                                : 'w-full md:w-[48%] shrink-0'
-                            }`}
-                          >
-                            <BudgetCard
-                              budget={budget as any}
-                              spent={spent}
-                              compact={true}
-                              onCardClick={() => setSelectedBudgetId(isSelected ? null : budget.id)}
-                              onPlusClick={() => setActiveBudgetForTx(budget)}
-                              onDeleteClick={() => setBudgetToDelete(budget)}
-                            />
-
-                            {/* Mobile inline expansion sub-ledger, shown only on Mobile below 'lg' break point */}
-                            {isSelected && (
-                              <div className="block lg:hidden w-full mt-2 animate-fade-in">
-                                {renderTransactionDrilldown(budget, true)}
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })
-                    ) : (
-                      <div className="w-full py-16 border-2 border-dashed border-[#E1E8ED] bg-white rounded-[1.5rem] flex flex-col items-center justify-center gap-3">
-                        <div className="w-14 h-14 rounded-2xl bg-vantage-text/5 flex items-center justify-center">
-                          <Plus size={24} className="text-[#57606F] opacity-20" />
-                        </div>
-                        <p className="text-[clamp(11px,2.5vw,13px)] font-black uppercase tracking-[0.25em] text-[#57606F] opacity-40">Initialize Budget Framework</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Right Panel: Adjacent Transactions Module (40% width) - shown side-by-side only on desktop/tablet 'lg' size */}
-                {selectedBudgetId && (
-                  <div className="hidden lg:block lg:w-[40%] sticky top-4 transition-all duration-300 animate-fade-in self-start shrink-0">
-                    {(() => {
-                      const budget = budgets.find(b => b.id === selectedBudgetId);
-                      return budget ? renderTransactionDrilldown(budget, false) : null;
-                    })()}
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* SAVINGS SUB-VIEW */}
-          {activeSubTab === 'savings' && (
-            <div className="flex flex-col gap-4">
-              {/* TARGET SAVINGS GOALS */}
-              <div className="flex flex-col gap-3 mt-2 select-none">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 px-1">
-                  <h4 style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-xs uppercase tracking-widest text-[#57606F]">
-                    TARGET SAVINGS GOALS
-                  </h4>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <button
-                      type="button"
-                      onClick={() => setShowArchivedGoals(!showArchivedGoals)}
-                      style={{ 
-                        fontFamily: "'Google Sans', sans-serif", 
-                        fontWeight: 400,
-                      }}
-                      className="flex items-center justify-center px-3.5 h-[32px] rounded-xl uppercase tracking-wider text-[clamp(10px,2.2vw,12px)] hover:bg-neutral-100 bg-white border border-[#E1E8ED] text-[#57606F] active:scale-95 transition-all text-center cursor-pointer select-none shadow-xs"
-                    >
-                      <span>{showArchivedGoals ? 'SHOW ACTIVE GOALS' : 'SHOW ARCHIVED GOALS'}</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEditingMilestone(null);
-                        setIsMilestoneModalOpen(true);
-                      }}
-                      style={{ 
-                        fontFamily: "'Google Sans', sans-serif", 
-                        fontWeight: 400,
-                        backgroundColor: '#A6DDB1',
-                        color: '#1E293B'
-                      }}
-                      className="flex items-center gap-1.5 px-3 h-[32px] rounded-xl uppercase tracking-wider text-[clamp(10px,2.2vw,12px)] hover:brightness-95 active:scale-95 transition-all text-center cursor-pointer shrink-0 border border-transparent select-none shadow-sm"
-                    >
-                      <Plus size={12} className="shrink-0" />
-                      <span>CREATE MILESTONE GOAL</span>
-                    </button>
-                  </div>
-                </div>
-
-                {milestones.filter(ms => showArchivedGoals ? ms.isArchived === true : (ms.isArchived !== true)).length === 0 ? (
-                  <div className="p-8 border-2 border-dashed border-[#E1E8ED] bg-white rounded-2xl flex flex-col items-center justify-center gap-3 text-center">
-                    <span style={{ fontFamily: "'Google Sans', sans-serif'", fontWeight: 400 }} className="text-[11px] font-normal uppercase tracking-[0.2em] text-[#57606F] opacity-60">
-                      {showArchivedGoals ? 'No Archived Goals' : 'No Active Milestones'}
-                    </span>
-                    <span style={{ fontFamily: "'Google Sans', sans-serif'", fontWeight: 400 }} className="text-[10px] text-vantage-muted max-w-[220px]">
-                      {showArchivedGoals 
-                        ? 'Your archived target goals and long-term milestones will appear here once retired.' 
-                        : 'Calibrate long-term properties, automobiles, or reserve markers cleanly.'}
-                    </span>
-                  </div>
-                ) : (
-                  <div className="flex flex-col gap-3">
-                    {milestones.filter(ms => showArchivedGoals ? ms.isArchived === true : (ms.isArchived !== true)).map((ms, msIdx) => {
-                      // Calculate balance sum of linked accounts
-                      const linkedAccs = accounts.filter(acc => ms.linkedAccountIds?.includes(acc.id));
-                      const totalBalancesSum = linkedAccs.reduce((sum, acc) => {
-                        const currentBalance = accountBalances[acc.id] || 0;
-                        const rate = (exchangeRates && exchangeRates[acc.currency]) || 1;
-                        const baseRateToAED = (exchangeRates && exchangeRates[activeBaseCurr]) || 1;
-                        const translated = (currentBalance * rate) / baseRateToAED;
-                        return sum + translated;
-                      }, 0);
-
-                      const percentage = ms.targetAmount > 0 
-                        ? Math.min((totalBalancesSum / ms.targetAmount) * 100, 100) 
-                        : 0;
-
-                      // Recommended monthly contribution = (Target amount - current linked balance) / months to target
-                      const monthsRemaining = Math.max(ms.monthsToTarget || 1, 1);
-                      const recAllocation = Math.max(0, (ms.targetAmount - totalBalancesSum) / monthsRemaining);
-
-                      const milestoneKey = ms.id || `milestone-goal-${msIdx}`;
-
-                      return (
-                        <div 
-                          key={milestoneKey} 
-                          style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
-                          className={`border p-4.5 rounded-2xl flex flex-col gap-3 shadow-xs hover:border-vantage-green/30 transition-all relative overflow-hidden group ${
-                            ms.isArchived 
-                              ? 'bg-neutral-50/80 border-[#E1E8ED] opacity-65 saturate-[0.15] hover:opacity-95 hover:saturate-[0.8]' 
-                              : 'bg-white border-[#E1E8ED]'
-                          }`}
-                        >
-                          <div className="flex justify-between items-start gap-3 relative z-10">
-                            <div className="flex flex-col">
-                              {/* Primary Goal name in bold 700 */}
-                              <h5 style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-sm text-black leading-snug font-bold">
-                                {ms.name}
-                              </h5>
-                              {/* Non-primary description strictly normal weight 400 */}
-                              <div style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[10px] text-[#57606F] uppercase tracking-wider mt-1.5 flex flex-wrap gap-1 leading-none">
-                                <span className="text-vantage-muted">Linked Nodes:</span>
-                                {linkedAccs.length === 0 ? (
-                                  <span className="text-red-500 font-normal">None linked</span>
-                                ) : (
-                                  linkedAccs.map((acc, ai) => (
-                                    <span key={`ms-acc-link-${ms.id}-${acc.id}`} className="text-black font-normal bg-neutral-100 px-1.5 py-0.5 rounded">
-                                      {acc.name}{ai < linkedAccs.length - 1 ? ',' : ''}
-                                    </span>
-                                  ))
-                                )}
-                              </div>
-                            </div>
-
-                            <div className="flex items-center gap-2">
-                              {/* Edit triggers sheet */}
-                              {!ms.isArchived && (
-                                <button 
-                                  type="button"
-                                  onClick={() => {
-                                    setEditingMilestone(ms);
-                                    setIsMilestoneModalOpen(true);
-                                  }}
-                                  className="w-7 h-7 hover:bg-neutral-100 flex items-center justify-center rounded-lg text-neutral-500 hover:text-black transition-colors border-none bg-transparent cursor-pointer"
-                                >
-                                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
-                                </button>
-                              )}
-
-                              {/* Archive / Retire toggle icon next to edit */}
-                              <button 
-                                type="button"
-                                onClick={() => setSavingsGoalAction({ type: 'archive', ms })}
-                                title={ms.isArchived ? "Restore milestone goal" : "Archive milestone goal"}
-                                className={`w-7 h-7 hover:bg-neutral-100 flex items-center justify-center rounded-lg transition-colors border-none bg-transparent cursor-pointer ${
-                                  ms.isArchived ? 'text-vantage-green hover:text-vantage-green-dark' : 'text-neutral-400 hover:text-vantage-green'
-                                }`}
-                              >
-                                <Archive size={14} />
-                              </button>
-                              
-                              {/* Delete confirmation/trigger */}
-                              <button 
-                                type="button"
-                                onClick={() => setSavingsGoalAction({ type: 'delete', ms })}
-                                className="w-7 h-7 hover:bg-red-50 flex items-center justify-center rounded-lg text-neutral-400 hover:text-red-600 transition-colors border-none bg-transparent cursor-pointer"
-                              >
-                                <Trash2 size={14} />
-                              </button>
-                            </div>
-                          </div>
-
-                          {/* Responsive progression bar percentage & numeric balance */}
-                          <div className="flex flex-col gap-1.5 mt-1 relative z-10">
-                            <div className="flex justify-between text-[10.5px] uppercase tracking-wider font-normal">
-                              {/* strictly Normal weights 400 for structural text */}
-                              <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-vantage-muted">
-                                Current Allocation Base
-                              </span>
-                              {/* Bold 700 exclusive for primary numerical calculations */}
-                              <div style={{ fontFamily: "'Google Sans', sans-serif'", fontWeight: 700 }} className="flex gap-1.5 font-bold text-xs text-black">
-                                <span className="text-[#57606F]">
-                                  {totalBalancesSum.toLocaleString('en-US', { maximumFractionDigits: 0 })}
-                                </span>
-                                <span className="opacity-50">/</span>
-                                <span>
-                                  {ms.targetAmount.toLocaleString('en-US', { maximumFractionDigits: 0 })} {activeBaseCurr}
-                                </span>
-                              </div>
-                            </div>
-
-                            {/* Progression Line (% achieved) */}
-                            <div className="w-full bg-vantage-text/5 rounded-full h-1.5 overflow-hidden">
-                              <div 
-                                className="bg-vantage-green h-full rounded-full transition-all duration-500 ease-out" 
-                                style={{ width: `${percentage}%` }} 
-                              />
-                            </div>
-                            
-                            <div className="flex justify-between items-center text-[10px] uppercase tracking-wider font-normal">
-                              {/* strictly Normal weights 400 for structural label */}
-                              <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[#57606F]">
-                                Goal Progression Pace
-                              </span>
-                              {/* Bold 700 exclusive for percentage metrics */}
-                              <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-vantage-green font-bold text-xs">
-                                {percentage.toFixed(0)}% Achieved
-                              </span>
-                            </div>
-                          </div>
-
-                          {/* Contribution Recommendation Row */}
-                          <div className="bg-[#E1E8ED]/20 rounded-xl px-3 py-2.5 flex items-center justify-between text-[10.5px] uppercase tracking-wider select-none relative z-10 border border-[#E1E8ED]/30 font-normal">
-                            {/* strictly Normal weights 400 for structural label */}
-                            <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-neutral-500">
-                              Pace Required per Month
-                            </span>
-                            <div>
-                              {totalBalancesSum >= ms.targetAmount ? (
-                                <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-vantage-green font-bold text-xs">FULLY FUNDED 🎉</span>
-                              ) : (
-                                <div className="text-right">
-                                  {/* Bold 700 exclusive for milestone calculation metrics */}
-                                  <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-black font-bold text-xs">
-                                    {activeBaseCurr} {recAllocation.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
-                                  </span>
-                                  {/* strictly Normal weights 400 for structural remaining times */}
-                                  <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-neutral-400 font-normal ml-1">/ mo ({monthsRemaining} mo remaining)</span>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* DEBT SUB-VIEW */}
-          {activeSubTab === 'debt' && (
-            <div className="flex flex-col gap-4">
-              {/* ACTIVE REPAYMENT MILESTONES Header with archived toggle option */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 px-1 mt-2 mb-1 select-none">
-                <h4 style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-xs text-black font-bold">
-                  {showArchivedDebts ? 'Archived Repayment Milestones' : 'Active Repayment Milestones'}
-                </h4>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <button
-                    type="button"
-                    onClick={() => setShowArchivedDebts(!showArchivedDebts)}
-                    style={{ 
-                      fontFamily: "'Google Sans', sans-serif", 
-                      fontWeight: 400,
-                    }}
-                    className="flex items-center justify-center px-3.5 h-[32px] rounded-xl text-[clamp(10px,2.2vw,12px)] hover:bg-neutral-100 bg-white border border-[#E1E8ED] text-[#57606F] active:scale-95 transition-all text-center cursor-pointer select-none shadow-xs"
-                  >
-                    <span>{showArchivedDebts ? 'Show Active Debts' : 'Show Archived Debts'}</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setEditingDebtMilestone(null);
-                      setIsDebtMilestoneModalOpen(true);
-                    }}
-                    style={{ 
-                      fontFamily: "'Google Sans', sans-serif", 
-                      fontWeight: 700,
-                      backgroundColor: '#A6DDB1',
-                      color: '#1E293B'
-                    }}
-                    className="flex items-center gap-1.5 px-3 h-[32px] rounded-xl text-[clamp(10px,2.2vw,12px)] font-bold hover:brightness-95 active:scale-95 transition-all text-center cursor-pointer shrink-0 border border-transparent select-none shadow-sm"
-                  >
-                    <Plus size={12} className="shrink-0" />
-                    <span>Register Loan or Mortgage</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Debt Milestones List with adaptive state filters and desaturation style enhancements */}
-              <div className="flex flex-col gap-3">
-                {debtMilestones.filter(ms => showArchivedDebts ? ms.isArchived === true : (ms.isArchived !== true)).length === 0 ? (
-                  <div className="p-8 border-2 border-dashed border-[#E1E8ED] bg-white rounded-2xl flex flex-col items-center justify-center gap-3 text-center">
-                    <span style={{ fontFamily: "'Google Sans', sans-serif'", fontWeight: 400 }} className="text-[11px] font-normal text-[#57606F] opacity-60">
-                      {showArchivedDebts ? 'No Archived Debt Milestones' : 'No Debt Milestones Defined'}
-                    </span>
-                    <span style={{ fontFamily: "'Google Sans', sans-serif'", fontWeight: 400 }} className="text-[10px] text-vantage-muted max-w-[220px]">
-                      {showArchivedDebts 
-                        ? 'Your settled and archived liabilities will appear here once retired.' 
-                        : 'Register car loans, mortgage payments, or credit lines to track your path down to 0 AED.'}
-                    </span>
-                  </div>
-                ) : (
-                  <div className="flex flex-col gap-3">
-                    {debtMilestones.filter(ms => showArchivedDebts ? ms.isArchived === true : (ms.isArchived !== true)).map((ms, msIdx) => {
-                      const acc = accounts.find(a => a.id === ms.accountId);
-                      const currentBalance = ms.accountId ? (accountBalances[ms.accountId] || 0) : 0;
-                      // Liability balances are negative, e.g. -50000. So remaining is absolute balance.
-                      const remainingDebtVal = Math.max(0, Math.abs(currentBalance));
-                      const paid = Math.max(0, ms.principleAmount - remainingDebtVal);
-                      const percentage = ms.principleAmount > 0 
-                        ? Math.min((paid / ms.principleAmount) * 100, 100) 
-                        : 100;
-
-                      const milestoneKey = ms.id || `debt-milestone-goal-${msIdx}`;
-
-                      return (
-                        <div 
-                          key={milestoneKey}
-                          style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
-                          className={`vantage-glass-base glass-card border p-4.5 rounded-2xl flex flex-col gap-3 transition-all relative overflow-hidden group ${
-                            ms.isArchived 
-                              ? 'opacity-65 saturate-[0.15] hover:opacity-95 hover:saturate-[0.8]' 
-                              : ''
-                          }`}
-                        >
-                          <div className="flex justify-between items-start gap-3 relative z-10">
-                            <div className="flex flex-col">
-                              {/* Primary Goal name in bold 700 */}
-                              <h5 style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-sm text-black leading-snug font-bold">
-                                {ms.name}
-                              </h5>
-                              {/* Non-primary description strictly normal weight 400 */}
-                              <div style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[10px] text-[#57606F] uppercase tracking-wider mt-1.5 flex flex-wrap gap-1 leading-none">
-                                <span className="text-vantage-muted">Linked Node:</span>
-                                {acc ? (
-                                  <span className="text-black font-normal bg-neutral-100 px-1.5 py-0.5 rounded">
-                                    {acc.name} ({acc.currency})
-                                  </span>
-                                ) : (
-                                  <span className="text-red-500 font-normal">None linked</span>
-                                )}
-                              </div>
-                            </div>
-
-                            <div className="flex items-center gap-2">
-                              {/* Edit trigger */}
-                              {!ms.isArchived && (
-                                <button 
-                                  type="button"
-                                  onClick={() => {
-                                    setEditingDebtMilestone(ms);
-                                    setIsDebtMilestoneModalOpen(true);
-                                  }}
-                                  className="w-7 h-7 hover:bg-neutral-100 flex items-center justify-center rounded-lg text-neutral-500 hover:text-black transition-colors border-none bg-transparent cursor-pointer"
-                                >
-                                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
-                                </button>
-                              )}
-
-                              {/* Archive toggle */}
-                              <button 
-                                type="button"
-                                onClick={() => setDebtMilestoneAction({ type: 'archive', ms })}
-                                title={ms.isArchived ? "Restore debt milestone" : "Archive debt milestone"}
-                                className={`w-7 h-7 hover:bg-neutral-100 flex items-center justify-center rounded-lg transition-colors border-none bg-transparent cursor-pointer ${
-                                  ms.isArchived ? 'text-vantage-green hover:text-vantage-green-dark' : 'text-neutral-400 hover:text-vantage-green'
-                                }`}
-                              >
-                                <Archive size={14} />
-                              </button>
-                              
-                              {/* Delete trigger */}
-                              <button 
-                                type="button"
-                                onClick={() => setDebtMilestoneAction({ type: 'delete', ms })}
-                                className="w-7 h-7 hover:bg-red-50 flex items-center justify-center rounded-lg text-neutral-400 hover:text-red-600 transition-colors border-none bg-transparent cursor-pointer"
-                              >
-                                <Trash2 size={14} />
-                              </button>
-                            </div>
-                          </div>
-
-                          {/* Progression tracker metrics */}
-                          <div className="flex flex-col gap-1.5 mt-1 relative z-10">
-                            <div className="flex justify-between text-[10.5px] uppercase tracking-wider font-normal">
-                              <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-vantage-muted">
-                                Remaining Liability
-                              </span>
-                              {/* Bold 700 for metrics */}
-                              <div style={{ fontFamily: "'Google Sans', sans-serif'", fontWeight: 700 }} className="flex gap-1.5 font-bold text-xs text-black">
-                                <span className="text-[#57606F]">
-                                  {remainingDebtVal.toLocaleString('en-US', { maximumFractionDigits: 0 })}
-                                </span>
-                                <span className="opacity-50">/</span>
-                                <span>
-                                  {ms.principleAmount.toLocaleString('en-US', { maximumFractionDigits: 0 })} {activeBaseCurr}
-                                </span>
-                              </div>
-                            </div>
-
-                            {/* Progression Line (% paid off) */}
-                            <div className="w-full bg-vantage-text/5 rounded-full h-1.5 overflow-hidden">
-                              <div 
-                                className="bg-[#ff3f34] h-full rounded-full transition-all duration-500 ease-out" 
-                                style={{ width: `${percentage}%` }} 
-                              />
-                            </div>
-                            
-                            <div className="flex justify-between items-center text-[10px] uppercase tracking-wider font-normal">
-                              <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[#57606F]">
-                                Repayments Progress
-                              </span>
-                              <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-red-500 font-bold text-xs">
-                                {percentage.toFixed(0)}% Repaid
-                              </span>
-                            </div>
-                          </div>
-
-                          {/* Installment payment pace */}
-                          <div className="bg-[#E1E8ED]/20 rounded-xl px-3 py-2.5 flex items-center justify-between text-[10.5px] uppercase tracking-wider select-none relative z-10 border border-[#E1E8ED]/30 font-normal">
-                            <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-neutral-500">
-                              Payment Servicing Installment Code
-                            </span>
-                            <div>
-                              <div className="text-right">
-                                <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-black font-bold text-xs">
-                                  {activeBaseCurr} {ms.paymentAmount.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
-                                </span>
-                                <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-neutral-400 font-normal ml-1">every {ms.paymentFrequency}</span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-        </motion.div>
-      </AnimatePresence>
+      {selectedBudgetId && budgets.find(b => b.id === selectedBudgetId) && (
+        <div className="fixed inset-0 z-50 bg-[#F8FAFC]">
+          <BudgetDetailView 
+            budget={budgets.find(b => b.id === selectedBudgetId)!}
+            transactions={allTransactions}
+            accounts={accounts}
+            uid={profile.uid}
+            onBack={() => setSelectedBudgetId(null)}
+            onEdit={() => { /* Implement */ }}
+          />
+        </div>
+      )}
       
       {/* Salary Breakdown Blueprints Modal */}
       <SalaryBreakdownModal 
@@ -1388,9 +970,9 @@ useEffect(() => {
         effectiveCategories={effectiveCategories}
       />
 
-      {/* Quick Transaction Modal */}
+      {/* Budget Transaction Modal */}
       {activeBudgetForTx && (
-        <QuickTransactionModal 
+        <BudgetTransactionModal 
           isOpen={true}
           onClose={() => setActiveBudgetForTx(null)}
           onSuccess={() => {
@@ -1400,7 +982,35 @@ useEffect(() => {
           budget={activeBudgetForTx}
           accounts={accounts}
           profile={profile}
-          effectiveCategories={effectiveCategories}
+        />
+      )}
+
+      {targetForTx && targetForTx.type === 'milestone' && (
+        <GoalTransactionModal 
+          isOpen={true}
+          onClose={() => setTargetForTx(null)}
+          onSuccess={() => {
+            setShowSuccess(true);
+            setTimeout(() => setShowSuccess(false), 2000);
+          }}
+          target={targetForTx.target}
+          type="milestone"
+          accounts={accounts}
+          profile={profile}
+        />
+      )}
+
+      {targetForTx && targetForTx.type === 'debt' && (
+        <DebtTransactionModal 
+          isOpen={true}
+          onClose={() => setTargetForTx(null)}
+          onSuccess={() => {
+            setShowSuccess(true);
+            setTimeout(() => setShowSuccess(false), 2000);
+          }}
+          debt={targetForTx.target}
+          accounts={accounts}
+          profile={profile}
         />
       )}
 
@@ -1439,7 +1049,7 @@ useEffect(() => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setSavingsGoalAction(null)}
-              className="absolute inset-0 bg-black/60 backdrop-blur-md"
+              className="absolute inset-0 bg-white"
             />
             {/* Modal Box */}
             <motion.div
@@ -1495,7 +1105,7 @@ useEffect(() => {
                     fontFamily: "'Google Sans', sans-serif",
                     fontWeight: 400
                   }}
-                  className="w-full flex items-center justify-center text-neutral-500 hover:text-black transition-colors font-normal cursor-pointer bg-transparent border-none outline-none text-[clamp(11px,2.8vw,13px)] uppercase tracking-[0.1em]"
+                  className="w-full flex items-center justify-center text-neutral-500 hover:text-black transition-colors font-normal cursor-pointer bg-transparent border-none outline-none text-[clamp(11px,2.8vw,13px)] uppercase tracking-[0.1em] "
                 >
                   CANCEL
                 </button>
@@ -1515,7 +1125,84 @@ useEffect(() => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setDebtMilestoneAction(null)}
-              className="absolute inset-0 bg-black/60 backdrop-blur-md"
+              className="absolute inset-0 bg-white"
+            />
+            {/* Modal Box */}
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 15 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 15 }}
+              style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
+              className="relative w-full max-w-[340px] md:max-w-[380px] bg-white border border-[#E1E8ED] rounded-[1.5rem] p-5 md:p-6 flex flex-col items-center text-center gap-3 md:gap-4 shadow-2xl"
+            >
+              {/* Soft decorative sage green Circle - optimized size and tight spacing */}
+              <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-[#A6DDB1]/20 text-[#A6DDB1] flex items-center justify-center shrink-0">
+                <AlertCircle className="w-5 h-5 md:w-6 md:h-6" />
+              </div>
+
+              <div className="flex flex-col gap-1 md:gap-2 w-full">
+                {/* Title in bold 700 with fluid scaling */}
+                <h3 
+                  style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
+                  className="text-[#1F2937] uppercase tracking-wider text-[clamp(12px,3.2vw,14px)] font-bold"
+                >
+                  {debtMilestoneAction.type === 'delete' ? 'DELETE DEBT' : (debtMilestoneAction.ms?.isArchived ? 'RESTORE DEBT' : 'ARCHIVE DEBT')}
+                </h3>
+                {/* Regular weight 400 for parsing descriptive query text to load beautifully */}
+                <p 
+                  style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
+                  className="text-neutral-500 tracking-wide leading-relaxed text-[clamp(12px,3vw,14px)] mt-1 md:mt-1.5"
+                >
+                  Are you sure you want to proceed?
+                </p>
+              </div>
+
+              <div className="flex flex-col w-full gap-3 mt-2">
+                {/* PROCEED High-contrast validation button custom-styled with regular weight 400 and soft sage green action #A6DDB1 */}
+                <button
+                  type="button"
+                  onClick={handleConfirmDebtMilestoneAction}
+                  disabled={isLoading}
+                  style={{ 
+                    fontFamily: "'Google Sans', sans-serif",
+                    fontWeight: 400,
+                    backgroundColor: '#A6DDB1',
+                    color: '#1E293B'
+                  }}
+                  className="w-full h-[38px] md:h-[42px] text-[clamp(11px,2.8vw,13px)] flex items-center justify-center rounded-xl shadow-sm uppercase tracking-[0.1em] hover:brightness-95 active:scale-95 transition-all text-center cursor-pointer font-normal border-none outline-none"
+                >
+                  {isLoading ? "Processing..." : "PROCEED"}
+                </button>
+                {/* CANCEL Dismiss button with regular weight 400 and scaled font to avoid looking disproportionate on desktop */}
+                <button
+                  type="button"
+                  onClick={() => setDebtMilestoneAction(null)}
+                  style={{ 
+                    fontFamily: "'Google Sans', sans-serif",
+                    fontWeight: 400
+                  }}
+                  className="w-full flex items-center justify-center text-neutral-500 hover:text-black transition-colors font-normal cursor-pointer bg-transparent border-none outline-none text-[clamp(11px,2.8vw,13px)] uppercase tracking-[0.1em]"
+                >
+                  CANCEL
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+
+      {/* Centralized Protective Confirmation Pop-up Overlay for Debt Milestones */}
+      <AnimatePresence>
+        {debtMilestoneAction !== null && (
+          <div className="fixed inset-0 z-[400] flex items-center justify-center p-6 select-none animate-fadeIn">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setDebtMilestoneAction(null)}
+              className="absolute inset-0 bg-white"
             />
             {/* Modal Box */}
             <motion.div
@@ -1623,7 +1310,7 @@ useEffect(() => {
                   setShowManageLinkedModal(false);
                   setDebtMilestoneToDelete(null);
                 }} 
-                className="absolute inset-0 bg-black/25 backdrop-blur-xs pointer-events-auto" 
+                className="absolute inset-0 bg-white pointer-events-auto" 
               />
               <motion.div 
                 initial={{ scale: 0.95, opacity: 0 }} 
@@ -1859,7 +1546,7 @@ const BudgetConfigModal: React.FC<{
     <AnimatePresence>
       {isOpen && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-3 sm:p-4">
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-black/20 backdrop-blur-sm" />
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-white" />
           <motion.div 
             initial={{ scale: 0.9, opacity: 0 }} 
             animate={{ scale: 1, opacity: 1 }} 
@@ -1949,13 +1636,13 @@ const BudgetConfigModal: React.FC<{
                       fontFamily: "'Google Sans', sans-serif"
                     }}
                   >
-                    {effectiveCategories.map((cat) => {
+                    {effectiveCategories.map((cat, idx) => {
                       const isCatSelected = mappedCategories.includes(cat.name);
                       const isCatExpanded = expandedCats.includes(cat.name);
                       const catSubcategories = cat.subcategories || [];
 
                       return (
-                        <div key={cat.name} className="flex flex-col gap-1">
+                        <div key={`daily-log-cat-sel-${cat.name || 'node'}-${idx}`} className="flex flex-col gap-1">
                           {/* Parent Category Row */}
                           <div className="flex items-center justify-between gap-2 p-1.5 rounded-lg border border-neutral-100 bg-white hover:bg-neutral-50 transition-colors">
                             <label className="flex items-center gap-2 flex-1 cursor-pointer">
@@ -2241,7 +1928,7 @@ export const QuickTransactionModal: React.FC<{
   return (
     <AnimatePresence>
       <div className="fixed inset-0 z-[200] flex items-center justify-center p-3 sm:p-4">
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-black/20 backdrop-blur-sm" />
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-white" />
         <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="relative w-full max-w-[420px] bg-vantage-card border-[1.5px] border-[#E1E8ED] rounded-[1.25rem] p-4 sm:p-6 md:p-7 shadow-2xl">
           <div className="flex flex-col items-center gap-0.5 mb-4 sm:mb-5">
             <h4 className="font-black text-black uppercase tracking-tighter leading-none"
@@ -2465,65 +2152,66 @@ export const MilestoneConfigModal: React.FC<{
     <AnimatePresence>
       {isOpen && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-3 sm:p-4">
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-black/20 backdrop-blur-sm" />
-          <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="relative w-full max-w-[420px] bg-vantage-card border-[1.5px] border-[#E1E8ED] rounded-[1.25rem] p-4 sm:p-6 md:p-7 shadow-2xl flex flex-col gap-4 overflow-y-auto max-h-[90vh]">
-            <div className="flex flex-col items-center gap-0.5 mb-2">
-              <h4 style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-black uppercase tracking-tight leading-none text-lg font-bold">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-white" />
+          <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="relative w-full max-w-[375px] bg-white border border-[#E1E8ED] rounded-[2rem] shadow-2xl flex flex-col max-h-[85vh]">
+            <div className="flex flex-col items-center gap-1.5 p-6 pb-2 flex-shrink-0">
+              <h4 style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-gray-900 uppercase tracking-tight text-center leading-tight text-lg">
                 {editingMilestone ? 'REFILLING MILESTONE GOAL' : 'CONFIGURE MILESTONE GOAL'}
               </h4>
-              <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-vantage-muted uppercase tracking-[0.25em] text-[9px] mt-1">
+              <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-gray-400 uppercase tracking-[0.2em] text-[10px]">
                 Savings Target Setup
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="flex flex-col gap-6 overflow-y-auto p-6 pt-2">
+
               {/* Goal name */}
-              <div className="space-y-1.5">
-                <label style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[10px] text-[#57606F] uppercase tracking-widest px-0.5 leading-none block">
-                  Goal Name / Label
+              <div className="space-y-2">
+                <label style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[10px] text-gray-500 uppercase tracking-widest px-1 block">
+                  GOAL NAME / LABEL
                 </label>
                 <input 
                   type="text"
                   required
                   value={name}
                   onChange={e => setName(e.target.value)}
-                  placeholder="e.g., Buying a car, Emergency Shield"
-                  style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
-                  className="w-full bg-vantage-text/5 border border-[#E1E8ED] rounded-lg px-3 py-2 text-black font-normal focus:border-[#A6DDB1] outline-none transition-all placeholder:text-[#57606F]/30 uppercase text-xs"
+                  placeholder="E.G., BUYING A CAR, EMERGENCY SHIELD"
+                  style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 500 }}
+                  className="w-full bg-[#f1f5f9] border-none rounded-[0.5rem] px-4 py-3 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-[#A6DDB1] outline-none transition-all text-xs"
                 />
               </div>
 
               {/* Selection categories / accounts linked */}
               <div className="space-y-2">
-                <label style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[10px] text-[#57606F] uppercase tracking-widest px-0.5 leading-none block">
-                  SELECT QUANTUM LEDGER SOURCES (CASH, BANK & SAVINGS)
+                <label style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[10px] text-gray-500 uppercase tracking-widest px-1 block leading-relaxed">
+                  SELECT QUANTUM LEDGER SOURCES <br/> (CASH, BANK & SAVINGS)
                 </label>
-                <div className="max-h-[140px] overflow-y-auto border border-[#E1E8ED] rounded-lg p-2 space-y-1.5 bg-neutral-50/50">
+                <div className="max-h-[140px] overflow-y-auto border border-gray-100 rounded-[0.5rem] p-2 space-y-1.5 bg-[#f1f5f9]/50">
                   {savingsAccounts.length === 0 ? (
-                    <div style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[10px] text-[#57606F] uppercase tracking-wider text-center py-4">No active accounts to link</div>
+                    <div style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[10px] text-gray-400 uppercase tracking-wider text-center py-4">No active accounts to link</div>
                   ) : (
-                    savingsAccounts.map(acc => {
+                    savingsAccounts.map((acc, idx) => {
                       const isChecked = linkedAccountIds.includes(acc.id);
                       const balanceVal = accountBalances[acc.id] || 0;
                       return (
                         <div 
-                          key={`ms-cfg-acc-${acc.id}`} 
+                          key={`ms-cfg-acc-${acc.id}-${idx}`} 
                           onClick={() => handleToggleAccount(acc.id)}
-                          className="flex items-center justify-between p-2 rounded-md hover:bg-neutral-100/80 cursor-pointer select-none transition-colors"
+                          className="flex items-center justify-between p-2 rounded-md hover:bg-gray-100/80 cursor-pointer select-none transition-colors"
                         >
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-3">
                             <input 
                               type="checkbox"
                               checked={isChecked}
                               onChange={() => {}} // Controlled by element onClick
                               style={{ accentColor: '#A6DDB1' }}
-                              className="w-3.5 h-3.5 cursor-pointer"
+                              className="w-5 h-5 rounded border-none text-brand focus:ring-brand"
                             />
-                            <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[11px] uppercase tracking-wide text-black font-normal leading-none">
+                            <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[11px] text-gray-700">
                               {acc.name}
                             </span>
                           </div>
-                          <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[10px] text-[#57606F] font-normal leading-none">
+                          <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 600 }} className="text-[11px] text-gray-500">
                             {acc.currency} {balanceVal.toLocaleString('en-US', { maximumFractionDigits: 0 })}
                           </span>
                         </div>
@@ -2534,9 +2222,9 @@ export const MilestoneConfigModal: React.FC<{
               </div>
 
               {/* Target amount */}
-              <div className="space-y-1.5">
-                <label style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[10px] text-[#57606F] uppercase tracking-widest px-0.5 leading-none block">
-                  Target Amount
+              <div className="space-y-2">
+                <label style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[10px] text-gray-500 uppercase tracking-widest px-1 block">
+                  TARGET AMOUNT
                 </label>
                 <div className="relative">
                   <input 
@@ -2546,22 +2234,24 @@ export const MilestoneConfigModal: React.FC<{
                     value={targetAmount}
                     onChange={e => setTargetAmount(e.target.value.replace(/[^0-9+\-*/.()]/g, ''))}
                     onBlur={() => setTargetAmount(prev => evaluateMathExpression(prev))}
-                    style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
-                    className="w-full bg-vantage-text/5 border border-[#E1E8ED] rounded-lg pl-3 pr-12 py-2 text-black focus:border-[#A6DDB1] outline-none transition-all text-sm font-normal"
+                    style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 500 }}
+                    className="w-full bg-[#f1f5f9] border-none rounded-[0.5rem] py-3 px-4 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-[#A6DDB1] outline-none transition-all text-xs"
                   />
-                  <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="absolute right-3 top-1/2 -translate-y-1/2 text-black/40 text-[10px] font-normal uppercase tracking-widest pointer-events-none">
+                  <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-[10px] uppercase tracking-widest pointer-events-none">
                     {activeBaseCurr}
                   </span>
                 </div>
               </div>
 
               {/* Slider target months */}
-              <div className="space-y-2">
-                <div className="flex justify-between items-center text-[10px] text-[#57606F] uppercase tracking-widest px-0.5 leading-none">
-                  <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}>Deadline (Months remaining)</span>
-                  <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-black font-normal text-xs">{monthsToTarget} months</span>
+              <section className="mb-8" data-purpose="deadline-section">
+                <div className="flex justify-between items-center mb-4">
+                  <label style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[10px] text-gray-500 uppercase tracking-widest">
+                    DEADLINE (MONTHS REMAINING)
+                  </label>
+                  <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-xs text-gray-900">{monthsToTarget} MONTHS</span>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-4">
                   <input 
                     type="range"
                     min="1"
@@ -2569,65 +2259,57 @@ export const MilestoneConfigModal: React.FC<{
                     value={monthsToTarget}
                     onChange={e => setMonthsToTarget(parseInt(e.target.value))}
                     style={{ accentColor: '#A6DDB1' }}
-                    className="flex-1 h-1.5 bg-neutral-200 rounded-full appearance-none cursor-pointer"
+                    className="w-full h-2 bg-[#f1f5f9] rounded-lg appearance-none cursor-pointer"
                   />
-                  <input 
-                    type="number"
-                    min="1"
-                    max="120"
-                    value={monthsToTarget}
-                    onChange={e => setMonthsToTarget(Math.max(1, parseInt(e.target.value) || 1))}
-                    style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
-                    className="w-14 bg-vantage-text/5 border border-[#E1E8ED] rounded-md px-1.5 py-1 text-xs text-center font-normal text-black focus:border-[#A6DDB1] outline-none"
-                  />
+                  <div className="bg-[#f1f5f9] px-4 py-2 rounded-[0.5rem] text-[10px] font-bold text-gray-700 w-12 text-center">
+                    {monthsToTarget}
+                  </div>
                 </div>
-              </div>
+              </section>
 
               {/* Recommendation indicator card */}
-              <div className="bg-[#E1E8ED]/20 border border-[#E1E8ED]/40 rounded-xl p-3 flex flex-col gap-1 select-none">
-                <div style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[10px] uppercase tracking-wider text-vantage-muted">
-                  Vantage Recommended Allocation:
-                </div>
+              <section className="bg-[#f1f5f9]/80 rounded-[0.5rem] p-4 border border-[#e2e8f0]" data-purpose="allocation-card">
+                <h3 style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[10px] text-gray-500 uppercase tracking-widest mb-2">VANTAGE RECOMMENDED ALLOCATION:</h3>
                 <div className="flex justify-between items-baseline mt-1 block">
                   {parsedTarget <= linkedBalancesSum ? (
-                    <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, color: '#A6DDB1' }} className="font-normal text-xs">
+                    <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700, color: '#366945' }} className="text-xs">
                       Pooled Funding Status: {parsedTarget > 0 ? Math.round((linkedBalancesSum / parsedTarget) * 100) : 100}% Secured
                     </span>
                   ) : (
                     <div className="flex flex-col gap-1 w-full">
                       <div className="flex items-baseline gap-1">
-                        <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-black text-sm leading-none font-normal">
+                        <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-gray-900 text-sm leading-none">
                           {activeBaseCurr} {recommendedVal.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
                         </span>
-                        <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[10.5px] text-[#57606F] uppercase tracking-wider font-normal">
+                        <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[10px] text-gray-500 uppercase">
                           per month
                         </span>
                       </div>
-                      <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, color: '#A6DDB1' }} className="text-[10px] mt-1 block font-normal">
+                      <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700, color: '#366945' }} className="text-[10px] mt-1 block">
                         Pooled Funding Status: {parsedTarget > 0 ? Math.round((linkedBalancesSum / parsedTarget) * 100) : 0}% Secured
                       </span>
                     </div>
                   )}
                 </div>
-                <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[9px] text-[#57606F] opacity-60 uppercase tracking-widest mt-0.5 block leading-none">
-                  Based on {activeBaseCurr} {linkedBalancesSum.toLocaleString('en-US', { maximumFractionDigits: 0 })} currently linked
+                <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[9px] text-gray-400 uppercase tracking-widest mt-2 block">
+                  BASED ON {activeBaseCurr} {linkedBalancesSum.toLocaleString('en-US', { maximumFractionDigits: 0 })} CURRENTLY LINKED
                 </span>
-              </div>
+              </section>
 
-              <div className="flex gap-2 pt-2">
+              <div className="flex gap-3 pt-2">
                 <button 
                   type="button" 
                   onClick={onClose}
-                  style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
-                  className="flex-1 h-[36px] border border-[#E1E8ED] rounded-lg text-black hover:bg-neutral-100 uppercase tracking-[0.2em] text-[11px] active:scale-95 transition-all cursor-pointer block leading-none"
+                  style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
+                  className="flex-1 h-[42px] bg-gray-100 hover:bg-gray-200 rounded-[0.5rem] text-gray-900 uppercase tracking-[0.1em] text-[10px] transition-all cursor-pointer border-none"
                 >
                   Cancel
                 </button>
                 <button 
                   type="submit" 
                   disabled={isLoading || !name || !targetAmount || linkedAccountIds.length === 0}
-                  style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
-                  className="flex-1 h-[36px] bg-vantage-green text-white rounded-lg uppercase tracking-[0.2em] text-[11px] shadow-lg shadow-vantage-green/20 active:scale-95 transition-all disabled:opacity-50 cursor-pointer block leading-none"
+                  style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
+                  className="flex-1 h-[42px] bg-[#A6DDB1] text-gray-900 rounded-[0.5rem] uppercase tracking-[0.1em] text-[10px] shadow-sm transition-all disabled:opacity-50 cursor-pointer border-none"
                 >
                   {isLoading ? 'Saving...' : 'Save Updates'}
                 </button>

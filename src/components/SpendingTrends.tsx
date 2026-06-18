@@ -1,13 +1,5 @@
 import React, { useMemo } from 'react';
-import { 
-  ResponsiveContainer, 
-  AreaChart, 
-  Area, 
-  XAxis, 
-  YAxis, 
-  Tooltip, 
-  CartesianGrid 
-} from 'recharts';
+import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { TrendingDown, Activity, Calendar } from 'lucide-react';
 import { VantageDataErrorBoundary } from './VantageDataErrorBoundary';
 
@@ -29,7 +21,6 @@ export const SpendingTrends: React.FC<SpendingTrendsProps> = ({
   const baseRateToAED = getRateToAED(baseCurrency);
 
   const chartData = useMemo(() => {
-    // Generate the last 30 days
     const daysData: { dateStr: string; label: string; amount: number }[] = [];
     const today = new Date();
     
@@ -46,191 +37,118 @@ export const SpendingTrends: React.FC<SpendingTrendsProps> = ({
       daysData.push({ dateStr, label, amount: 0 });
     }
 
-    // Filter relevant realized expense transactions
-    const expenseTransactions = allTransactions.filter(tx => {
-      // Exclude non-confirmed transactions
-      if (
-        tx.status === 'draft' || 
-        tx.status === 'scheduled' || 
-        tx.status === 'pending' || 
-        tx.status === 'upcoming' || 
-        tx.isUpcomingSalaryAllocation || 
-        (tx as any).interval !== undefined
-      ) {
-        return false;
-      }
+    allTransactions.forEach(tx => {
+      if (tx.type !== 'expense' && tx.type !== 'Outflow') return;
+      if (selectedAccIds.size > 0 && !selectedAccIds.has(tx.accountId)) return;
 
-      // Check account selection
-      const isAccSelected = selectedAccIds.has(tx.accountId) || 
-        (tx.type === 'transfer' && tx.toAccountId && selectedAccIds.has(tx.toAccountId));
-      if (!isAccSelected) return false;
-
-      // Check type is expense
-      if (tx.type !== 'expense') return false;
-
-      return true;
-    });
-
-    // Accumulate transaction amounts on their matching date
-    expenseTransactions.forEach(tx => {
-      if (!tx.date) return;
+      const txDateStr = typeof tx.date === 'string' ? tx.date.substring(0, 10) : '';
+      const matchDay = daysData.find(d => d.dateStr === txDateStr);
       
-      // Normalize transaction date
-      const txDateObj = new Date(tx.date);
-      const yyyy = txDateObj.getFullYear();
-      const mm = String(txDateObj.getMonth() + 1).padStart(2, '0');
-      const dd = String(txDateObj.getDate()).padStart(2, '0');
-      const txDateStr = `${yyyy}-${mm}-${dd}`;
+      if (matchDay) {
+        const txAccount = accounts.find(a => a.id === tx.accountId);
+        const txCurrency = txAccount?.currency || baseCurrency;
+        
+        let amountInAED = tx.amount || 0;
+        if (txCurrency !== 'AED') {
+          const rateToAED = getRateToAED(txCurrency);
+          amountInAED = amountInAED * rateToAED;
+        }
 
-      const amtRaw = Number(tx.amount || 0);
-      const rate = getRateToAED(tx.currency);
-      const amtInAED = amtRaw * rate;
-      const amtInBase = amtInAED / baseRateToAED;
-
-      const matchedDay = daysData.find(d => d.dateStr === txDateStr);
-      if (matchedDay) {
-        matchedDay.amount += amtInBase;
+        const amountInBase = amountInAED / baseRateToAED;
+        matchDay.amount += amountInBase;
       }
     });
 
-    return daysData.map(day => ({
-      name: day.label,
-      spending: Math.round(day.amount * 100) / 100
+    return daysData.map(d => ({
+      name: d.label,
+      spending: parseFloat(d.amount.toFixed(2))
     }));
-  }, [allTransactions, selectedAccIds, baseCurrency, getRateToAED, baseRateToAED]);
+  }, [allTransactions, selectedAccIds, accounts, baseCurrency, baseRateToAED, getRateToAED]);
 
-  // Statistical calculations
-  const stats = useMemo(() => {
-    let total = 0;
-    let peak = 0;
-    let activeDaysCount = 0;
-
-    chartData.forEach(day => {
-      total += day.spending;
-      if (day.spending > peak) {
-        peak = day.spending;
-      }
-      if (day.spending > 0) {
-        activeDaysCount++;
-      }
-    });
-
-    const average = total / 30;
-
-    return {
-      total: Math.round(total * 100) / 100,
-      average: Math.round(average * 100) / 100,
-      peak: Math.round(peak * 100) / 100,
-      activeDaysCount
-    };
+  const totalPeriodBurn = useMemo(() => {
+    return chartData.reduce((sum, d) => sum + d.spending, 0);
   }, [chartData]);
 
-  // Format currency value cleanly
-  const formatValue = (num: number) => {
-    return num.toLocaleString('en-US', {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    });
-  };
-
   return (
-    <div 
-      className="p-5 bg-[#FFFFFF] border border-[#E1E8ED] rounded-2xl shadow-sm flex flex-col gap-4 w-full"
-      style={{ fontFamily: "'Google Sans', sans-serif" }}
-    >
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-        <div className="flex flex-col">
-          <span className="text-sm font-bold text-[#1E2229] tracking-tight flex items-center gap-1.5">
-            <TrendingDown size={16} className="text-[#ec5c5c] shrink-0" />
-            Spending trends
-          </span>
-          <span className="text-[11px] font-normal text-neutral-500 tracking-normal antialiased">
-            Daily outflows over the last 30 days
-          </span>
+    <VantageDataErrorBoundary>
+      <div 
+        className="w-full p-5 flex flex-col gap-4 box-border transition-all duration-300"
+        style={{
+          background: 'var(--glass-bg)',
+          backdropFilter: 'var(--glass-blur)',
+          WebkitBackdropFilter: 'var(--glass-blur)',
+          border: 'var(--glass-border)',
+          borderRadius: '24px',
+          boxShadow: 'var(--shadow-card)'
+        }}
+      >
+        {/* SUMMARY INSIGHT ROW */}
+        <div className="flex items-center justify-between select-none border-b border-white/5 pb-3">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center">
+              <TrendingDown size={16} />
+            </div>
+            <div className="flex flex-col">
+              <h4 className="text-sm font-bold text-white m-0 tracking-tight lowercase">spending trends</h4>
+              <span className="text-[10px] text-neutral-400 font-medium mt-0.5">Rolling 30-day allocation timeline</span>
+            </div>
+          </div>
+          <div className="text-right flex flex-col items-end">
+            <span className="text-sm font-mono font-bold text-white tracking-tight">
+              {totalPeriodBurn.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {baseCurrency}
+            </span>
+            <span className="text-[9px] font-mono tracking-widest text-neutral-500 uppercase mt-0.5">Aggregated burn</span>
+          </div>
         </div>
 
-        <div className="flex items-center gap-1 text-[10px] font-normal text-neutral-400 bg-neutral-50 px-2.5 py-1 rounded-full border border-[#E1E8ED]/40">
-          <Calendar size={11} />
-          <span>Last 30d relative to current session</span>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-3 gap-2 py-1 bg-neutral-50/50 rounded-xl p-2.5 border border-[#E1E8ED]/30">
-        <div className="flex flex-col">
-          <span className="text-[10px] font-normal text-neutral-500">Total spending</span>
-          <span className="text-[14px] font-bold text-neutral-900 tracking-tight">
-            {formatValue(stats.total)} <span className="text-[9px] font-normal text-neutral-400">{baseCurrency}</span>
-          </span>
-        </div>
-
-        <div className="flex flex-col">
-          <span className="text-[10px] font-normal text-[#ec5c5c]">Daily average</span>
-          <span className="text-[14px] font-bold text-[#ec5c5c] tracking-tight text-red-500">
-            {formatValue(stats.average)} <span className="text-[9px] font-normal text-red-400">{baseCurrency}</span>
-          </span>
-        </div>
-
-        <div className="flex flex-col">
-          <span className="text-[10px] font-normal text-neutral-500">Peak single day</span>
-          <span className="text-[14px] font-bold text-neutral-900 tracking-tight">
-            {formatValue(stats.peak)} <span className="text-[9px] font-normal text-neutral-400">{baseCurrency}</span>
-          </span>
-        </div>
-      </div>
-
-      <div className="h-[180px] w-full mt-1.5">
-        <VantageDataErrorBoundary>
+        {/* VECTOR CHART AREA CANVAS */}
+        <div className="w-full h-[220px] mt-2 relative overflow-hidden">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={chartData} margin={{ top: 5, right: 10, left: -25, bottom: 0 }}>
+            <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
               <defs>
-                <linearGradient id="spendingGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#ec5c5c" stopOpacity={0.25} />
-                  <stop offset="100%" stopColor="#ec5c5c" stopOpacity={0.01} />
+                <linearGradient id="vantageBurnGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="rgba(244, 63, 94, 0.2)" />
+                  <stop offset="95%" stopColor="rgba(244, 63, 94, 0)" />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
               <XAxis 
                 dataKey="name" 
                 axisLine={false} 
                 tickLine={false} 
-                tick={{ fontSize: '9px', fill: '#8A94A6', fontFamily: "'Google Sans', sans-serif" }}
-                interval={4}
+                tick={{ fontSize: 9, fill: '#64748B', fontFamily: 'system-ui' }} 
               />
               <YAxis 
                 axisLine={false} 
                 tickLine={false} 
-                tick={{ fontSize: '9px', fill: '#8A94A6', fontFamily: "'Google Sans', sans-serif" }}
+                tick={{ fontSize: 9, fill: '#64748B', fontFamily: 'system-ui' }} 
               />
-              <Tooltip 
-                contentStyle={{ 
-                  background: 'rgba(255, 255, 255, 0.98)',
-                  border: '1px solid #E1E8ED',
+              <Tooltip
+                contentStyle={{
+                  background: 'rgba(30, 34, 41, 0.85)',
+                  backdropFilter: 'blur(16px)',
+                  border: '1px solid rgba(255,255,255,0.1)',
                   borderRadius: '12px',
-                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
-                  fontFamily: "'Google Sans', sans-serif",
-                  fontSize: '11px',
+                  boxShadow: '0 8px 32px 0 rgba(0,0,0,0.3)',
                   padding: '8px 12px'
                 }}
-                formatter={(value: any) => [
-                  <span className="font-bold text-neutral-900">{formatValue(Number(value))} {baseCurrency}</span>,
-                  <span className="text-neutral-400 font-normal">Outflow</span>
-                ]}
-                labelStyle={{ fontWeight: 500, color: '#57606F', marginBottom: '2px' }}
+                labelStyle={{ fontSize: 10, fontWeight: 600, color: '#94A3B8', marginBottom: '4px' }}
+                itemStyle={{ fontSize: 11, fontWeight: 700, color: '#F43F5E' }}
+                formatter={(value) => [`${Number(value).toLocaleString()} ${baseCurrency}`, 'Outflow']}
               />
               <Area 
                 type="monotone" 
                 dataKey="spending" 
-                name="Spending" 
-                stroke="#ec5c5c" 
+                stroke="#F43F5E" 
                 strokeWidth={2} 
-                fill="url(#spendingGradient)" 
+                fill="url(#vantageBurnGradient)" 
                 dot={false}
-                activeDot={{ r: 4, stroke: '#FFFFFF', strokeWidth: 2, fill: '#ec5c5c' }}
+                activeDot={{ r: 4, stroke: '#1E2229', strokeWidth: 2, fill: '#F43F5E' }}
               />
             </AreaChart>
           </ResponsiveContainer>
-        </VantageDataErrorBoundary>
+        </div>
       </div>
-    </div>
+    </VantageDataErrorBoundary>
   );
 };

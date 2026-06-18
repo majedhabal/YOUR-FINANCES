@@ -1,7 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Plus, Trash2 } from 'lucide-react';
-import * as LucideIcons from 'lucide-react';
+import { Plus, Trash2, Home, Utensils, Car, Film, ShoppingBag, HelpCircle } from 'lucide-react';
 import { triggerHaptic, hapticPresets } from '../lib/haptics';
 
 export interface BudgetCategory {
@@ -33,17 +32,24 @@ interface BudgetCardProps {
   onDeleteClick?: (e: React.MouseEvent) => void;
 }
 
-const getIconComponent = (name?: string) => {
-  if (!name) return null;
-  
-  // Convert kebab-case (e.g. shopping-cart) to PascalCase (e.g. ShoppingCart)
-  const pascalName = name
-    .split('-')
-    .map(part => part.charAt(0).toUpperCase() + part.slice(1))
-    .join('');
-  
-  const IconComponent = (LucideIcons as any)[pascalName] || (LucideIcons as any)[name];
-  return IconComponent || null;
+const getCategoryIcon = (category: string) => {
+  const cat = (category || '').toLowerCase();
+  if (cat.includes('house') || cat.includes('housing') || cat.includes('rent') || cat.includes('home') || cat.includes('utilities')) {
+    return Home;
+  }
+  if (cat.includes('food') || cat.includes('drink') || cat.includes('grocery') || cat.includes('groceries') || cat.includes('supermarket') || cat.includes('dining') || cat.includes('restaurant')) {
+    return Utensils;
+  }
+  if (cat.includes('transport') || cat.includes('car') || cat.includes('vehicle') || cat.includes('fuel') || cat.includes('gas') || cat.includes('commute')) {
+    return Car;
+  }
+  if (cat.includes('entertainment') || cat.includes('movie') || cat.includes('sub') || cat.includes('netflix') || cat.includes('leisure') || cat.includes('spotify') || cat.includes('play')) {
+    return Film;
+  }
+  if (cat.includes('shopping') || cat.includes('bag') || cat.includes('clothes') || cat.includes('clothing') || cat.includes('electronics')) {
+    return ShoppingBag;
+  }
+  return HelpCircle;
 };
 
 export const BudgetCard: React.FC<BudgetCardProps> = ({
@@ -60,15 +66,11 @@ export const BudgetCard: React.FC<BudgetCardProps> = ({
   const ratio = maxLimit > 0 ? spentVal / maxLimit : 0;
   const progress = Math.min(ratio * 100, 100);
   const isOver = spentVal > maxLimit;
-  const isNearLimit = (ratio >= 0.80 && ratio < 1.0);
   
   const titleText = budget.categoryTitle || budget.title || budget.category || 'Allocation';
-  const categoryText = budget.category || 'Budget Envelope';
-  const cycleText = budget.period ? `${budget.period.charAt(0).toUpperCase()}${budget.period.slice(1)}` : 'Monthly';
+  const categoryText = budget.subcategory || budget.category || 'Rent & Utilities';
 
-  // Resolve custom icon asset
-  const IconComp = getIconComponent(budget.iconAsset);
-  const emojiStr = budget.emoji || (budget.iconAsset && budget.iconAsset.length === 1 ? budget.iconAsset : '🍟');
+  const IconComponent = getCategoryIcon(titleText);
 
   return (
     <motion.div
@@ -76,143 +78,79 @@ export const BudgetCard: React.FC<BudgetCardProps> = ({
       animate={{ opacity: 1, y: 0 }}
       whileTap={{ scale: 0.98 }}
       onClick={onCardClick}
-      className={`w-full relative overflow-hidden group vantage-glass-base glass-card border-[1px] ${isOver ? 'border-[#ff3f34] bg-[#ff3f34]/5' : (isNearLimit ? 'border-amber-300 bg-amber-500/5' : 'border-neutral-200')} cursor-pointer rounded-2xl flex flex-col justify-between`}
-      style={{
-        padding: compact ? '12px' : 'clamp(14px, 3vw, 20px)',
-        minHeight: compact ? 'clamp(76px, 16vw, 95px)' : 'clamp(120px, 26vw, 140px)',
-      }}
+      className={`w-full relative overflow-hidden group bg-white border border-neutral-150 hover:bg-neutral-50/50 cursor-pointer rounded-2xl p-4 flex flex-col justify-between transition-all duration-300 shadow-[0_1px_3px_0_rgba(0,0,0,0.02)]`}
     >
-      {/* Subtle progress bar background overlay */}
-      <div 
-        className={`absolute inset-y-0 left-0 ${isOver ? 'bg-[#ff3f34]/5' : (isNearLimit ? 'bg-amber-500/5' : 'bg-vantage-green/5')} transition-all duration-500 ease-out z-0 pointer-events-none`}
-        style={{ width: `${progress}%` }}
-      />
-
-      <div className="relative flex items-center justify-between z-10 w-full gap-2 sm:gap-3">
-        {/* Information Section */}
-        <div className="flex-1 flex items-center gap-2 sm:gap-3 min-w-0 pr-1">
-          <div className="rounded-xl flex items-center justify-center bg-neutral-100 text-[#1E293B] border border-neutral-200 text-sm shrink-0"
-               style={{
-                 width: compact ? 'clamp(28px, 6vw, 36px)' : '42px',
-                 height: compact ? 'clamp(28px, 6vw, 36px)' : '42px',
-               }}>
-            {IconComp ? (
-              <IconComp size={compact ? 16 : 20} className="text-[#57606F]" />
-            ) : (
-              <span style={{ fontFamily: "inherit" }}>{emojiStr}</span>
-            )}
+      <div className="flex items-start justify-between w-full mb-3 gap-3">
+        {/* Left Side: Icon & Title Information */}
+        <div className="flex items-center gap-3 min-w-0 flex-1">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-neutral-100 text-[#366945] border border-neutral-150/40 shrink-0 group-hover:bg-primary-container/20 transition-all duration-300">
+            <IconComponent size={18} className="text-[#366945]" />
           </div>
-          <div className="flex flex-col min-w-0">
-            <div className="flex items-center gap-1.5 mb-1">
-              <span className="tracking-tight text-neutral-900 truncate leading-none"
-                    style={{ 
-                      fontFamily: "'Google Sans', sans-serif", 
-                      fontWeight: 700,
-                      fontSize: compact ? 'clamp(11px, 3.4vw, 14px)' : 'clamp(12px, 3.8vw, 15px)' 
-                    }}>
-                {titleText}
-              </span>
-              <span 
-                className="px-1.5 py-0.5 rounded bg-neutral-100 text-[9px] text-[#57606F] border border-neutral-200 leading-none scale-90 shrink-0 font-normal"
-                style={{ fontFamily: "'Google Sans', sans-serif" }}
-              >
-                {cycleText}
-              </span>
-            </div>
-            
-            {/* Fractional numerical breakdowns directly underneath the card headers */}
-            <span className="tracking-tight text-[#57606F] block font-normal leading-normal mb-1"
-                  style={{ 
-                    fontFamily: "'Google Sans', sans-serif", 
-                    fontWeight: 400,
-                    fontSize: compact ? 'clamp(10px, 3.2vw, 11px)' : 'clamp(11px, 2.2vw, 12.5px)' 
-                  }}>
-              {budget.currency || 'AED'} {(spentVal || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} spent of {budget.currency || 'AED'} {maxLimit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          <div className="flex flex-col min-w-0 select-none">
+            <span className="text-neutral-900 group-hover:text-emerald-700 transition-colors truncate font-bold text-sm leading-tight"
+                  style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}>
+              {titleText}
             </span>
-            
-            <span className="tracking-tight text-[#7F8C8D] truncate leading-none font-normal"
-                  style={{ 
-                    fontFamily: "'Google Sans', sans-serif", 
-                    fontSize: compact ? 'clamp(8.5px, 2.8vw, 10px)' : 'clamp(9.5px, 1.8vw, 10.5px)' 
-                  }}>
+            <span className="text-xs text-neutral-400 mt-1 truncate font-normal"
+                  style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}>
               {categoryText}
             </span>
           </div>
         </div>
 
-        {/* Interaction/Spent Section */}
-        <div className="flex-none flex flex-col items-end border-l border-neutral-200 pl-2 sm:pl-3 shrink-0">
-          <div className="flex items-center gap-1 sm:gap-1.5 leading-none">
-            <span className="tracking-tight whitespace-nowrap"
-                  style={{
-                    fontFamily: "'Google Sans', sans-serif",
-                    fontWeight: 700,
-                    fontSize: compact ? 'clamp(11px, 3.4vw, 14px)' : 'clamp(12px, 3.8vw, 16px)',
-                    color: isOver ? '#ff3f34' : (isNearLimit ? '#D97706' : '#20C997')
-                  }}>
-              {(spentVal || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </span>
-            {onPlusClick && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  triggerHaptic(hapticPresets.medium);
-                  onPlusClick(e);
-                }}
-                className="rounded-full bg-vantage-green flex items-center justify-center text-white shadow-lg shadow-vantage-green/20 hover:scale-105 active:scale-95 transition-all shrink-0 animate-fade-in"
-                style={{
-                  width: compact ? 'clamp(16px, 4vw, 20px)' : 'clamp(18px, 4.5vw, 22px)',
-                  height: compact ? 'clamp(16px, 4vw, 20px)' : 'clamp(18px, 4.5vw, 22px)',
-                }}
-              >
-                <Plus size={compact ? 8 : 10} strokeWidth={4} />
-              </button>
-            )}
-          </div>
-
-          <div className="flex items-center gap-1 mt-0.5 leading-none">
-            <span className="text-[#57606F] tracking-tight leading-none whitespace-nowrap font-normal"
-                  style={{ 
-                    fontFamily: "'Google Sans', sans-serif", 
-                    fontSize: compact ? 'clamp(10px, 3.2vw, 12px)' : 'clamp(10px, 2vw, 11px)' 
-                  }}>
-              /{maxLimit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {budget.currency || 'AED'}
-            </span>
-            {onDeleteClick && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDeleteClick(e);
-                }}
-                className="p-1 text-[#57606F] hover:text-[#ff3f34] transition-all active:scale-95 shrink-0"
-              >
-                <Trash2 size={12} />
-              </button>
-            )}
-          </div>
+        {/* Right Side: Numerical ratio values */}
+        <div className="text-right flex flex-col shrink-0 items-end select-all">
+          <span className="text-neutral-900 text-sm font-bold leading-tight"
+                style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}>
+            {budget.currency || 'AED'} {spentVal.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })} / {maxLimit.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+          </span>
+          <span className="text-xs text-neutral-400 mt-1 font-normal leading-none"
+                style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}>
+            {progress.toFixed(0)}% Used
+          </span>
         </div>
       </div>
 
-      {/* Bar indicator - full details or clean layout */}
-      <div className="w-full relative z-10 mt-1">
-        <div className="w-full bg-neutral-150 rounded-full overflow-hidden"
-             style={{ height: 'clamp(5px, 1.8vw, 8px)' }}>
+      {/* Progress slider bar container */}
+      <div className="w-full relative">
+        <div className="w-full bg-neutral-100 rounded-full overflow-hidden"
+             style={{ height: '4px' }}>
           <div 
             style={{ width: `${progress}%` }}
-            className={`h-full rounded-full transition-all duration-500 ${isOver ? 'bg-[#ff3f34]' : (isNearLimit ? 'bg-amber-500' : 'bg-vantage-green')}`}
+            className={`h-full rounded-full transition-all duration-500 ${isOver ? 'bg-rose-500' : 'bg-[#A6DDB1]'}`}
           />
         </div>
-        <div className="flex items-center justify-between mt-1 text-neutral-500 font-normal"
-             style={{ 
-               fontFamily: "'Google Sans', sans-serif", 
-               fontSize: compact ? 'clamp(10px, 3.2vw, 12px)' : 'clamp(10.5px, 2vw, 11.5px)' 
-             }}>
-          <span>{progress.toFixed(0)}% Used</span>
-          <span style={{ fontWeight: 700 }} className={isOver ? 'text-[#ff3f34]' : (isNearLimit ? 'text-amber-500' : 'text-emerald-700')}>
-            {isOver ? 'Limit Exceeded' : (isNearLimit ? 'Near Limit' : 'Within Budget')}
-          </span>
-         </div>
       </div>
+
+      {/* Quick operational triggers for deletion or quick allocation */}
+      {(onDeleteClick || onPlusClick) && (
+        <div className="flex items-center justify-end gap-1 mt-2.5 pt-1.5 border-t border-neutral-50">
+          {onPlusClick && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                triggerHaptic(hapticPresets.medium);
+                onPlusClick(e);
+              }}
+              style={{ fontFamily: "'Google Sans', sans-serif" }}
+              className="flex items-center gap-1 px-2 py-1 bg-neutral-50 hover:bg-[#A6DDB1]/10 text-neutral-500 hover:text-emerald-800 text-[10px] rounded-lg transition-all"
+            >
+              <Plus size={10} /> Add Spend
+            </button>
+          )}
+          {onDeleteClick && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onDeleteClick(e);
+              }}
+              className="p-1 text-neutral-300 hover:text-rose-500 transition-all cursor-pointer"
+            >
+              <Trash2 size={12} />
+            </button>
+          )}
+        </div>
+      )}
     </motion.div>
   );
 };

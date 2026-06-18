@@ -69,6 +69,10 @@ createRoot(document.getElementById('root')!).render(
   </StrictMode>,
 );
 
+// Register service worker
+import { registerServiceWorker } from './lib/swRegistration';
+registerServiceWorker();
+
 // Gracefully remove splash screen after load
 window.addEventListener('load', () => {
   const splash = document.getElementById('splash-screen');
@@ -80,54 +84,3 @@ window.addEventListener('load', () => {
     }, 1000); // 1s show time for premium feel
   }
 });
-
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    if ('Notification' in window) {
-      if (Notification.permission === 'granted') {
-        navigator.serviceWorker.register('/sw.js')
-          .then((reg) => {
-            console.log('Vantage PWA: Service Worker registered successfully under pre-authorized notification rules.', reg);
-          })
-          .catch((err) => {
-            console.error('ServiceWorker registration failed: ', err);
-          });
-      } else if (Notification.permission === 'default') {
-        Notification.requestPermission()
-          .then((permission) => {
-            if (permission === 'granted') {
-              navigator.serviceWorker.register('/sw.js')
-                .then((reg) => {
-                  console.log('Vantage PWA: Service Worker registered after permission approval.', reg);
-                })
-                .catch((err) => {
-                  console.warn('ServiceWorker registration failed: ', err);
-                });
-            } else {
-              console.warn('Vantage PWA: Notification permission was denied or dismissed. Proceeding to register service worker in safe fallback mode.');
-              navigator.serviceWorker.register('/sw.js').catch((err) => {
-                console.warn('Service Worker fallback register failed: ', err);
-              });
-            }
-          })
-          .catch((err) => {
-            console.warn('Notification permission interface request failed gracefully:', err);
-            navigator.serviceWorker.register('/sw.js').catch((swErr) => {
-              console.warn('Service Worker fallback register failed: ', swErr);
-            });
-          });
-      } else {
-        console.warn('Vantage PWA: Notification permission is explicitly denied. Registering service worker in caching-only mode.');
-        navigator.serviceWorker.register('/sw.js').catch((err) => {
-          console.warn('Service Worker register failed: ', err);
-        });
-      }
-    } else {
-      console.warn('System notifications interface is not supported in this client environment.');
-      // Fallback register without notifications if web push is unavailable but caching is required
-      navigator.serviceWorker.register('/sw.js').catch((err) => {
-        console.warn('Service Worker fallback register failed: ', err);
-      });
-    }
-  });
-}

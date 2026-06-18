@@ -536,8 +536,8 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
           navigator.serviceWorker.ready.then((registration) => {
             registration.showNotification(title, {
               body: body,
-              icon: '/icons/Vantage-Wallet-Logo-192x192.png',
-              badge: '/icons/Vantage-Wallet-Logo-192x192.png',
+              icon: '/icons/Your_Finances_Logo.png',
+              badge: '/icons/Your_Finances_Logo.png',
               tag: 'vantage-push-notification',
               data: {
                 url: '/?tab=daily_log&subTab=daily'
@@ -545,7 +545,7 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
             }).catch(() => {
               const n = new Notification(title, {
                 body: body,
-                icon: '/icons/Vantage-Wallet-Logo-192x192.png'
+                icon: '/icons/Your_Finances_Logo.png'
               });
               if (onClick) {
                 n.onclick = () => {
@@ -557,7 +557,7 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
           }).catch(() => {
             const n = new Notification(title, {
               body: body,
-              icon: '/icons/Vantage-Wallet-Logo-192x192.png'
+              icon: '/icons/Your_Finances_Logo.png'
             });
             if (onClick) {
               n.onclick = () => {
@@ -570,7 +570,7 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
           try {
             const n = new Notification(title, {
               body: body,
-              icon: '/icons/Vantage-Wallet-Logo-192x192.png'
+              icon: '/icons/Your_Finances_Logo.png'
             });
             if (onClick) {
               n.onclick = () => {
@@ -586,7 +586,7 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
         Notification.requestPermission().then(permission => {
           if (permission === 'granted') {
             try {
-              const n = new Notification(title, { body: body, icon: '/icons/Vantage-Wallet-Logo-192x192.png' });
+              const n = new Notification(title, { body: body, icon: '/icons/Your_Finances_Logo.png' });
               if (onClick) {
                 n.onclick = () => {
                   window.focus();
@@ -1239,7 +1239,7 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
          whileTap={{ scale: 0.95 }}
          onClick={() => setIsOpen(!isOpen)}
          style={{ fontFamily: "'Google Sans', sans-serif" }}
-         className="w-12 h-12 bg-[#FFFFFF] border border-neutral-250/55 rounded-full shadow-2xl flex items-center justify-center text-neutral-800 hover:text-[#A6DDB1] relative cursor-pointer"
+         className="w-[30px] h-[30px] bg-[#FFFFFF] border-0 rounded-full shadow-2xl flex items-center justify-center text-neutral-800 hover:text-[#A6DDB1] relative cursor-pointer"
       >
         <Bell size={18} className={eligibleDrafts.length > 0 ? "animate-bounce" : ""} />
         
@@ -1279,7 +1279,7 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
               exit={{ y: '100%', opacity: 0.8 }}
               transition={{ type: 'spring', damping: 25, stiffness: 220 }}
               style={{ fontFamily: "'Google Sans', sans-serif" }}
-              className="fixed bottom-4 left-1/2 -translate-x-1/2 md:right-6 md:left-auto md:translate-x-0 w-[calc(100%-2rem)] max-w-[350px] md:max-w-[390px] max-h-[85vh] md:max-h-[640px] bg-[#FFFFFF] border border-neutral-200 rounded-2xl shadow-2xl z-50 flex flex-col overflow-hidden text-neutral-800"
+              className="fixed bottom-4 left-1/2 -translate-x-1/2 md:right-6 md:left-auto md:translate-x-0 w-[calc(100%-2rem)] max-w-[350px] md:max-w-[390px] max-h-[90vh] bg-[#FFFFFF] border border-neutral-200 rounded-2xl shadow-2xl z-50 flex flex-col overflow-hidden text-neutral-800"
               id="dispatch-hub-overlay-drawer"
             >
               {/* Header section with Google Sans font weight: 700 */}
@@ -1520,7 +1520,7 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
                           const associatedAccount = accounts.find(a => a.id === tx.accountId);
                           return (
                             <motion.div
-                              key={`hub-tx-card-${tx.id}`}
+                              key={`hub-tx-card-${tx.id || txIdx}-${txIdx}`}
                               layout
                               initial={{ transform: 'scale(0.95)', opacity: 0 }}
                               animate={{ transform: 'scale(1)', opacity: 1 }}

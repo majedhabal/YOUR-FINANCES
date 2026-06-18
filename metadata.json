@@ -6,9 +6,6 @@
     "microphone"
   ],
   "majorCapabilities": [
-    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API",
-    "Neural financial intelligence",
-    "Real-time transaction tracking",
-    "High-tech Matrix design"
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
   ]
 }

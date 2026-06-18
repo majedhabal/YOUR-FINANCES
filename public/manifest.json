@@ -1,6 +1,6 @@
 {
-  "name": "Vantage AI Wallet",
-  "short_name": "Vantage AI Wallet",
+  "name": "Your Finances by ME Vantage",
+  "short_name": "Your Finances",
   "description": "A streamlined financial platform designed to simplify money management and bring absolute clarity to your daily life.",
   "start_url": "/",
   "display": "standalone",
@@ -8,7 +8,7 @@
   "theme_color": "#FFFFFF",
   "orientation": "portrait",
   "categories": ["finance", "productivity"],
-  "id": "com.mevantage.analytics",
+  "id": "com.yourfinances.analytics",
   "shortcuts": [
     {
       "name": "View Budgets",
@@ -35,7 +35,7 @@
       "type": "application/json",
       "icons": [
         {
-          "src": "icons/Vantage-Wallet-Logo-192x192.png",
+          "src": "/icons/Your_Finances_Logo_Loading.png",
           "sizes": "192x192",
           "type": "image/png"
         }
@@ -60,19 +60,19 @@
   ],
   "icons": [
     {
-      "src": "icons/Vantage-Wallet-Logo-192x192.png",
+      "src": "/icons/Your_Finances_Logo_Loading.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "icons/Vantage-Wallet-Logo-512x512.png",
+      "src": "/icons/Your_Finances_Logo_Loading.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "icons/Vantage-Wallet-Logo-512x512-maskable.png",
+      "src": "/icons/Your_Finances_Logo_Loading.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"

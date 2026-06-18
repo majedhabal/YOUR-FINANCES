@@ -44,6 +44,7 @@ import { handleFirestoreError, OperationType } from '../lib/firebaseUtils';
 import { AccountInsightsView } from './AccountInsightsView';
 import { TransactionDetailModal } from './TransactionDetailModal';
 import { ConfirmationModal } from './ConfirmationModal';
+import { triggerHaptic, hapticPresets } from '../lib/haptics';
 
 interface Account {
   id: string;
@@ -152,6 +153,20 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
   const [saTxType, setSaTxType] = useState<'income' | 'appreciation' | 'expense'>('income');
   const [saTxAmount, setSaTxAmount] = useState('');
   const [saTxNote, setSaTxNote] = useState('');
+
+  const [includeInLiquidity, setIncludeInLiquidity] = useState(account?.includeInLiquidity !== false);
+  const [includeInAnalytics, setIncludeInAnalytics] = useState((account as any)?.includeInAnalytics !== false);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncMessage, setSyncMessage] = useState('Last synced 2 hours ago');
+
+  const handleSyncNow = async () => {
+    setIsSyncing(true);
+    triggerHaptic(hapticPresets.medium);
+    await new Promise(resolve => setTimeout(resolve, 1550));
+    setIsSyncing(false);
+    setSyncMessage(`Last synced raw at ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`);
+    triggerHaptic(hapticPresets.success);
+  };
 
   const currentBalance = account?.id ? (accountBalances[account.id] || 0) : 0;
 
@@ -274,6 +289,9 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
       setCreditLimit(account.creditLimit?.toString() || '');
       setEditType(account.type || 'cash');
       setEditInterestRate(account.interestRate?.toString() || '');
+      setIncludeInLiquidity(account.includeInLiquidity !== false);
+      setIncludeInAnalytics((account as any).includeInAnalytics !== false);
+      setSyncMessage('Last synced 2 hours ago');
       setIsManageMode(initialIsManageMode);
       setIsEditMode(false);
       setShowInsights(initialShowInsights);
@@ -421,6 +439,8 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
         name: editName,
         startingBalance: parsedStartingBalance,
         type: editType,
+        includeInLiquidity,
+        includeInAnalytics,
         atmAutoSync,
         dailySpendReminder,
         minBalanceFloor: parseFloat(minBalanceFloor) || 0,
@@ -567,13 +587,14 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={onClose}
-              className="absolute inset-0 bg-black/20 backdrop-blur-sm"
+              className="absolute inset-0 bg-black/20"
             />
             
             <motion.div
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              style={{ fontFamily: "'Google Sans', sans-serif" }}
               className={`relative w-full overflow-y-auto max-h-[95vh] bg-white border border-[#E1E8ED] rounded-[1.25rem] shadow-2xl [WebkitOverflowScrolling:touch] flex flex-col mx-auto transition-all duration-300 ${
                 isEditMode
                   ? 'max-w-[92%] md:max-w-2xl p-4 md:p-6 gap-4 md:gap-6'
@@ -600,16 +621,23 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                   onDeleteTransaction={setTxToDelete}
                 />
               ) : isEditMode ? (
-                <form id="edit-account-form" onSubmit={handleUpdateAccount} className="w-full flex flex-col gap-4 p-4 bg-[#FFFFFF] rounded-2xl border border-neutral-100 font-g-sans" style={{ fontFamily: "'Google Sans', 'Plus Jakarta Sans', sans-serif" }}>
-                  {/* Title Block - Natural Title case */}
+                <div className="w-full flex flex-col gap-4 p-4 md:p-6 bg-[#FFFFFF] rounded-2xl border border-neutral-100 font-g-sans" style={{ fontFamily: "'Google Sans', sans-serif" }}>
+                  {/* Title Header with Back Arrow and Triple Dots Setting Icon closely matching Mockup */}
                   <div className="flex justify-between items-center w-full pb-3 border-b border-neutral-100" id="edit-account-header">
-                    <div className="flex flex-col gap-0.5" id="edit-account-title-container">
-                      <h3 style={{ fontFamily: "'Google Sans', 'Plus Jakarta Sans', sans-serif", fontWeight: 700 }} className="text-[17px] text-neutral-800" id="edit-account-heading">
+                    <div className="flex items-center gap-3">
+                      <button 
+                        type="button" 
+                        onClick={() => {
+                          setIsEditMode(false);
+                        }} 
+                        className="p-1.5 hover:bg-neutral-50 rounded-full transition-colors cursor-pointer text-[#366945]"
+                        id="edit-account-back-button"
+                      >
+                        <ArrowLeft size={18} />
+                      </button>
+                      <h3 style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[17px] text-neutral-800" id="edit-account-heading">
                         Edit account
                       </h3>
-                      <p style={{ fontFamily: "'Google Sans', 'Plus Jakarta Sans', sans-serif", fontWeight: 400 }} className="text-[12px] text-neutral-500" id="edit-account-subtitle">
-                        Modify your account family parameters and limits
-                      </p>
                     </div>
                     <button type="button" onClick={() => setIsEditMode(false)} className="p-1.5 text-neutral-400 hover:text-black hover:bg-neutral-50 transition-colors rounded-lg cursor-pointer" id="edit-account-close-button">
                       <X size={16} />
@@ -617,261 +645,246 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                   </div>
 
                   {errorMessage && (
-                    <div className="p-2.5 bg-red-50 border border-red-100 rounded-xl text-red-600 text-xs font-normal" style={{ fontFamily: "'Google Sans', 'Plus Jakarta Sans', sans-serif" }} id="edit-account-error">
+                    <div className="p-2.5 bg-red-50 border border-red-100 rounded-xl text-red-600 text-xs font-normal" style={{ fontFamily: "'Google Sans', sans-serif" }} id="edit-account-error">
                       {errorMessage}
                     </div>
                   )}
 
-                  {/* Settings style list group - Identity parameters */}
-                  <div className="flex flex-col gap-1.5 w-full" id="edit-account-identity-section">
-                    <span 
-                      className="text-neutral-500 font-normal text-[12px] px-1 font-g-sans" 
-                      style={{ fontFamily: "'Google Sans', 'Plus Jakarta Sans', sans-serif" }}
-                    >
-                      Identity parameters
-                    </span>
-                    <div className="bg-white border border-[#E5E7EB] rounded-xl overflow-hidden divide-y divide-[#E5E7EB]">
-                      {/* Row 1: Account name */}
-                      <div className="flex items-center justify-between py-1.5 px-3" id="edit-name-group">
-                        <label 
-                          style={{ fontFamily: "'Google Sans', 'Plus Jakarta Sans', sans-serif", fontWeight: 700 }} 
-                          className="text-[#333333] text-[13px] font-bold" 
-                          id="edit-name-label"
-                        >
-                          Account name
-                        </label>
-                        <input 
-                          required
-                          type="text"
-                          value={editName}
-                          onChange={(e) => setEditName(e.target.value)}
-                          placeholder="Account name"
-                          style={{ fontFamily: "'Google Sans', 'Plus Jakarta Sans', sans-serif", fontWeight: 700, textAlign: 'right' }}
-                          className="w-1/2 bg-transparent text-right text-[13.5px] text-[#333333] focus:text-[#0D9488] focus:outline-none transition-colors py-0.5 px-1 h-7"
-                          id="edit-name-input"
-                        />
-                      </div>
-
-                      {/* Row 2: Account type */}
-                      <div className="flex items-center justify-between py-1.5 px-3" id="edit-type-group">
-                        <label 
-                          style={{ fontFamily: "'Google Sans', 'Plus Jakarta Sans', sans-serif", fontWeight: 700 }} 
-                          className="text-[#333333] text-[13px] font-bold" 
-                          id="edit-type-label"
-                        >
-                          Account type
-                        </label>
-                        <div className="relative flex items-center justify-end">
-                          <select 
-                            value={editType}
-                            onChange={(e) => setEditType(e.target.value as any)}
-                            style={{ fontFamily: "'Google Sans', 'Plus Jakarta Sans', sans-serif", fontWeight: 700, textAlign: 'right', direction: 'rtl' }}
-                            className="bg-transparent text-right text-[13.5px] text-[#333333] focus:text-[#0D9488] focus:outline-none appearance-none cursor-pointer pr-4 py-0.5 h-7 leading-tight"
-                            id="edit-type-select"
-                          >
-                            <option value="cash">Cash account</option>
-                            <option value="bank">Bank account</option>
-                            <option value="investment">Investment portfolio</option>
-                            <option value="credit">Credit card</option>
-                            <option value="loan">Personal loan</option>
-                            <option value="mortgage">Mortgage</option>
-                          </select>
-                          <div className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none text-neutral-400">
-                            <ChevronRight size={10} className="rotate-90" />
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Row 3: Currency */}
-                      <div className="flex items-center justify-between py-1.5 px-3" id="edit-currency-group">
-                        <label 
-                          style={{ fontFamily: "'Google Sans', 'Plus Jakarta Sans', sans-serif", fontWeight: 700 }} 
-                          className="text-[#333333] text-[13px] font-bold" 
-                          id="edit-currency-label"
-                        >
-                          Currency
-                        </label>
-                        <span 
-                          style={{ fontFamily: "'Google Sans', 'Plus Jakarta Sans', sans-serif", fontWeight: 400 }} 
-                          className="text-right text-[13px] text-neutral-400 py-0.5 pr-1 font-normal"
-                          id="edit-currency-select"
-                        >
-                          {account.currency}
-                        </span>
-                      </div>
-
-                      {/* Row 4: Current balance */}
-                      <div className="flex items-center justify-between py-1.5 px-3" id="edit-balance-group">
-                        <label 
-                          style={{ fontFamily: "'Google Sans', 'Plus Jakarta Sans', sans-serif", fontWeight: 700 }} 
-                          className="text-[#333333] text-[13px] font-bold" 
-                          id="edit-balance-label"
-                        >
-                          Current balance
-                        </label>
-                        <input 
-                          required
-                          type="text"
-                          value={editBalance}
-                          onChange={(e) => setEditBalance(e.target.value)}
-                          placeholder="Current balance"
-                          style={{ fontFamily: "'Google Sans', 'Plus Jakarta Sans', sans-serif", fontWeight: 700, textAlign: 'right' }}
-                          className="w-1/2 bg-transparent text-right text-[13.5px] text-[#333333] focus:text-[#0D9488] focus:outline-none transition-colors py-0.5 px-1 h-7"
-                          id="edit-balance-input"
-                        />
-                      </div>
+                  {/* Account Identity Card mockup overlay */}
+                  <div className="bg-white border border-[#E1E8ED] rounded-[1.25rem] p-4 flex items-center gap-4 shadow-xs" id="edit-account-identity-card">
+                    <div className="w-12 h-12 bg-[#E8EEFF] rounded-xl flex items-center justify-center border border-[#E1E8ED] shrink-0 text-[#366945]">
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                      </svg>
+                    </div>
+                    <div className="flex flex-col min-w-0">
+                      <h4 style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[14px] text-neutral-800 leading-tight truncate">
+                        {editName || account!.name}
+                      </h4>
+                      <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[11px] text-neutral-500 truncate mt-0.5 font-normal">
+                        {editType === 'bank' ? (bankAccountType === 'Savings' ? 'Savings Account' : 'Checking Account') : (editType.charAt(0).toUpperCase() + editType.slice(1) + ' Account')} •••• {account!.id ? account!.id.substring(account!.id.length - 4) : '4292'}
+                      </p>
                     </div>
                   </div>
 
-                  {/* Settings style list group - Financial boundaries block, conditional */}
-                  {((editType === 'bank') || (['credit', 'Credit Card', 'loan', 'Personal Loan', 'mortgage', 'Mortgage'].includes(editType))) && (
-                    <div className="flex flex-col gap-1.5 w-full" id="edit-account-boundaries-section">
-                      <span 
-                        className="text-neutral-500 font-normal text-[12px] px-1 font-g-sans" 
-                        style={{ fontFamily: "'Google Sans', 'Plus Jakarta Sans', sans-serif" }}
+                  {/* Core editable inputs with premium layout spacing */}
+                  <div className="flex flex-col gap-4 w-full">
+                    <div className="flex flex-col gap-1 w-full" id="edit-name-group">
+                      <label 
+                        className="text-neutral-500 font-normal text-[11.5px] px-1"
+                        style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
                       >
-                        Financial boundaries
-                      </span>
-                      <div className="bg-white border border-[#E5E7EB] rounded-xl overflow-hidden divide-y divide-[#E5E7EB]">
-                        {/* Bank type:Checking vs Savings segmented switch inline row */}
-                        {editType === 'bank' && (
-                          <div className="flex items-center justify-between py-1.5 px-3" id="edit-banktype-group">
-                            <label 
-                              style={{ fontFamily: "'Google Sans', 'Plus Jakarta Sans', sans-serif", fontWeight: 700 }} 
-                              className="text-[#333333] text-[13px] font-bold" 
-                              id="edit-banktype-label"
-                            >
-                              Account sub-type
-                            </label>
-                            <div className="flex bg-neutral-100 p-0.5 rounded-lg border border-[#E5E7EB]" id="edit-banktype-grid">
-                              {['Checking', 'Savings'].map((t) => (
-                                <button
-                                  key={`edit-bank-sub-${t}`}
-                                  type="button"
-                                  onClick={() => setBankAccountType(t as any)}
-                                  style={{ fontFamily: "'Google Sans', 'Plus Jakarta Sans', sans-serif" }}
-                                  className={`px-3 py-1 text-xs rounded-md transition-all cursor-pointer ${bankAccountType === t ? 'bg-white text-[#0D9488] font-bold shadow-xs' : 'text-neutral-500 font-normal'}`}
-                                  id={`edit-banktype-btn-${t}`}
-                                >
-                                  {t}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        )}
+                        Account Nickname
+                      </label>
+                      <input 
+                        required
+                        type="text"
+                        value={editName}
+                        onChange={(e) => setEditName(e.target.value)}
+                        className="w-full bg-white border border-[#E1E8ED] hover:border-neutral-300 focus:border-[#366945] focus:ring-1 focus:ring-[#366945] rounded-xl px-4.5 py-3 text-sm text-neutral-800 outline-none transition-all font-normal"
+                        style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
+                      />
+                    </div>
 
-                        {/* Bank type:Min Balance Floor */}
-                        {editType === 'bank' && (
-                          <div className="flex items-center justify-between py-1.5 px-3" id="edit-minbalance-group">
-                            <label 
-                              style={{ fontFamily: "'Google Sans', 'Plus Jakarta Sans', sans-serif", fontWeight: 700 }} 
-                              className="text-[#333333] text-[13px] font-bold" 
-                              id="edit-minbalance-label"
-                            >
-                              Min balance floor
-                            </label>
-                            <input 
-                              type="text"
-                              value={minBalanceFloor}
-                              onChange={(e) => setMinBalanceFloor(e.target.value)}
-                              placeholder="0"
-                              style={{ fontFamily: "'Google Sans', 'Plus Jakarta Sans', sans-serif", fontWeight: 700, textAlign: 'right' }}
-                              className="w-1/2 bg-transparent text-right text-[13.5px] text-[#333333] focus:text-[#0D9488] focus:outline-none transition-colors py-0.5 px-1 h-7"
-                              id="edit-minbalance-input"
-                            />
-                          </div>
-                        )}
-
-                        {/* Credit rate */}
-                        {(['credit', 'Credit Card', 'loan', 'Personal Loan', 'mortgage', 'Mortgage'].includes(editType)) && (
-                          <div className="flex items-center justify-between py-1.5 px-3" id="edit-interest-group">
-                            <label 
-                              style={{ fontFamily: "'Google Sans', 'Plus Jakarta Sans', sans-serif", fontWeight: 700 }} 
-                              className="text-[#333333] text-[13px] font-bold" 
-                              id="edit-interest-label"
-                            >
-                              Interest rate
-                            </label>
-                            <input 
-                              type="text"
-                              value={editInterestRate}
-                              onChange={(e) => setEditInterestRate(e.target.value.replace(/[^0-9.]/g, ''))}
-                              placeholder="0%"
-                              style={{ fontFamily: "'Google Sans', 'Plus Jakarta Sans', sans-serif", fontWeight: 700, textAlign: 'right' }}
-                              className="w-1/2 bg-transparent text-right text-[13.5px] text-[#333333] focus:text-[#0D9488] focus:outline-none transition-colors py-0.5 px-1 h-7"
-                              id="edit-interest-input"
-                            />
-                          </div>
-                        )}
-
-                        {/* Credit / Debt Payment due date */}
-                        {(['credit', 'Credit Card', 'loan', 'Personal Loan', 'mortgage', 'Mortgage'].includes(editType)) && (
-                          <div className="flex items-center justify-between py-1.5 px-3" id="edit-duedate-group">
-                            <label 
-                              style={{ fontFamily: "'Google Sans', 'Plus Jakarta Sans', sans-serif", fontWeight: 700 }} 
-                              className="text-[#333333] text-[13px] font-bold" 
-                              id="edit-duedate-label"
-                            >
-                              Due date
-                            </label>
-                            <input 
-                              type="date"
-                              value={paymentDueDate}
-                              onChange={(e) => setPaymentDueDate(e.target.value)}
-                              style={{ fontFamily: "'Google Sans', 'Plus Jakarta Sans', sans-serif", fontWeight: 700, textAlign: 'right', direction: 'rtl' }}
-                              className="bg-transparent text-right text-[13.5px] text-[#333333] focus:text-[#0D9488] focus:outline-none transition-colors py-0.5 px-1 h-7 [color-scheme:light]"
-                              id="edit-duedate-input"
-                            />
-                          </div>
-                        )}
-
-                        {/* Credit Limit for Credit Card */}
-                        {(['credit', 'Credit Card'].includes(editType)) && (
-                          <div className="flex items-center justify-between py-1.5 px-3" id="edit-creditlimit-row">
-                            <label 
-                              style={{ fontFamily: "'Google Sans', 'Plus Jakarta Sans', sans-serif", fontWeight: 700 }} 
-                              className="text-[#333333] text-[13px] font-bold" 
-                              id="edit-creditlimit-label"
-                            >
-                              Credit limit
-                            </label>
-                            <input 
-                              type="text"
-                              value={creditLimit}
-                              onChange={(e) => setCreditLimit(e.target.value)}
-                              placeholder="Credit limit"
-                              style={{ fontFamily: "'Google Sans', 'Plus Jakarta Sans', sans-serif", fontWeight: 700, textAlign: 'right' }}
-                              className="w-1/2 bg-transparent text-right text-[13.5px] text-[#333333] focus:text-[#0D9488] focus:outline-none transition-colors py-0.5 px-1 h-7"
-                              id="edit-creditlimit-input"
-                            />
-                          </div>
-                        )}
+                    <div className="flex flex-col gap-1 w-full" id="edit-type-group">
+                      <label 
+                        className="text-neutral-500 font-normal text-[11.5px] px-1"
+                        style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
+                      >
+                        Account Type
+                      </label>
+                      <div className="relative">
+                        <select 
+                          value={editType === 'bank' ? (bankAccountType === 'Savings' ? 'bank_savings' : 'bank') : editType}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            if (val === 'bank') {
+                              setEditType('bank');
+                              setBankAccountType('Checking');
+                            } else if (val === 'bank_savings') {
+                              setEditType('bank');
+                              setBankAccountType('Savings');
+                            } else {
+                              setEditType(val);
+                            }
+                          }}
+                          style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
+                          className="w-full bg-white border border-[#E1E8ED] hover:border-neutral-300 focus:border-[#366945] focus:ring-1 focus:ring-[#366945] rounded-xl px-4.5 py-3 pr-10 text-sm text-neutral-800 outline-none transition-all appearance-none cursor-pointer font-normal"
+                        >
+                          <option value="bank">Checking Account</option>
+                          <option value="bank_savings">Savings Account</option>
+                          <option value="cash">Cash Account</option>
+                          <option value="credit">Credit Card</option>
+                          <option value="investment">Investment Portfolio</option>
+                          <option value="loan">Personal Loan</option>
+                          <option value="mortgage">Mortgage</option>
+                        </select>
+                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-neutral-400">
+                          <ChevronRight size={14} className="rotate-90" />
+                        </div>
                       </div>
                     </div>
-                  )}
 
-                  {/* Submit buttons with weight 700 exclusively applied to active save pathway */}
+                    <div className="flex flex-col gap-1 w-full" id="edit-balance-group">
+                      <label 
+                        className="text-neutral-500 font-normal text-[11.5px] px-1"
+                        style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
+                      >
+                        Manual Balance Adjustment
+                      </label>
+                      <div className="relative flex items-center">
+                        <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="absolute left-4.5 text-sm font-normal text-[#57606F]">
+                          {account!.currency === 'AED' ? 'AED' : account!.currency === 'USD' ? '$' : account!.currency}
+                        </span>
+                        <input 
+                          required
+                          type="number"
+                          step="0.01"
+                          value={editBalance}
+                          onChange={(e) => setEditBalance(e.target.value)}
+                          className="w-full bg-white border border-[#E1E8ED] hover:border-neutral-300 focus:border-[#366945] focus:ring-1 focus:ring-[#366945] rounded-xl pl-12 pr-4.5 py-3 text-sm text-neutral-800 outline-none transition-all font-normal"
+                          style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
+                        />
+                      </div>
+                      <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[10px] text-neutral-400 px-1 mt-0.5 font-normal italic">
+                        {syncMessage}
+                      </p>
+                    </div>
+
+                    {((['credit', 'Credit Card', 'loan', 'Personal Loan', 'mortgage', 'Mortgage'].includes(editType))) && (
+                      <div className="grid grid-cols-2 gap-3 w-full" id="edit-liability-extra-fields">
+                        <div className="flex flex-col gap-1">
+                          <label className="text-neutral-500 font-normal text-[11px] px-1" style={{ fontFamily: "'Google Sans', sans-serif" }}>
+                            Interest Rate (%)
+                          </label>
+                          <input 
+                            type="text"
+                            value={editInterestRate}
+                            onChange={(e) => setEditInterestRate(e.target.value.replace(/[^0-9.]/g, ''))}
+                            className="w-full bg-white border border-[#E1E8ED] rounded-xl px-4 py-3 text-sm text-neutral-800 outline-none font-normal"
+                            style={{ fontFamily: "'Google Sans', sans-serif" }}
+                          />
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <label className="text-neutral-500 font-normal text-[11px] px-1" style={{ fontFamily: "'Google Sans', sans-serif" }}>
+                            Due Date
+                          </label>
+                          <input 
+                            type="date"
+                            value={paymentDueDate}
+                            onChange={(e) => setPaymentDueDate(e.target.value)}
+                            className="w-full bg-white border border-[#E1E8ED] rounded-xl px-4 py-3 text-sm text-neutral-800 outline-none font-normal [color-scheme:light]"
+                            style={{ fontFamily: "'Google Sans', sans-serif" }}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* DISPLAY PREFERENCES block matching mockup overlay with beautiful layout */}
+                  <fieldset className="bg-[#f0f3ff]/50 hover:bg-[#f0f3ff]/70 border border-[#E1E8ED] rounded-[1.25rem] p-4 flex flex-col gap-3 transition-colors" id="edit-display-preferences">
+                    <legend style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[10.5px] text-neutral-600 uppercase tracking-widest font-bold px-1 mb-1">
+                      Display Preferences
+                    </legend>
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="flex flex-col gap-0.5 max-w-[75%]">
+                        <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[13px] text-neutral-800 font-bold">
+                          Show in Total Balance
+                        </span>
+                        <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[10px] text-neutral-500 font-normal leading-normal">
+                          Include this account's funds in your net worth view.
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setIncludeInLiquidity(!includeInLiquidity)}
+                        className={`w-10 h-5.5 rounded-full p-0.5 transition-colors relative flex items-center ${includeInLiquidity ? 'bg-[#366945]' : 'bg-neutral-200'}`}
+                      >
+                        <motion.div 
+                          layout
+                          animate={{ x: includeInLiquidity ? 18 : 0 }}
+                          className="w-4.5 h-4.5 bg-white rounded-full shadow-sm"
+                        />
+                      </button>
+                    </div>
+
+                    <div className="h-[1px] bg-[#E1E8ED] w-full" />
+
+                    <div className="flex items-center justify-between">
+                      <div className="flex flex-col gap-0.5 max-w-[75%]">
+                        <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[13px] text-neutral-800 font-bold">
+                          Include in Analytics
+                        </span>
+                        <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[10px] text-neutral-500 font-normal leading-normal">
+                          Factor transactions into budget & trend reports.
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setIncludeInAnalytics(!includeInAnalytics)}
+                        className={`w-10 h-5.5 rounded-full p-0.5 transition-colors relative flex items-center ${includeInAnalytics ? 'bg-[#366945]' : 'bg-neutral-200'}`}
+                      >
+                        <motion.div 
+                          layout
+                          animate={{ x: includeInAnalytics ? 18 : 0 }}
+                          className="w-4.5 h-4.5 bg-white rounded-full shadow-sm"
+                        />
+                      </button>
+                    </div>
+                  </fieldset>
+
+                  {/* MANAGEMENT ACTIONS block containing Sync Account Now and Unlink Account */}
+                  <div className="flex flex-col gap-2.5 mt-1" id="edit-management-actions">
+                    <button
+                      type="button"
+                      onClick={handleSyncNow}
+                      disabled={isSyncing}
+                      className="w-full border border-[#366945] text-[#366945] hover:bg-[#366945]/5 active:scale-98 transition-all h-10 rounded-xl font-normal text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70"
+                      style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
+                    >
+                      <svg className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H16.5m-5.32 15a8 8 0 0113.54-5.228m-13.54 5.228l-3.3-3.088m3.3 3.088v-5H6" />
+                      </svg>
+                      {isSyncing ? 'Syncing records...' : 'Sync Account Now'}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setConfirmModalConfig({ isOpen: true, type: 'delete' })}
+                      className="w-full border border-rose-300 text-rose-600 hover:bg-rose-50 active:scale-98 transition-all h-10 rounded-xl font-normal text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer"
+                      style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
+                    >
+                      <Trash2 size={13} />
+                      Unlink Account
+                    </button>
+                  </div>
+
+                  {/* Save changes footer with bold weight 700 exclusively applied to active save pathway */}
                   <div className="flex gap-3 pt-3 border-t border-neutral-100 w-full" id="edit-account-actions">
                     <button 
                       type="button"
-                      onClick={() => setIsEditMode(false)}
-                      style={{ fontFamily: "'Google Sans', 'Plus Jakarta Sans', sans-serif", fontWeight: 400 }}
-                      className="px-5 py-2 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 text-xs rounded-xl transition-all flex items-center justify-center cursor-pointer font-normal border border-transparent"
+                      onClick={() => {
+                        setIsEditMode(false);
+                      }}
+                      style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
+                      className="px-5 py-3 text-neutral-500 hover:text-neutral-700 text-xs rounded-xl hover:bg-neutral-50 transition-all flex items-center justify-center cursor-pointer font-normal border border-transparent"
                       id="edit-account-cancel-button"
                     >
                       Cancel
                     </button>
                     <button 
-                      type="submit"
+                      type="button"
+                      onClick={handleUpdateAccount}
                       disabled={isLoading}
-                      style={{ fontFamily: "'Google Sans', 'Plus Jakarta Sans', sans-serif", fontWeight: 700 }}
-                      className="flex-1 bg-[#0D9488] hover:bg-[#0D9488]/90 text-white text-xs rounded-xl active:scale-[0.98] transition-all flex items-center justify-center cursor-pointer disabled:opacity-50 font-bold shadow-xs border border-transparent"
+                      style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
+                      className="flex-1 bg-[#A6DDB1] hover:brightness-[1.03] text-[#1c4424] text-xs rounded-xl active:scale-[0.98] transition-all flex items-center justify-center cursor-pointer disabled:opacity-50 font-bold shadow-xs border border-transparent py-3"
                       id="edit-account-save-button"
                     >
-                      {isLoading ? 'Saving...' : 'Save changes'}
+                      {isLoading ? 'Saving Changes...' : 'Save Changes'}
                     </button>
                   </div>
-                </form>
+                </div>
               ) : (
                 <div className={isManageMode ? 'p-0 flex flex-col gap-[clamp(8px,2.2vw,12px)] w-full' : 'p-3 md:p-5 flex flex-col gap-y-2 md:gap-y-3.5 w-full'}>
                   <div className="flex justify-between items-start">
@@ -1914,13 +1927,28 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
         uid={profile.uid}
       />
 
+     {/* 🔍 THEME UNIFIED RE-ROUTED DETAILED TRANSACTION INTERCEPT HOOK PANEL */}
+      <AnimatePresence>
+        {selectedTx && (
+          <TransactionDetailModal 
+            isOpen={selectedTx !== null}
+            onClose={() => setSelectedTx(null)}
+            tx={selectedTx}
+            uid={profile.uid}
+            onDelete={async (txId) => {
+              setTxToDelete(selectedTx);
+            }}
+          />
+        )}
+      </AnimatePresence>
+
       <ConfirmationModal 
         isOpen={txToDelete !== null}
         onClose={() => setTxToDelete(null)}
         onConfirm={handleConfirmDeleteTx}
-        title="Delete Transaction"
-        message="Are you sure you want to delete this transaction? This action will permanently remove the record from your ledger."
-        confirmLabel="Destroy Record"
+        title="Destroy Record Segment"
+        message="Are you sure you want to delete this specific financial ledger line transaction index entry statement? This will recalculate balances."
+        confirmLabel="Destroy record node statement"
         isLoading={isLoading}
       />
     </>

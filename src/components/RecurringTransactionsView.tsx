@@ -117,7 +117,7 @@ export const RecurringTransactionsView: React.FC<RecurringTransactionsViewProps>
       }
 
       const accId = rec.sourceAccountId || rec.accountId;
-      const acc = accounts.find(a => a.id === accId);
+      const acc = accounts?.find(a => a.id === accId);
       const titleStr = rec.notes || rec.title || rec.category;
       const details = {
         title: rec.emoji ? `${rec.emoji} ${titleStr}` : `💸 ${titleStr}`,
@@ -345,10 +345,10 @@ export const RecurringTransactionsView: React.FC<RecurringTransactionsViewProps>
       {/* Dual Pane Layout: Responsive Flex Grid */}
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         {/* Left Side: Schedules List */}
-        <div className="flex-1 w-full flex flex-col gap-4">
+        <div className="flex-1 w-full flex flex-col gap-4 bg-red-50" style={{ minHeight: '100px' }}>
           <div className="flex items-center justify-between px-1">
-            <span className="text-xs font-bold text-neutral-500">Active schedules</span>
-            <span className="text-xs font-bold text-neutral-700">{recurring.length} items</span>
+            <span className="text-xs font-bold text-neutral-500">Active schedules ({recurring.filter(r => ['income', 'inflow'].includes(r.transactionType?.toLowerCase())).length} In / {recurring.filter(r => ['outflow', 'expense'].includes(r.transactionType?.toLowerCase())).length} Out)</span>
+            <span className="text-xs font-bold text-neutral-700">{recurring.length} total</span>
           </div>
 
           {loading ? (
@@ -370,7 +370,7 @@ export const RecurringTransactionsView: React.FC<RecurringTransactionsViewProps>
             <div className="flex flex-col gap-4">
               {recurring.map((rec, idx) => {
                 const accId = rec.sourceAccountId || rec.accountId;
-                const acc = accounts.find(a => a.id === accId);
+                const acc = accounts?.find(a => a.id === accId);
                 const titleStr = rec.title || rec.notes || rec.category;
                 const recLabel = rec.frequency || (rec.recurrency ? (rec.recurrency.charAt(0).toUpperCase() + rec.recurrency.slice(1)) : 'Monthly');
                 const isIncome = rec.transactionType === 'income' || rec.type === 'income';
@@ -630,7 +630,7 @@ export const RecurringTransactionsView: React.FC<RecurringTransactionsViewProps>
                      <span className="text-[10px] font-bold text-neutral-400">Transaction amount</span>
                      <div className="flex items-baseline gap-1.5">
                         <span className="text-lg font-bold text-neutral-400">
-                          {accounts.find(a => a.id === (editingItem.sourceAccountId || editingItem.accountId))?.currency || 'AED'}
+                          {accounts?.find(a => a.id === (editingItem.sourceAccountId || editingItem.accountId))?.currency || 'AED'}
                         </span>
                         <input 
                            type="number"
@@ -669,7 +669,7 @@ export const RecurringTransactionsView: React.FC<RecurringTransactionsViewProps>
                               className="w-full bg-white border border-neutral-200 rounded-xl p-3 pl-10 text-xs text-neutral-700 outline-none focus:border-neutral-400 appearance-none transition-all hover:bg-neutral-50 min-h-[40px]"
                            >
                               <option value="">None</option>
-                              {MASTER_CATEGORIES.find(c => c.name === editCategory)?.subcategories.map((s, idx) => (
+                              {MASTER_CATEGORIES.find(c => c.name === editCategory)?.subcategories?.map((s, idx) => (
                                  <option key={`sub-recur-opt-${s}-${idx}`} value={s}>{s}</option>
                               ))}
                            </select>

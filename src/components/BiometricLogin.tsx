@@ -576,7 +576,7 @@ export const BiometricLogin: React.FC<BiometricLoginProps> = ({ onSuccess }) => 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[300] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 text-[#57606F]"
+              className="fixed inset-0 z-[300] bg-black/50 flex items-center justify-center p-4 text-[#57606F]"
               id="legal-modal-overlay"
               onClick={() => setActiveModal(null)}
             >
@@ -662,7 +662,7 @@ export const BiometricLogin: React.FC<BiometricLoginProps> = ({ onSuccess }) => 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[300] bg-black/40 backdrop-blur-sm flex items-center justify-center p-4 text-[#57606F]"
+              className="fixed inset-0 z-[300] bg-black/50 flex items-center justify-center p-4 text-[#57606F]"
               id="fb-modal-overlay"
               onClick={() => setShowFbConfigModal(false)}
             >
@@ -877,7 +877,7 @@ export const BiometricLogin: React.FC<BiometricLoginProps> = ({ onSuccess }) => 
     <div className="fixed inset-0 z-[200] bg-[#FFFFFF] flex flex-col justify-between overflow-y-auto selection:bg-[#E9F5ED] selection:text-emerald-900" style={{ fontFamily: '"Google Sans", sans-serif' }}>
       
       {/* Upper Navigation Header */}
-      <header className="w-full border-b border-[#E1E8ED] bg-white/90 backdrop-blur-md sticky top-0 z-50 px-6 py-4 flex items-center justify-between" id="marketing-nav">
+      <header className="w-full border-b border-[#E1E8ED] bg-white sticky top-0 z-50 px-6 py-4 flex items-center justify-between" id="marketing-nav">
         <div className="max-w-6xl w-full mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2.5 cursor-pointer" onClick={handleTitleTap}>
             <div className="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center shadow-sm">

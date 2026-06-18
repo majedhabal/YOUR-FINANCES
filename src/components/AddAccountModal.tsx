@@ -36,9 +36,7 @@ const GlassInput: React.FC<GlassInputProps> = ({ label, focused, prefixElement, 
         style={{
           display: 'flex',
           alignItems: 'center',
-          background: 'rgba(255, 255, 255, 0.40)',
-          backdropFilter: 'blur(8px)',
-          WebkitBackdropFilter: 'blur(8px)',
+          background: '#FFFFFF',
           borderRadius: '12px',
           border: focused ? '1.5px solid #A6DDB1' : '1px solid rgba(30, 34, 41, 0.08)',
           boxShadow: focused ? '0 0 8px rgba(166, 221, 177, 0.3)' : 'none',
@@ -94,9 +92,7 @@ const GlassSelect: React.FC<GlassSelectProps> = ({ label, focused, children, sty
         <select
           {...props}
           style={{
-            background: 'rgba(255, 255, 255, 0.40)',
-            backdropFilter: 'blur(8px)',
-            WebkitBackdropFilter: 'blur(8px)',
+            background: '#FFFFFF',
             borderRadius: '12px',
             border: focused ? '1.5px solid #A6DDB1' : '1px solid rgba(30, 34, 41, 0.08)',
             boxShadow: focused ? '0 0 8px rgba(166, 221, 177, 0.3)' : 'none',

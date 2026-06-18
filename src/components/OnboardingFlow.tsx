@@ -41,6 +41,7 @@ interface AccountItem {
   id?: string;
   name: string;
   type: string;
+  bankAccountType?: string;
   startingBalance: number;
   currency: string;
   creditLimit?: number;
@@ -710,12 +711,17 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
       startingBalanceVal = parseFloat(evaluatedBalance) || 0;
     }
 
+    const isSavings = accountName.toLowerCase().includes('savings');
     const newAcc: AccountItem = {
       name: accountName.trim(),
-      type: accountType,
+      type: isCreditCard ? 'Credit Card' : (accountType === 'cash' ? 'Cash' : 'Bank'),
       startingBalance: startingBalanceVal,
       currency: currency.toUpperCase() || 'AED'
     };
+
+    if (!isCreditCard) {
+      newAcc.bankAccountType = accountType === 'cash' ? 'Cash' : (isSavings ? 'Savings' : 'Checking');
+    }
 
     if (isCreditCard) {
       newAcc.creditLimit = parseFloat(evaluateMathExpression(creditLimit)) || 0;
@@ -881,7 +887,8 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
         const startingBalanceVal = -1 * Math.abs(parseFloat(evaledBal) || 0);
         finalAccounts.push({
           name: accountName.trim(),
-          type: accountType,
+          type: isCreditCard ? 'Credit Card' : (accountType === 'cash' ? 'Cash' : 'Bank'),
+          bankAccountType: isCreditCard ? undefined : (accountType === 'cash' ? 'Cash' : (accountName.toLowerCase().includes('savings') ? 'Savings' : 'Checking')),
           startingBalance: startingBalanceVal,
           currency: currency.toUpperCase() || 'AED',
           creditLimit: parseFloat(evaluateMathExpression(creditLimit)) || 0,
@@ -889,9 +896,11 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
           paymentDueDate: `2026-06-${(statementDueDate || "25").padStart(2, '0')}`
         });
       } else if (!isCreditCard && accountBalance.trim()) {
+        const isSavings = accountName.toLowerCase().includes('savings');
         finalAccounts.push({
           name: accountName.trim(),
-          type: accountType,
+          type: accountType === 'cash' ? 'Cash' : 'Bank',
+          bankAccountType: accountType === 'cash' ? 'Cash' : (isSavings ? 'Savings' : 'Checking'),
           startingBalance: parseFloat(evaluateMathExpression(accountBalance)) || 0,
           currency: currency.toUpperCase() || 'AED'
         });
@@ -906,7 +915,8 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
       if (!hasPayrollAcc) {
         finalAccounts.push({
           name: payrollAccName,
-          type: 'bank',
+          type: 'Bank',
+          bankAccountType: 'Checking',
           startingBalance: evalSalary,
           currency: currency.toUpperCase() || 'AED'
         });
@@ -1549,7 +1559,9 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                         key={status}
                         type="button"
                         onClick={() => {
-                          profile.relationshipStatus = status; // saved immediately to local profile object structure
+                          if (profile) {
+                            profile.relationshipStatus = status; // saved immediately to local profile object structure
+                          }
                           setRelationshipStatus(status);
                           setActiveStep(4);
                           setTimeout(() => {

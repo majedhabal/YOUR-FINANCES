@@ -98,9 +98,7 @@ export const CashBreakdownModal: React.FC<CashBreakdownModalProps> = ({
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 15 }}
               style={{ 
-                background: 'rgba(255, 255, 255, 0.55)',
-                backdropFilter: 'blur(22px)',
-                WebkitBackdropFilter: 'blur(22px)',
+                background: '#FFFFFF',
                 borderRadius: '20px',
                 border: '1px solid rgba(30, 34, 41, 0.08)',
                 padding: '1.25rem',

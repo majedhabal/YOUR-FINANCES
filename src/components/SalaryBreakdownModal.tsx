@@ -809,7 +809,7 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 15 }}
           transition={{ duration: 0.2, ease: 'easeOut' }}
-          className="salary-breakdown-frame relative w-full max-w-[480px] bg-[rgba(243,244,246,0.72)] backdrop-blur-[24px] border border-[#E1E8ED]/80 rounded-[24px] shadow-2xl overflow-hidden flex flex-col h-[85vh] md:h-[780px] max-h-[90vh] select-none mx-auto"
+          className="salary-breakdown-frame relative w-full max-w-[480px] bg-white border border-[#E1E8ED] rounded-[24px] shadow-2xl overflow-hidden flex flex-col h-[85vh] md:h-[780px] max-h-[90vh] select-none mx-auto"
           style={{}}
         >
           {/* Calendar Date Mismatch Guard Warning Modal */}
@@ -879,7 +879,7 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
 
           {/* Premium white canvas loading overlay */}
           {isLoading && (
-            <div className="absolute inset-0 bg-[#FFFFFF] z-[300] flex flex-col items-center justify-center p-6 text-center animate-fade-in" style={{ padding: '24px' }}>
+            <div className="absolute inset-0 bg-[#FFFFFF] z-[300] flex flex-col items-center justify-center p-3 text-center animate-fade-in" style={{ padding: '12px' }}>
               <div className="w-10 h-10 border-4 border-[#4F46E5] border-t-transparent rounded-full animate-spin mb-4" />
               <span className="text-neutral-800 text-sm premium-loader-heading mb-1 block">
                 Confirming allocations...
@@ -891,13 +891,13 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
           )}
 
           {/* Header */}
-          <div className="p-5 flex items-center justify-between border-b border-[#E1E8ED]/40 bg-transparent shrink-0">
+          <div className="p-3 flex items-center justify-between border-b border-[#E1E8ED]/40 bg-transparent shrink-0">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-xl bg-[#A6DDB1]/10 flex items-center justify-center border border-[#A6DDB1]/20">
                 <Calendar size={16} className="text-[#0E9F6E]" />
               </div>
               <div className="flex flex-col">
-                <h2 className="breakdown-header-title text-[#1E2229] leading-tight">Salary Breakdown Structure</h2>
+                <h2 className="breakdown-header-title text-[#1E2229] leading-tight" style={{ fontSize: '30px' }}>Salary Breakdown Structure</h2>
               </div>
             </div>
             <button 
@@ -1044,23 +1044,23 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
                 exit={{ opacity: 0 }}
                 className="flex-1 overflow-hidden flex flex-col h-full bg-transparent"
               >
-                <div className="flex-1 overflow-y-auto p-5 space-y-5 scrollbar-hide flex flex-col">
+                <div className="flex-1 overflow-y-auto p-2 space-y-2 scrollbar-hide flex flex-col">
                   
                   {/* Timeline Horizontal Month Carousel Selector */}
-                  <div className="bg-[rgba(255,255,255,0.45)] backdrop-blur-[10px] border border-[#E1E8ED]/60 rounded-[20px] p-5 shadow-sm flex flex-col gap-2.5 items-center justify-center shrink-0">
+                  <div className="bg-[rgba(255,255,255,0.45)] backdrop-blur-[10px] border border-[#E1E8ED]/60 rounded-[16px] p-2 shadow-sm flex flex-col gap-1 items-center justify-center shrink-0">
                     <div className="flex items-center justify-between w-full">
                       <button
                         type="button"
                         onClick={handlePreviousMonth}
-                        className="flex items-center gap-1.5 px-3 py-1.5 bg-[#F3F5F7] hover:bg-[#E1E8ED] text-[#1E2229] rounded-[15px] breakdown-secondary-text transition-all cursor-pointer whitespace-nowrap border border-[#E1E8ED]"
+                        className="flex items-center gap-1.5 px-2 py-1 bg-[#F3F5F7] hover:bg-[#E1E8ED] text-[#1E2229] rounded-[10px] breakdown-secondary-text transition-all cursor-pointer whitespace-nowrap border border-[#E1E8ED]"
                       >
                         <ChevronLeft size={11} className="shrink-0" />
-                        <span className="font-normal">Previous</span>
+                        <span className="font-normal" style={{ fontSize: '10px' }}>Previous</span>
                       </button>
                       
                       <div className="text-center select-none flex-1 px-1">
                         <span 
-                          style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} 
+                          style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: '11px' }} 
                           className="breakdown-secondary-text text-[#1E2229] block"
                         >
                           {getSalaryBreakdownTitle(selectedYearMonth)}
@@ -1070,16 +1070,16 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
                       <button 
                         type="button"
                         onClick={handleNextMonth}
-                        className="flex items-center gap-1.5 px-3 py-1.5 bg-[#F3F5F7] hover:bg-[#E1E8ED] text-[#1E2229] rounded-[15px] breakdown-secondary-text transition-all cursor-pointer whitespace-nowrap border border-[#E1E8ED]"
+                        className="flex items-center gap-1.5 px-2 py-1 bg-[#F3F5F7] hover:bg-[#E1E8ED] text-[#1E2229] rounded-[10px] breakdown-secondary-text transition-all cursor-pointer whitespace-nowrap border border-[#E1E8ED]"
                       >
-                        <span className="font-normal">Next</span>
+                        <span className="font-normal" style={{ fontSize: '10px' }}>Next</span>
                         <ChevronRight size={11} className="shrink-0" />
                       </button>
                     </div>
 
                     <div className="text-center">
                       <span 
-                        style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} 
+                        style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: '10px' }} 
                         className="breakdown-secondary-text text-[#0E9F6E] block leading-none"
                       >
                         {getOperationalDateSpanText(selectedYearMonth, payday)}
@@ -1113,7 +1113,7 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
                     </div>
 
                     {/* SECTION HEADER: SELECT INCOME TRANSACTIONS */}
-                    <div className="bg-[rgba(255,255,255,0.45)] backdrop-blur-[10px] border border-[#E1E8ED]/60 rounded-[20px] shadow-sm p-4 space-y-3">
+                    <div className="bg-white border border-[#E1E8ED]/60 rounded-[20px] shadow-sm p-4 space-y-3">
                       <div 
                         onClick={() => {
                           if (dbRecurringIncomes.length > 0) {
@@ -1423,8 +1423,8 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
                     </div>
                   ) : isPerfectAllocation ? (
                     <div 
-                      className="p-3.5 rounded-[12px] text-center text-[clamp(1.1rem,2.5vw,1.3rem)] font-semibold flex items-center justify-center gap-2 shadow-sm select-none w-full"
-                      style={{ backgroundColor: '#A6DDB1', color: '#1E2229' }}
+                      className="p-3.5 rounded-[12px] text-center font-semibold flex items-center justify-center gap-2 shadow-sm select-none w-full"
+                      style={{ backgroundColor: '#A6DDB1', color: '#1E2229', fontSize: '26px' }}
                     >
                       <CheckCircle size={16} className="shrink-0" />
                       <span>Balance perfectly allocated</span>

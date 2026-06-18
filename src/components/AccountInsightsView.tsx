@@ -237,7 +237,7 @@ export const AccountInsightsView: React.FC<AccountInsightsViewProps> = ({ accoun
   };
 
   return (
-    <div className="flex flex-col h-full bg-vantage-black text-white">
+    <div className="flex flex-col h-full bg-vantage-black text-white" style={{ fontFamily: "'Google Sans', sans-serif" }}>
       {/* Header */}
       <div className="bg-vantage-card/30 p-6 pb-20 rounded-b-[2.5rem] relative z-0 border-b border-white/5">
         <div className="flex items-center justify-between">

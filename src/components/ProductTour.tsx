@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'motion/react';
+import { motion } from 'motion/react'; // Preserving your exact motion import
 
 export interface ProductTourProps {
   step: number;
@@ -82,13 +82,11 @@ export const ProductTour: React.FC<ProductTourProps> = ({
     justifyContent: 'space-between',
     boxSizing: 'border-box',
     
-    /* 🌟 Forced Glassmorphic Tokens Override */
-    background: 'rgba(255, 255, 255, 0.45)',
-    backdropFilter: 'blur(30px) saturate(190%)',
-    WebkitBackdropFilter: 'blur(30px) saturate(190%)',
-    border: '1px solid rgba(255, 255, 255, 0.55)',
+    /* 🌟 Solid Flat White Theme Override (No Glass) */
+    background: '#FFFFFF',
+    border: '1px solid rgba(30, 34, 41, 0.08)',
     borderRadius: '24px',
-    boxShadow: '0 12px 40px 0 rgba(30, 34, 41, 0.25)',
+    boxShadow: '0 12px 40px 0 rgba(30, 34, 41, 0.15)',
   };
 
   if (coords) {

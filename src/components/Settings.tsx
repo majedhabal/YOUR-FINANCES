@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { User, Shield, Bell, CreditCard, LogOut, ChevronRight, Moon, Globe, Sparkles, Zap, PackageOpen, RotateCcw, LayoutGrid, RefreshCw, Calendar, CheckSquare, Brain, Lock, Fingerprint, MessageSquare, Zap as ZapIcon, Type, ZoomIn } from 'lucide-react';
 
-import { doc, updateDoc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, updateDoc, getDoc, setDoc, writeBatch, collection, getDocs } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useVantageActions } from '../hooks/useVantageActions';
 import { PremiumModal } from './PremiumModal';
@@ -97,6 +97,45 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
       setIsSavingGeminiKey(false);
     }
   };
+
+  const runMigration = async () => {
+    if(!profile?.uid) return;
+    setIsSaving(true);
+    try {
+        const catSnap = await getDocs(collection(db, `users/${profile.uid}/custom_categories`));
+        const categories = catSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+        const txSnap = await getDocs(collection(db, `users/${profile.uid}/transactions`));
+
+        const batch = writeBatch(db);
+        let updatesCount = 0;
+
+        txSnap.docs.forEach(txDoc => {
+            const tx = txDoc.data() as { category: string, type?: string };
+            const categoryEntry = categories.find(c => c.name === tx.category);
+
+            if (categoryEntry) {
+                const expectedType = categoryEntry.nature === 'Income' ? 'Inflow' : 'Outflow';
+                if (tx.type !== expectedType) {
+                    batch.update(txDoc.ref, { type: expectedType });
+                    updatesCount++;
+                }
+            }
+        });
+        
+        if (updatesCount > 0) {
+            await batch.commit();
+            alert(`Migration complete. Updated ${updatesCount} transactions.`);
+        } else {
+            alert("No updates needed.");
+        }
+    } catch(err) {
+        console.error(err);
+        alert("Migration failed.");
+    } finally {
+        setIsSaving(false);
+    }
+  }
 
   React.useEffect(() => {
     if (profile) {
@@ -336,11 +375,20 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
       title: 'Vantage Identity',
       items: [
         { 
-          icon: isPremium ? Sparkles : Shield, 
-          label: 'Subscription Status', 
-          value: isPremium ? 'Premium (Active)' : 'Basic Portfolio',
-          action: () => !isPremium && setIsPremiumModalOpen(true),
-          highlight: isPremium
+          icon: LogOut, 
+          label: 'Sign out from Your Finances',
+          action: async () => {
+            try {
+              const { auth } = await import('../lib/firebase');
+              await auth.signOut();
+            } catch (e) {
+              console.warn("Firebase signout error:", e);
+            }
+            localStorage.removeItem('vantage_session_token');
+            localStorage.removeItem('vantage_active_session_profile');
+            window.dispatchEvent(new CustomEvent('vantage-logout'));
+            window.location.reload();
+          }
         },
         { 
           icon: MessageSquare, 
@@ -376,6 +424,12 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
           label: 'Recurring Protocols', 
           value: 'Automation Rules',
           action: () => setActiveView('recurring')
+        },
+        { 
+          icon: Sparkles, 
+          label: 'Fix Transaction Types', 
+          value: isSaving ? 'Migrating...' : 'Run Migration',
+          action: runMigration
         },
       ]
     },
@@ -703,28 +757,28 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
         )}
       </AnimatePresence>
 
-      <div className="flex flex-col gap-0.5 px-4 mb-1">
-        <h2 className="font-bold text-vantage-text tracking-tight" style={{ fontSize: 'clamp(16px, 4.5vw, 20px)' }}>Dashboard controls</h2>
-        <p className="text-vantage-muted tracking-wide font-normal animate-pulse" style={{ fontSize: 'clamp(8px, 1.8vw, 10px)' }}>Strategic infrastructure</p>
+      <div className="flex flex-col gap-1 px-md mb-xl">
+        <h2 className="font-bold text-vantage-text tracking-tight" style={{ fontSize: '24px', fontWeight: 'bold' }}>Dashboard controls</h2>
+        <p className="text-vantage-muted tracking-wide font-normal" style={{ fontSize: '14px' }}>Strategic infrastructure</p>
       </div>
 
       {/* High-density User Profile Card */}
-      <div className="p-3 bg-white dark:bg-[#111215] rounded-2xl border border-neutral-200 dark:border-white/5 shadow-sm flex items-center justify-between gap-3 mx-4 leading-none select-none">
+      <div className="p-3 bg-[#FFFFFF] rounded-2xl border border-neutral-200 shadow-sm flex items-center justify-between gap-3 mx-4 leading-none select-none">
         <div className="flex items-center gap-3 min-w-0">
           <div className="w-9 h-9 rounded-full bg-vantage-green/10 flex items-center justify-center text-vantage-green select-none shrink-0" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700, fontSize: 'clamp(12px, 3.2vw, 15px)' }}>
             {(profile?.fullName || randomPlaceholder).charAt(0).toUpperCase()}
           </div>
           <div className="flex flex-col min-w-0">
-            <span className="text-vantage-text dark:text-neutral-100 truncate" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700, fontSize: 'clamp(11px, 3.2vw, 13px)', lineHeight: '1.2' }}>
+            <span className="text-vantage-text dark:text-neutral-100 truncate" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: '18px', lineHeight: '1.2' }}>
               {profile?.fullName || randomPlaceholder}
             </span>
-            <span className="text-vantage-muted truncate" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: 'clamp(9px, 2.6vw, 11px)' }}>
+            <span className="text-vantage-muted truncate" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: '12px', height: '16px', lineHeight: '14px', width: '160px' }}>
               {profile?.email || 'vantage.user@private.com'}
             </span>
           </div>
         </div>
         <div className="flex shrink-0">
-          <span className={`px-2 py-0.5 rounded-full tracking-wide ${isPremium ? 'bg-vantage-green/10 text-vantage-green border border-vantage-green/20' : 'bg-vantage-text/10 text-vantage-muted border border-vantage-text/15'}`} style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700, fontSize: 'clamp(8px, 2.2vw, 10px)' }}>
+          <span className={`px-2 py-0.5 rounded-full tracking-wide ${isPremium ? 'bg-vantage-green/10 text-vantage-green border border-vantage-green/20' : 'bg-vantage-text/10 text-vantage-muted border border-vantage-text/15'}`} style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700, fontSize: '14px' }}>
             {isPremium ? 'Premium' : 'Basic'}
           </span>
         </div>
@@ -759,7 +813,7 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
               {section.items.map((item: any, itemIdx: any) => (
                 <div 
                   key={itemIdx}
-                  className={`w-full flex flex-col transition-colors ${itemIdx !== section.items.length - 1 ? 'border-b border-neutral-100 dark:border-white/5' : ''}`}
+                  className={`w-full flex flex-col p-4 transition-colors ${itemIdx !== section.items.length - 1 ? 'border-b border-neutral-100 dark:border-white/5' : ''}`}
                 >
                   <div className="flex items-center justify-between w-full gap-3">
                     <div className="flex items-center gap-2 min-w-0">
@@ -767,7 +821,7 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
                         <item.icon size={15} strokeWidth={2} className={item.label === 'Restore Purchase History' && isRestoring ? 'animate-spin' : ''} />
                       </div>
                       <span 
-                        style={{ fontSize: 'clamp(11px, 3.2vw, 13px)' }}
+                        style={{ fontSize: '15px' }}
                         className={`font-semibold truncate leading-tight ${item.highlight ? 'text-[#065F46] dark:text-vantage-green' : 'text-vantage-text dark:text-neutral-200'}`}
                       >
                         {item.label}
@@ -790,11 +844,11 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
                         <button 
                           onClick={item.action} 
                           disabled={item.action === undefined || (item.label === 'Restore Purchase History' && isRestoring)}
-                          className="flex items-center gap-1.5 outline-none active:scale-95 transition-transform min-w-0 shrink-0"
+                          className="flex items-center gap-1.5 outline-none active:scale-95 transition-transform min-w-0 shrink-0 border border-neutral-200 rounded-lg px-2 py-0.5"
                         >
                           <span 
-                            style={{ fontSize: 'clamp(10px, 2.8vw, 12px)' }}
-                            className={`font-bold tracking-wide truncate max-w-[120px] ${item.highlight ? 'text-[#065F46] dark:text-vantage-green' : 'text-neutral-400 dark:text-neutral-500'}`}
+                            style={{ fontSize: '14px' }}
+                            className={`font-normal tracking-wide truncate max-w-[150px] ${item.highlight ? 'text-[#065F46] dark:text-vantage-green' : 'text-neutral-500 dark:text-neutral-400'}`}
                           >
                             {item.value}
                           </span>
@@ -1031,30 +1085,7 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
           <span className="truncate">Sign Out from Vantage AI</span>
         </button>
 
-        {/* Self Destruct Button */}
-        <button 
-          id="self-destruct-btn"
-          onClick={async () => {
-             if (confirm("Proceed with caution: This will permanently wipe all local and vault data. This action is irreversible.")) {
-               try {
-                 await deleteUserProfile();
-                 // Sign out and reload/redirect
-                 const { auth } = await import('../lib/firebase');
-                 await auth.signOut();
-                 window.dispatchEvent(new CustomEvent('vantage-logout'));
-                 window.location.reload();
-               } catch (e) {
-                 console.error("Self-destruct failed:", e);
-                 alert("Self-destruct operation failed. Please check network.");
-               }
-             }
-          }}
-          className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-red-50 text-[#991B1B] border border-[#991B1B]/20 hover:bg-red-100 transition-colors active:scale-95 font-bold tracking-wide cursor-pointer mt-4" 
-          style={{ fontSize: 'clamp(10px, 2.8vw, 12px)' }}
-        >
-          <ZapIcon size={14} className="shrink-0" />
-          <span className="truncate">Self-Destruct Matrix</span>
-        </button>
+
       </div>
 
       <div className="flex flex-col items-center gap-1 mt-10 pb-16">
