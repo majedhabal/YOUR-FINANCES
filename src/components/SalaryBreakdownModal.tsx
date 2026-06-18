@@ -98,6 +98,10 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
   const [dbRecurringIncomes, setDbRecurringIncomes] = useState<any[]>([]);
 
   // Track active visual budget envelope keys chosen by user
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent('salary-modal-toggled', { detail: { isOpen } }));
+  }, [isOpen]);
+
   const [activeEnvelopes, setActiveEnvelopes] = useState<string[]>([
     'housing__rent', 'investments__savings', 'financial_expenses__loan', 'food_&_drinks__groceries', 'shopping__clothes', 'vehicle__fuel', 'financial_expenses__fees'
   ]);
@@ -793,24 +797,16 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[250] flex items-center justify-center p-2 sm:p-4">
-        {/* Backdrop */}
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={onClose}
-          className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-        />
-
-        {/* Modal Window Container */}
+      <div className="fixed inset-0 z-[250] bg-white ml-[-237px]">
+        {/* Backdrop - Omit or adjust if not desired, or make transparent */}
+        
+        {/* Modal Window Container - Full Screen */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 15 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 15 }}
           transition={{ duration: 0.2, ease: 'easeOut' }}
-          className="salary-breakdown-frame relative w-full max-w-[480px] bg-white border border-[#E1E8ED] rounded-[24px] shadow-2xl overflow-hidden flex flex-col h-[85vh] md:h-[780px] max-h-[90vh] select-none mx-auto"
-          style={{}}
+          className="relative w-full h-full bg-white flex flex-col select-none"
         >
           {/* Calendar Date Mismatch Guard Warning Modal */}
           <AnimatePresence>
@@ -855,27 +851,7 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
             )}
           </AnimatePresence>
 
-          <style>{`
-            .salary-breakdown-frame,
-            .salary-breakdown-frame * {
-              font-family: 'Google Sans', sans-serif !important;
-              color: #1E2229 !important;
-              text-transform: none !important;
-              letter-spacing: normal !important;
-            }
-            #breakdown-main-title {
-              font-size: clamp(1.15rem, 2.6vw, 1.4rem) !important;
-              font-weight: 600 !important;
-            }
-            .breakdown-primary-text {
-              font-size: clamp(1rem, 2.2vw, 1.2rem) !important;
-              font-weight: 500 !important;
-            }
-            .breakdown-secondary-text {
-              font-size: clamp(0.8rem, 1.8vw, 0.95rem) !important;
-              font-weight: 400 !important;
-            }
-          `}</style>
+          {/* Removed legacy style overrides */}
 
           {/* Premium white canvas loading overlay */}
           {isLoading && (
@@ -890,24 +866,24 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
             </div>
           )}
 
-          {/* Header */}
-          <div className="p-3 flex items-center justify-between border-b border-[#E1E8ED]/40 bg-transparent shrink-0">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-[#A6DDB1]/10 flex items-center justify-center border border-[#A6DDB1]/20">
-                <Calendar size={16} className="text-[#0E9F6E]" />
-              </div>
-              <div className="flex flex-col">
-                <h2 className="breakdown-header-title text-[#1E2229] leading-tight" style={{ fontSize: '30px' }}>Salary Breakdown Structure</h2>
-              </div>
-            </div>
-            <button 
-              type="button"
-              onClick={onClose}
-              className="p-1.5 text-[#57606F] hover:text-[#1E2229] transition-colors cursor-pointer rounded-lg hover:bg-[#F3F5F7]/50"
-            >
-              <X size={18} />
-            </button>
-          </div>
+           {/* Header */}
+           <div className="pt-16 pb-4 px-4 flex items-center justify-between border-b border-outline-variant bg-surface shrink-0">
+             <div className="flex items-center gap-3">
+               <div className="w-10 h-10 rounded-full bg-primary-container/30 flex items-center justify-center text-on-primary-container">
+                 <Calendar size={20} />
+               </div>
+               <div className="flex flex-col">
+                 <h2 className="text-on-surface text-lg font-bold">Salary Breakdown</h2>
+               </div>
+             </div>
+             <button                
+               type="button"
+               onClick={onClose}
+               className="p-2 hover:bg-surface-container rounded-full transition-colors text-on-surface"
+             >
+               <X size={20} />
+             </button>
+           </div>
 
           <AnimatePresence mode="wait">
             {isCreatingSchedule ? (
@@ -1042,9 +1018,9 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="flex-1 overflow-hidden flex flex-col h-full bg-transparent"
+                className="flex-1 overflow-y-auto bg-transparent"
               >
-                <div className="flex-1 overflow-y-auto p-2 space-y-2 scrollbar-hide flex flex-col">
+                <div className="p-2 space-y-2 flex flex-col">
                   
                   {/* Timeline Horizontal Month Carousel Selector */}
                   <div className="bg-[rgba(255,255,255,0.45)] backdrop-blur-[10px] border border-[#E1E8ED]/60 rounded-[16px] p-2 shadow-sm flex flex-col gap-1 items-center justify-center shrink-0">
@@ -1345,13 +1321,13 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
                           return (
                             <div 
                               key={`envelope-${cat.key}-${index}`}
-                              className="h-[30px] bg-[rgba(255,255,255,0.4)] border border-[#E1E8ED] px-3 rounded-[15px] flex items-center justify-between gap-1.5 transition-all shrink-0 hover:bg-[rgba(255,255,255,0.6)]"
+                              className="h-[26px] bg-[rgba(255,255,255,0.4)] border border-[#E1E8ED] px-2 rounded-[12px] flex items-center justify-between gap-1 transition-all shrink-0 hover:bg-[rgba(255,255,255,0.6)]"
                             >
                               <div className="flex items-center gap-2 min-w-0 flex-1">
                                 <span className="text-sm shrink-0">{cat.emoji}</span>
                                 <span 
                                   style={{ fontFamily: "'Google Sans', sans-serif" }}
-                                  className="text-[13px] text-slate-800 font-normal leading-none truncate"
+                                  className="text-[11px] text-slate-800 font-normal leading-none truncate"
                                 >
                                   {cat.label}
                                 </span>
@@ -1365,15 +1341,15 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
                                 )}
                               </div>
 
-                              <div className="relative flex items-center w-[100px] shrink-0 h-[22px]">
-                                <span className="absolute left-2.5 text-[10px] text-zinc-400 font-normal uppercase leading-none pointer-events-none">{activeBaseCurrency}</span>
+                              <div className="relative flex items-center w-[80px] shrink-0 h-[20px]">
+                                <span className="absolute left-2 text-[9px] text-zinc-400 font-normal uppercase leading-none pointer-events-none">{activeBaseCurrency}</span>
                                 <input 
                                   type="number"
                                   placeholder="0"
                                   min="0"
                                   value={allocations[cat.key] || ''}
                                   onChange={(e) => handleAllocationChange(cat.key, e.target.value)}
-                                  className="w-full h-full bg-[#ffffff] rounded-[11px] border border-[#E1E8ED] text-right focus:border-[#A6DDB1] pr-2.5 pl-9 text-xs text-[#1E2229] outline-none font-bold transition-all"
+                                                                    className="w-full h-full bg-[#ffffff] rounded-[10px] border border-[#E1E8ED] text-right focus:border-[#A6DDB1] pr-1.5 pl-6 text-[11px] text-[#1E2229] outline-none font-bold transition-all"
                                 />
                               </div>
                             </div>

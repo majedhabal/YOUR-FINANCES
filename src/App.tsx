@@ -17,8 +17,9 @@ import { Accounts } from './components/Accounts';
 import { VantageAI } from './components/VantageAI';
 import { Transactions } from './components/Transactions';
 import { Analytics } from './components/Analytics';
+import { SalaryBreakdownModal } from './components/SalaryBreakdownModal';
 
-export type Tab = 'essentials' | 'accounts' | 'ai' | 'activity' | 'analytics';
+export type Tab = 'essentials' | 'accounts' | 'ai' | 'activity' | 'analytics' | 'salary-breakdown';
 
 const animation = {
   initial: { opacity: 0, y: 10 },

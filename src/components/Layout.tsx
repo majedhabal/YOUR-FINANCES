@@ -51,9 +51,18 @@ const navItems = [
   { id: 'analytics' as Tab, label: 'Analytics', icon: TrendingUp },
 ];
 
+  const [isSalaryModalOpen, setIsSalaryModalOpen] = React.useState(false);
+
+  useEffect(() => {
+    const handleSalaryModal = (e: any) => {
+      setIsSalaryModalOpen(e.detail.isOpen);
+    };
+    window.addEventListener('salary-modal-toggled', handleSalaryModal);
+    return () => window.removeEventListener('salary-modal-toggled', handleSalaryModal);
+  }, []);
+
   return (
     <div className="w-full min-h-screen flex flex-col bg-[#F8FAFC] text-black overflow-x-hidden relative">
-      
       <AnimatePresence>
         {isFabMenuOpen && (
           <motion.div 
@@ -85,36 +94,38 @@ const navItems = [
       </div>
 
       {/* CORE BRAND HEADER UTILITY */}
-      <header className="w-full sticky top-0 z-40 px-4 py-0 flex items-center justify-between select-none box-border border-b border-neutral-100 bg-white shrink-0">
-        <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => setActiveTab('essentials')}>
-          <div className="w-24 h-24 flex items-center justify-center filter drop-shadow Astro-Portrait-Mode">
-            <VantageLogo size="100%" />
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3">
-          {isOffline && (
-            <div className="flex items-center gap-1 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-400 text-[10px] font-mono tracking-wide uppercase">
-              <WifiOff size={10} />
-              <span>Offline</span>
+      {!isSalaryModalOpen && (
+        <header className="w-full sticky top-0 z-40 px-4 py-0 flex items-center justify-between select-none box-border border-b border-neutral-100 bg-white shrink-0">
+          <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => setActiveTab('essentials')}>
+            <div className="w-24 h-24 flex items-center justify-center filter drop-shadow Astro-Portrait-Mode">
+              <VantageLogo size="100%" />
             </div>
-          )}
-          {profile?.uid && (
-            <NotificationDispatchHub
-              uid={profile.uid}
-              accounts={accounts || []}
-              transactions={transactions || []}
-              accountBalances={accountBalances || {}}
-            />
-          )}
-          <button 
-            onClick={() => setActiveTab('settings')}
-            className="p-2 rounded-full hover:bg-neutral-100 transition-colors"
-          >
-            <SettingsIcon size={20} className="text-neutral-400" />
-          </button>
-        </div>
-      </header>
+          </div>
+
+          <div className="flex items-center gap-3">
+            {isOffline && (
+              <div className="flex items-center gap-1 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-400 text-[10px] font-mono tracking-wide uppercase">
+                <WifiOff size={10} />
+                <span>Offline</span>
+              </div>
+            )}
+            {profile?.uid && (
+              <NotificationDispatchHub
+                uid={profile.uid}
+                accounts={accounts || []}
+                transactions={transactions || []}
+                accountBalances={accountBalances || {}}
+              />
+            )}
+            <button 
+              onClick={() => setActiveTab('settings')}
+              className="p-2 rounded-full hover:bg-neutral-100 transition-colors"
+            >
+              <SettingsIcon size={20} className="text-neutral-400" />
+            </button>
+          </div>
+        </header>
+      )}
 
       {/* CONTENT CANVAS */}
       <main className="flex-1 w-full relative z-10 box-border pb-28 bg-[#F8FAFC]">
@@ -122,7 +133,8 @@ const navItems = [
       </main>
 
       {/* UNIFIED STICKY FOOTER BOTTOM NAVIGATION DOCK */}
-      <nav className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-[460px] box-border select-none shrink-0">
+      {!isSalaryModalOpen && (
+        <nav className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-[460px] box-border select-none shrink-0">
         {/* FAB */}
         <button
           onClick={() => setIsFabMenuOpen(true)}
@@ -164,6 +176,7 @@ const navItems = [
           })}
         </div>
       </nav>
+      )}
     </div>
   );
 };

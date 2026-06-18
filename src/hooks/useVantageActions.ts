@@ -45,9 +45,16 @@ export function useVantageActions(uid?: string) {
     await deleteDoc(transactionRef);
   };
 
+  const deleteProfile = async () => {
+    const userId = getUid();
+    const userRef = doc(db, 'users', userId);
+    await deleteDoc(userRef);
+  };
+
   return {
     createAccount,
     updateTransaction,
-    deleteTransaction
+    deleteTransaction,
+    deleteProfile
   };
 }

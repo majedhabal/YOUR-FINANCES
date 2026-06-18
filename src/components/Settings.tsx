@@ -39,7 +39,7 @@ interface SettingsProps {
 }
 
 export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateProfile }) => {
-  const { deleteUserProfile } = useVantageActions(profile?.uid);
+  const { deleteProfile } = useVantageActions(profile?.uid);
   const [activeView, setActiveView] = useState<'main' | 'categories' | 'recurring' | 'privacy' | 'terms' | 'ai_conversations'>('main');
   const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
@@ -1063,9 +1063,13 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
         </div>
       </div>
 
-      <div className="flex flex-col gap-2 mt-6 px-4">
-        {/* Sign Out Button */}
-        <button 
+
+      <div className="flex flex-col items-center gap-1 mt-10 pb-16">
+        <div className="text-[10px] font-bold text-vantage-muted tracking-wide">Vantage AI wallet v1.2.0</div>
+        <div className="text-[8px] text-vantage-muted opacity-50 font-bold tracking-wide text-center max-w-[250px]">Designed for high-performance financial management</div>
+      </div>
+
+      <button 
           onClick={async () => {
             try {
               const { auth } = await import('../lib/firebase');
@@ -1078,20 +1082,34 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
             window.dispatchEvent(new CustomEvent('vantage-logout'));
             window.location.reload();
           }}
-          className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-[#991B1B]/5 text-[#991B1B] border border-[#991B1B]/10 hover:bg-[#991B1B]/10 transition-colors active:scale-95 font-bold tracking-wide cursor-pointer" 
+          className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-neutral-200 dark:border-white/10 text-vantage-text dark:text-neutral-200 font-bold tracking-wide hover:bg-neutral-50 dark:hover:bg-white/5 transition-colors active:scale-95 cursor-pointer w-full mb-8" 
           style={{ fontSize: 'clamp(10px, 2.8vw, 12px)' }}
         >
           <LogOut size={14} className="shrink-0" />
           <span className="truncate">Sign Out from Vantage AI</span>
         </button>
 
-
-      </div>
-
-      <div className="flex flex-col items-center gap-1 mt-10 pb-16">
-        <div className="text-[10px] font-bold text-vantage-muted tracking-wide">Vantage AI wallet v1.2.0</div>
-        <div className="text-[8px] text-vantage-muted opacity-50 font-bold tracking-wide text-center max-w-[250px]">Designed for high-performance financial management</div>
-      </div>
+        <button 
+          onClick={async () => {
+             if (confirm("Are you sure you want to permanently delete your entire Vantage profile and database? This action is irreversible.")) {
+               try {
+                 await deleteProfile();
+                 const { auth } = await import('../lib/firebase');
+                 await auth.signOut();
+                 window.dispatchEvent(new CustomEvent('vantage-logout'));
+                 window.location.reload();
+               } catch (e) {
+                 console.error("Delete profile failed:", e);
+                 alert("Delete profile operation failed. Please check network.");
+               }
+             }
+          }}
+          className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-red-500/20 bg-red-50 text-red-600 font-bold tracking-wide hover:bg-red-100 transition-colors active:scale-95 cursor-pointer w-full mb-8" 
+          style={{ fontSize: 'clamp(10px, 2.8vw, 12px)' }}
+        >
+          <ZapIcon size={14} className="shrink-0" />
+          <span className="truncate">Delete profile</span>
+        </button>
     </div>
   );
 };

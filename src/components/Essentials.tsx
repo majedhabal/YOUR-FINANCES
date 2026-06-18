@@ -865,6 +865,16 @@ useEffect(() => {
           <Calendar size={14} />
           <span>Income allocation</span>
         </button>
+        <SalaryBreakdownModal 
+          isOpen={isSalaryModalOpen}
+          onClose={() => setIsSalaryModalOpen(false)}
+          profile={profile}
+          budgets={budgets}
+          onSuccess={() => {
+            setShowSuccess(true);
+            setTimeout(() => setShowSuccess(false), 2000);
+          }}
+        />
       </div>
 
       {/* Unified Grid Layout */}
@@ -946,18 +956,6 @@ useEffect(() => {
         </div>
       )}
       
-      {/* Salary Breakdown Blueprints Modal */}
-      <SalaryBreakdownModal 
-        isOpen={isSalaryModalOpen}
-        onClose={() => setIsSalaryModalOpen(false)}
-        profile={profile}
-        budgets={budgets}
-        onSuccess={() => {
-          setShowSuccess(true);
-          setTimeout(() => setShowSuccess(false), 2000);
-        }}
-      />
-
       {/* Config Modal */}
       <BudgetConfigModal 
         isOpen={isConfigModalOpen || editingBudget !== null}
