@@ -769,6 +769,38 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
       return;
     }
 
+    // New logic: auto-create/update budget records in Firestore for the current month
+    // based on the successfully committed allocations.
+    try {
+      if (profile?.uid) {
+        const batch = writeBatch(db);
+        
+        // Loop through all active envelope allocations and create/update budget doc
+        for (const [envelopeKey, amount] of Object.entries(allocations)) {
+          if (Number(amount) > 0) {
+            // Envelope keys are "category__subcategory".
+            // Use the full name for the categoryTitle.
+            const name = envelopeKey.replace('__', ' > ');
+            
+            const budRef = doc(collection(db, `users/${profile.uid}/miniBudgets`));
+            batch.set(budRef, {
+              userId: profile.uid,
+              categoryTitle: name,
+              allocatedAmount: Number(amount),
+              spentAmount: 0,
+              currency: activeBaseCurrency,
+              period: selectedYearMonth,
+              createdAt: serverTimestamp(),
+              updatedAt: serverTimestamp()
+            });
+          }
+        }
+        await batch.commit();
+      }
+    } catch (err) {
+      console.error("Failed to auto-create budgets from allocation:", err);
+    }
+
     await commitAllocation(payday);
   };
 
@@ -1020,7 +1052,7 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
                 exit={{ opacity: 0 }}
                 className="flex-1 overflow-y-auto bg-transparent"
               >
-                <div className="p-2 space-y-2 flex flex-col">
+                <div className="p-2 space-y-2 flex flex-col w-[340px] ml-[245px]">
                   
                   {/* Timeline Horizontal Month Carousel Selector */}
                   <div className="bg-[rgba(255,255,255,0.45)] backdrop-blur-[10px] border border-[#E1E8ED]/60 rounded-[16px] p-2 shadow-sm flex flex-col gap-1 items-center justify-center shrink-0">
@@ -1237,7 +1269,7 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
                                     initial={{ scale: 0.95, opacity: 0 }}
                                     animate={{ scale: 1, opacity: 1 }}
                                     exit={{ scale: 0.95, opacity: 0 }}
-                                    className="bg-[#7a7a7a] border-0 rounded-[25px] p-5 w-full max-w-sm space-y-4 shadow-xl"
+                                    className="bg-white border-0 rounded-[25px] p-5 w-full max-w-sm space-y-4 shadow-xl"
                                   >
                                     <div className="space-y-1">
                                       <h4 style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-xs uppercase tracking-wider text-white font-normal">
@@ -1368,7 +1400,7 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
                 </div>
 
                 {/* Bottom Calculations Panel & Action Button (Fixed Footer) */}
-                <div className="p-4 bg-[rgba(255,255,255,0.45)] backdrop-blur-[10px] border border-[#E1E8ED]/60 rounded-[24px] shadow-sm shrink-0 flex flex-col gap-3 mx-4 mb-4">
+                <div className="p-4 bg-[rgba(255,255,255,0.45)] backdrop-blur-[10px] border border-[#E1E8ED]/60 rounded-[24px] shadow-sm shrink-0 flex flex-col gap-3 mx-4 mb-4 w-[305px] ml-[260px]">
                   {/* Calculations Row Details */}
                   <div className="grid grid-cols-3 gap-2 py-1 text-center w-full">
                     <div className="flex flex-col gap-1">
@@ -1399,8 +1431,8 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
                     </div>
                   ) : isPerfectAllocation ? (
                     <div 
-                      className="p-3.5 rounded-[12px] text-center font-semibold flex items-center justify-center gap-2 shadow-sm select-none w-full"
-                      style={{ backgroundColor: '#A6DDB1', color: '#1E2229', fontSize: '26px' }}
+                      className="p-3.5 rounded-[12px] text-center font-semibold flex items-center justify-center gap-2 shadow-sm select-none w-full bg-[#A6DDB1] text-[#1E2229]"
+                      style={{ fontSize: '16px' }}
                     >
                       <CheckCircle size={16} className="shrink-0" />
                       <span>Balance perfectly allocated</span>
@@ -1468,24 +1500,26 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
                 className="absolute inset-x-0 bottom-0 top-0 md:top-[80px] md:mx-auto md:max-w-[480px] md:h-fit bg-[rgba(243,244,246,0.85)] backdrop-blur-[24px] border border-[#E1E8ED]/85 rounded-[24px] shadow-2xl z-50 flex flex-col overflow-hidden"
               >
                 {/* Drawer header */}
-                <div className="p-6 flex items-center justify-between shrink-0 border-b border-[rgba(30,34,41,0.04)]">
-                  <div className="flex items-center gap-2">
+                <div className="p-6 flex items-center justify-between shrink-0 bg-white relative w-full">
+                  <div className="flex items-center gap-2 text-left">
                     <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 600 }} className="text-[clamp(1.15rem,2.6vw,1.4rem)] text-[#1E2229]">
                       Browse All Categories
                     </span>
                   </div>
-                  <button 
-                    type="button"
-                    onClick={() => setIsManageCategoriesOpen(false)}
-                    style={{ backgroundColor: 'rgba(166, 221, 177, 0.4)', color: '#1E2229', fontFamily: "'Google Sans', sans-serif", fontWeight: 500 }}
-                    className="px-6 py-2.5 text-[clamp(0.8rem,1.8vw,0.95rem)] rounded-[20px] hover:brightness-105 active:scale-95 transition-all cursor-pointer border border-[rgba(255,255,255,0.45)]"
-                  >
-                    Done
-                  </button>
+                  <div>
+                    <button 
+                      type="button"
+                      onClick={() => setIsManageCategoriesOpen(false)}
+                      style={{ backgroundColor: '#A6DDB1', color: '#1E2229', fontFamily: "'Google Sans', sans-serif", fontWeight: 600 }}
+                      className="px-6 py-2.5 text-[clamp(0.8rem,1.8vw,0.95rem)] rounded-[20px] hover:brightness-105 active:scale-95 transition-all cursor-pointer border border-[rgba(255,255,255,0.45)]"
+                    >
+                      Done
+                    </button>
+                  </div>
                 </div>
 
                 {/* Checklist options */}
-                <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                <div className="flex-1 overflow-y-auto p-6 space-y-4 w-[305px] ml-[260px] rounded-[15px] bg-white">
                   <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[clamp(0.8rem,1.8vw,0.95rem)] text-[#1E2229] leading-relaxed">
                     Expand categories below and check subcategories. Checking any item automatically appends it as an active high-density allocation budget envelope.
                   </p>
@@ -1496,7 +1530,7 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
                       {/* Parent Accordion Row */}
                       <div
                         onClick={() => toggleCategoryExpanded('ACCOUNT FUND TRANSFERS')}
-                        className="p-4 flex items-center justify-between cursor-pointer transition-all select-none"
+                        className="p-4 flex items-center justify-between cursor-pointer transition-all select-none hover:bg-neutral-50"
                       >
                         <div className="flex items-center gap-2">
                           <span className="text-lg shrink-0">🔄</span>
@@ -1509,7 +1543,7 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
                         </div>
                         <span 
                           style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
-                          className="text-[clamp(0.8rem,1.8vw,0.95rem)] text-[#1E2229] opacity-60"
+                          className="text-[clamp(0.8rem,1.8vw,0.95rem)] text-neutral-500"
                         >
                           {expandedCategories.includes('ACCOUNT FUND TRANSFERS') ? 'Collapse' : 'Expand'}
                         </span>
@@ -1567,11 +1601,11 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
                       const displayCatName = cat.name === 'Food & Drinks' ? 'Food & Drink' : cat.name;
 
                       return (
-                        <div key={`category-row-${cat.key || cat.name || index}-${index}`} className="bg-[#FFFFFF] mb-[0.6rem] rounded-[24px] border border-[#E1E8ED] overflow-hidden">
+                        <div key={`category-row-${cat.key || cat.name || index}-${index}`} className="bg-white mb-4 rounded-[24px] border border-neutral-100 shadow-sm overflow-hidden">
                           {/* Parent Accordion Row */}
                           <div
                             onClick={() => toggleCategoryExpanded(cat.name)}
-                            className="p-4 flex items-center justify-between cursor-pointer transition-all select-none"
+                            className="p-4 flex items-center justify-between cursor-pointer transition-all select-none hover:bg-neutral-50"
                           >
                             <div className="flex items-center gap-3">
                               <span className="text-lg shrink-0">{cat.emoji || '📁'}</span>
@@ -1584,7 +1618,7 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
                             </div>
                             <span 
                               style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
-                              className="text-[clamp(0.8rem,1.8vw,0.95rem)] text-[#1E2229] opacity-60"
+                              className="text-[clamp(0.8rem,1.8vw,0.95rem)] text-neutral-500"
                             >
                               {isExpanded ? 'Collapse' : 'Expand'}
                             </span>

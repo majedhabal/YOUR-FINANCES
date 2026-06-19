@@ -87,13 +87,13 @@ export const BudgetSection: React.FC<{ budgets: any[], accounts: any[], transact
                   <div className="flex gap-1">
                     <button 
                       onClick={(e) => { e.stopPropagation(); onAddExpense(b); }}
-                      className="text-gray-400 hover:text-green-600 p-1 transition-colors self-center pointer-events-auto"
+                      className="text-gray-400 hover:text-green-600 p-1 transition-colors self-center pointer-events-auto flex items-center justify-center"
                     >
                       <Plus size={16} />
                     </button>
                     <button 
                       onClick={(e) => { e.stopPropagation(); onDelete(b); }}
-                      className="text-gray-400 hover:text-rose-500 p-1 transition-colors self-center pointer-events-auto"
+                      className="text-gray-400 hover:text-rose-500 p-1 transition-colors self-center pointer-events-auto flex items-center justify-center"
                     >
                       <Trash2 size={16} />
                     </button>
