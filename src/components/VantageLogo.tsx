@@ -8,7 +8,7 @@ interface VantageLogoProps {
 export const VantageLogo: React.FC<VantageLogoProps> = ({ className = '', size = '100%' }) => {
   return (
     <img 
-      src="/icons/Your_Finances_Logo.png" 
+      src="/icons/Your_Finances_Logo_512x512.jpg" 
       alt="YOUR FINANCES Logo" 
       width={size} 
       height={size} 

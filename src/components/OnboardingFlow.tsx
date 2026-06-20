@@ -22,7 +22,13 @@ import {
   HelpCircle,
   Coins,
   Facebook,
-  Lock
+  Lock,
+  User,
+  Baby,
+  TrendingDown,
+  Shield,
+  Home,
+  TrendingUp
 } from 'lucide-react';
 import { doc, setDoc, collection, serverTimestamp, getDoc, updateDoc } from 'firebase/firestore';
 import { signInWithPopup, FacebookAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
@@ -443,6 +449,8 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
   const [currency, setCurrency] = useState<string>('AED');
   const [isCurrencyDropdownOpen, setIsCurrencyDropdownOpen] = useState<boolean>(false);
   const [currencySearchQuery, setCurrencySearchQuery] = useState<string>('');
+  const [isAddDependentDropdownOpen, setIsAddDependentDropdownOpen] = useState<boolean>(false);
+  const [isGoalDropdownOpen, setIsGoalDropdownOpen] = useState<boolean>(false);
 
   // Payroll state variables
   const [salaryAmount, setSalaryAmount] = useState<string>('12000');
@@ -1498,7 +1506,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
               Welcome to <strong className="font-bold">YOUR FINANCES</strong>! 👋 Let's set up your profile so you can start your future financial freedom.
             </p>
             <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: "clamp(11px, 3.2vw, 13px)" }} className="leading-relaxed mt-1">
-              Completing this sign up process will set up the app for you, so you don't have to!
+              This one-minute sign-up process configures everything, leaving the app completely ready for your everyday use.
             </p>
             <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: "clamp(11px, 3.2vw, 13px)" }} className="leading-relaxed mt-1">
               Can you please tell me your <strong className="font-bold">name</strong>?
@@ -1673,7 +1681,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                   }`}
                 >
                   <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-xs text-black font-bold">
-                    I don't have a regular income, but I want to manage my existing funds.
+                    I don't have a regular income for now, but I want to manage my existing funds.
                   </span>
                   <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[10px] text-neutral-500 leading-normal">
                     Tip: You will not set up a recurring salary transfer, but you can set up multiple active accounts.
@@ -1720,17 +1728,25 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                 </label>
 
                 {/* Vertical fluid list or dropdown */}
-                <div className="relative w-full select-none">
+                <div className="relative w-full">
                   <input
                     type="text"
-                    readOnly
-                    onClick={() => setIsCurrencyDropdownOpen(!isCurrencyDropdownOpen)}
+                    value={isCurrencyDropdownOpen ? currencySearchQuery : (currency ? `${currency} - ${GLOBAL_CURRENCIES.find(c => c.code === currency)?.name || ''}` : '')}
+                    onChange={(e) => {
+                      if (!isCurrencyDropdownOpen) {
+                        setIsCurrencyDropdownOpen(true);
+                      }
+                      setCurrencySearchQuery(e.target.value);
+                    }}
+                    onFocus={() => {
+                      setIsCurrencyDropdownOpen(true);
+                      setCurrencySearchQuery('');
+                    }}
                     style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: "clamp(11px, 2.8vw, 13px)" }}
-                    value={isCurrencyDropdownOpen ? '' : (currency ? `${currency} - ${GLOBAL_CURRENCIES.find(c => c.code === currency)?.name || ''}` : '')}
                     placeholder="Select or search base currency..."
-                    className="w-full h-[38px] max-h-[38px] bg-[#FFFFFF] border border-neutral-250 rounded-xl pl-3.5 pr-10 text-black outline-none focus:border-[#A6DDB1] focus:bg-white placeholder:text-neutral-400 transition-all font-normal cursor-pointer select-none"
+                    className="w-full h-[38px] max-h-[38px] bg-[#FFFFFF] border border-neutral-250 rounded-xl pl-3.5 pr-10 text-black outline-none focus:border-[#A6DDB1] focus:bg-white placeholder:text-neutral-400 transition-all font-normal cursor-pointer"
                   />
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-neutral-400">
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-neutral-400" onClick={() => setIsCurrencyDropdownOpen(!isCurrencyDropdownOpen)}>
                     <ChevronDown size={14} className={`transition-transform duration-200 ${isCurrencyDropdownOpen ? 'rotate-180' : ''}`} />
                   </div>
                 </div>
@@ -1745,18 +1761,6 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                       transition={{ duration: 0.2, ease: 'easeOut' }}
                       className="overflow-hidden w-full flex flex-col gap-1.5 mt-1"
                     >
-                      {/* Search Bar Row at Apex */}
-                      <div className="relative w-full">
-                        <input
-                          type="text"
-                          value={currencySearchQuery}
-                          onChange={(e) => setCurrencySearchQuery(e.target.value)}
-                          placeholder="Search currency code or country..."
-                          style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: "clamp(10.5px, 2.6vw, 12.5px)" }}
-                          className="w-full h-[38px] max-h-[38px] bg-[#FFFFFF] border border-neutral-250 rounded-xl px-3 text-black outline-none focus:border-[#A6DDB1] placeholder:text-neutral-400 transition-all font-normal"
-                        />
-                      </div>
-
                       {/* Dropdown Options Scroll List Panel */}
                       <div className="max-h-[160px] md:max-h-[240px] overflow-y-auto border border-neutral-100 rounded-xl flex flex-col w-full bg-[#FFFFFF] select-none scrollbar-thin">
                         {(() => {
@@ -1856,7 +1860,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
           <div className="flex flex-col gap-1.5 self-start max-w-[85%] animate-fadeIn">
             <div className="bg-[#E9ECEF] text-[#000000] rounded-2xl rounded-tl-none p-2.5 shadow-sm border border-[#D1D8DD]/50">
               <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: "clamp(11px, 3.2vw, 13px)" }} className="leading-relaxed font-normal">
-                Thank you! Now, please tell me what are your financial goals?
+                Thank you! Now, please tell me what are your financial priority?
               </p>
             </div>
           </div>
@@ -1941,21 +1945,16 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
 
                 {/* Account Destination Selection Capsule list */}
                 <div className="flex flex-col gap-1.5 text-left mt-1">
-                  <span style={{ fontFamily: "'Google Sans', sans-serif", fontSize: "11px", fontWeight: 400 }} className="text-neutral-500 select-none">
-                    Salary Account
-                  </span>
                   <div className="flex flex-col sm:flex-row gap-2 select-none w-full">
-                    <button
-                      type="button"
-                      onClick={() => setPayrollDestination('dedicated')}
+                    <p 
                       style={{ 
                         fontFamily: "'Google Sans', sans-serif", 
                         fontWeight: 400
                       }}
-                      className={`w-full px-3 py-2.5 h-[38px] rounded-xl border text-[10.5px] transition-all cursor-pointer flex items-center justify-center gap-1.5 bg-black text-[#A6DDB1] border-black scale-[1.01] shadow-sm font-semibold`}
+                      className="w-full text-left text-[11px] text-neutral-600 bg-neutral-50 border border-neutral-200 rounded-xl p-3"
                     >
-                      Create Dedicated Salary Account
-                    </button>
+                      We will create a dedicated salary account for you.
+                    </p>
                   </div>
                 </div>
 
@@ -2122,10 +2121,10 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                       style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
                       className="w-full h-[38px] max-h-[38px] bg-neutral-50 border border-neutral-250 rounded-xl px-3 py-0 text-xs text-black focus:border-[#00FF88] outline-none transition-colors cursor-pointer font-normal"
                     >
-                      <option value="bank" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="font-normal">Checking / Bank</option>
-                      <option value="savings" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="font-normal">Savings Vault</option>
-                      <option value="credit_card" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="font-normal">Credit Card Account</option>
-                      <option value="cash" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="font-normal">Cash / Petty Wallet</option>
+                      <option value="bank" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="font-normal">Checking account</option>
+                      <option value="savings" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="font-normal">Saving account</option>
+                      <option value="credit_card" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="font-normal">Credit card</option>
+                      <option value="cash" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="font-normal">Physical cash</option>
                     </select>
                   </div>
 
@@ -2504,14 +2503,21 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                               <div className="flex items-center gap-2 max-w-[85%]">
                                 <span className="text-base select-none shrink-0">{bp.emoji}</span>
                                 <span 
-                                  style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700, fontSize: "13px" }} 
+                                  style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700, fontSize: "14px" }} 
                                   className="text-black font-bold truncate"
                                 >
                                   {bp.categoryGroup === 'needs' ? 'Essential Needs' : bp.categoryGroup === 'wants' ? 'Personal Wants' : getGoalTitle(primaryGoal)}
                                 </span>
                                 <span 
-                                  style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 500 }} 
-                                  className="text-[9px] text-neutral-400 bg-neutral-100 px-1.5 py-0.5 rounded-md font-medium shrink-0 whitespace-nowrap"
+                                  style={{ 
+                                    fontFamily: "'Google Sans', sans-serif", 
+                                    fontWeight: 500,
+                                    marginLeft: "-4px",
+                                    paddingLeft: "5px",
+                                    paddingRight: "5px",
+                                    marginRight: "0px"
+                                  }} 
+                                  className="text-[9px] text-neutral-400 bg-neutral-100 py-0.5 rounded-md font-medium shrink-0 whitespace-nowrap"
                                 >
                                   {pctLabel}
                                 </span>
@@ -2530,8 +2536,8 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                             {/* Crisp Fluid Fluid Display of Calculated Amount */}
                             <div className="flex flex-col gap-0.5">
                               <span 
-                                style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} 
-                                className="text-[10px] text-neutral-400 font-normal"
+                                style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: "12px" }} 
+                                className="text-neutral-400 font-normal"
                               >
                                 Budget Allocation
                               </span>
@@ -2556,11 +2562,11 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
 
                             {/* Editable Amount Input Suffix Sourced Placeholder */}
                             <div className="flex flex-col gap-1 text-left">
-                              <div className="flex justify-between items-center text-[10px] text-neutral-400">
-                                <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="font-normal">
+                              <div className="flex justify-between items-center text-neutral-400">
+                                <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: "12px" }} className="font-normal">
                                   Adjust Amount
                                 </span>
-                                <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="font-normal font-sans text-right shrink-0 whitespace-nowrap">
+                                <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: "12px" }} className="font-normal font-sans text-right shrink-0 whitespace-nowrap">
                                   {pctLabel} Guideline
                                 </span>
                               </div>
@@ -2583,162 +2589,289 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                             </div>
                           </div>
 
-                          {/* Configure Assigned Categories Link Dropdown Button */}
-                          <div className="flex flex-col gap-1 text-left relative mt-2 w-full">
-                            <button
-                              type="button"
-                              onClick={() => setExpandedEnvelopes(prev => ({ ...prev, [bp.id]: !prev[bp.id] }))}
-                              className="flex items-center justify-between px-3 py-1.5 text-[clamp(0.85rem,1.8vw,1.05rem)] text-[#444444] rounded-lg border border-[#A6DDB1] w-full bg-white font-normal text-left"
-                              style={{ fontFamily: "'Google Sans', sans-serif" }}
-                            >
-                              {expandedEnvelopes[bp.id] 
-                                ? "Select Tracking Categories ▼" 
-                                : `${(bp.mappedCategories.length + bp.mappedSubCategories.length)} Selected`}
-                            </button>
+                          {/* Configure Assigned Categories Link Dropdown Button or Inline for Essential Needs, Personal Wants and Emergency Funds */}
+                          {bp.categoryGroup === 'needs' || bp.categoryGroup === 'wants' || bp.categoryGroup === 'savings' ? (
+                            <div className="flex flex-col gap-2.5 text-left mt-3 w-full border-t border-neutral-100 pt-3">
+                              <span 
+                                style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} 
+                                className="text-[11px] text-black font-bold"
+                              >
+                                Tracking Categories
+                              </span>
+                              <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[9.5px] text-neutral-400 font-normal leading-normal">
+                                Assign transaction categories directly to this envelope:
+                              </span>
+                              <div className="flex flex-col gap-1.5 mt-1 max-h-[170px] overflow-y-auto scrollbar-thin pr-1">
+                                {MASTER_CATEGORIES.map((cat) => {
+                                  const isSelected = bp.mappedCategories.includes(cat.name);
+                                  const isExpanded = (expandedCategories[bp.id] || []).includes(cat.name);
+                                  
+                                  return (
+                                    <div key={`onboard-cat-${bp.id}-${cat.name}`} className="flex flex-col gap-1">
+                                      <div className="flex items-center justify-between gap-1.5 p-1.5 rounded-lg border border-[#E1E8ED] bg-white transition-colors hover:bg-neutral-50">
+                                        <label className="flex items-center gap-2 flex-1 cursor-pointer select-none">
+                                          <input
+                                            type="checkbox"
+                                            checked={isSelected}
+                                            onChange={() => handleToggleCategoryOnEnvelope(bp.id, cat.name)}
+                                            className="w-3.5 h-3.5 rounded border-neutral-300 text-black focus:ring-black accent-black cursor-pointer"
+                                          />
+                                          <span 
+                                            style={{ 
+                                              fontFamily: "'Google Sans', sans-serif",
+                                              fontSize: '11px',
+                                              fontWeight: 500
+                                            }}
+                                            className="text-neutral-800"
+                                          >
+                                            {cat.emoji} {cat.name}
+                                          </span>
+                                        </label>
+                                        <button 
+                                          type="button"
+                                          onClick={() => setExpandedCategories(prev => ({
+                                              ...prev,
+                                              [bp.id]: prev[bp.id]?.includes(cat.name) 
+                                                  ? (prev[bp.id] || []).filter(c => c !== cat.name)
+                                                  : [...(prev[bp.id] || []), cat.name] 
+                                          }))}
+                                          className="text-neutral-400 hover:text-black transition-colors"
+                                        >
+                                          <span className="text-[10px]">{isExpanded ? '▲' : '▼'}</span>
+                                        </button>
+                                      </div>
 
-                            {/* Smooth absolute-positioned dropdown selection menu overlay */}
-                            {expandedEnvelopes[bp.id] && (
-                              <>
-                                {/* Overlay click interceptor to close the dropdown cleanly on clicking outside */}
-                                <div
-                                  className="fixed inset-0 z-40 bg-transparent"
-                                  onClick={() => setExpandedEnvelopes(prev => ({ ...prev, [bp.id]: false }))}
-                                />
-                                <div 
-                                  className="absolute left-0 right-0 top-full mt-1.5 p-3.5 bg-white rounded-xl border border-[#E1E8ED] flex flex-col gap-3 text-left shadow-lg z-50 max-h-[250px] overflow-y-auto animate-fadeIn w-full"
-                                  style={bp.categoryGroup === 'wants' || bp.categoryGroup === 'needs' || bp.categoryGroup === 'savings' ? { width: '280px', marginLeft: '-27px' } : undefined}
-                                >
-                                  {/* Categories checklist */}
-                                  <div className="flex flex-col gap-1 text-left w-full">
-                                    <span 
-                                      style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} 
-                                      className="text-[10px] text-black font-bold"
-                                    >
-                                      Categories
-                                    </span>
-                                    <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[8px] text-neutral-400 font-normal leading-normal">
-                                      Toggle checklists to assign transaction categories directly to this envelope.
-                                    </span>
-                                    <div className="flex flex-col gap-2 mt-2">
-                                      {MASTER_CATEGORIES.map((cat) => {
-                                        const isSelected = bp.mappedCategories.includes(cat.name);
-                                        const isExpanded = (expandedCategories[bp.id] || []).includes(cat.name);
-                                        
-                                        return (
-                                          <div key={`onboard-cat-${bp.id}-${cat.name}`} className="flex flex-col gap-1">
-                                            <div className="flex items-center justify-between gap-1.5 p-1.5 rounded-lg border border-[#E1E8ED] bg-white transition-colors hover:bg-neutral-50">
-                                              <label className="flex items-center gap-2 flex-1 cursor-pointer">
-                                                <input
-                                                  type="checkbox"
-                                                  checked={isSelected}
-                                                  onChange={() => handleToggleCategoryOnEnvelope(bp.id, cat.name)}
-                                                  className="w-3.5 h-3.5 rounded border-neutral-300 text-black focus:ring-black accent-black cursor-pointer"
-                                                />
-                                                <span 
-                                                  style={{ 
-                                                    fontFamily: "'Google Sans', sans-serif",
-                                                    fontSize: 'clamp(0.95rem, 2vw, 1.15rem)',
-                                                    fontWeight: 500
-                                                  }}
-                                                  className="text-neutral-800"
-                                                >
-                                                  {cat.name}
-                                                </span>
-                                              </label>
-                                              <button 
-                                                onClick={() => setExpandedCategories(prev => ({
-                                                    ...prev,
-                                                    [bp.id]: prev[bp.id]?.includes(cat.name) 
-                                                        ? (prev[bp.id] || []).filter(c => c !== cat.name)
-                                                        : [...(prev[bp.id] || []), cat.name] 
-                                                }))}
-                                                className="text-neutral-400 hover:text-black transition-colors"
+                                      {isExpanded && (
+                                        <div className="flex flex-col gap-1 ml-5 pl-2 border-l border-neutral-100">
+                                          {cat.subcategories.map(sub => {
+                                            const isSubSelected = bp.mappedSubCategories.includes(sub);
+                                            return (
+                                              <label 
+                                                  key={`onboard-sub-${bp.id}-${cat.name}-${sub}`}
+                                                  className="flex items-center gap-2 px-1.5 py-1 rounded-md hover:bg-neutral-50 cursor-pointer select-none"
                                               >
-                                                {isExpanded ? '▲' : '▼'}
-                                              </button>
-                                            </div>
+                                                  <input
+                                                    type="checkbox"
+                                                    checked={isSubSelected}
+                                                    onChange={() => handleToggleSubCategoryOnEnvelope(bp.id, sub, cat.name)}
+                                                    className="w-3 h-3 rounded border-neutral-300 text-neutral-600 focus:ring-neutral-400 accent-neutral-600 cursor-pointer"
+                                                  />
+                                                  <span 
+                                                    style={{ 
+                                                      fontFamily: "'Google Sans', sans-serif",
+                                                      fontSize: '9.5px',
+                                                      fontWeight: 400
+                                                    }}
+                                                    className="text-neutral-600"
+                                                  >
+                                                      {sub}
+                                                  </span>
+                                              </label>
+                                            );
+                                          })}
+                                        </div>
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                              </div>
 
-                                            {isExpanded && (
-                                              <div className="flex flex-col gap-1 ml-6 pl-2 border-l-2 border-neutral-100">
-                                                {cat.subcategories.map(sub => {
-                                                  const isSubSelected = bp.mappedSubCategories.includes(sub);
-                                                  return (
-                                                    <label 
-                                                        key={`onboard-sub-${bp.id}-${cat.name}-${sub}`}
-                                                        className="flex items-center gap-2 px-1.5 py-1 rounded-md hover:bg-neutral-50 cursor-pointer"
-                                                    >
-                                                        <input
-                                                          type="checkbox"
-                                                          checked={isSubSelected}
-                                                          onChange={() => handleToggleSubCategoryOnEnvelope(bp.id, sub, cat.name)}
-                                                          className="w-3 h-3 rounded border-neutral-300 text-neutral-600 focus:ring-neutral-400 accent-neutral-600 cursor-pointer"
-                                                        />
-                                                        <span 
-                                                          style={{ 
-                                                            fontFamily: "'Google Sans', sans-serif",
-                                                            fontSize: 'clamp(0.85rem, 1.8vw, 1rem)',
-                                                            fontWeight: 400
-                                                          }}
-                                                          className="text-neutral-600"
-                                                        >
-                                                            {sub}
-                                                        </span>
-                                                    </label>
-                                                  );
-                                                })}
-                                              </div>
-                                            )}
-                                          </div>
+                              {bp.mappedCategories.length > 0 && (
+                                <div className="flex flex-col gap-1 text-left pt-2 border-t border-neutral-150">
+                                  <span 
+                                    style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} 
+                                    className="text-[9.5px] text-black font-bold"
+                                  >
+                                    Sub-Categories
+                                  </span>
+                                  <div className="grid grid-cols-2 gap-1 mt-1 max-h-[100px] overflow-y-auto scrollbar-thin pr-1">
+                                    {MASTER_CATEGORIES
+                                      .filter((cat) => bp.mappedCategories.includes(cat.name))
+                                      .flatMap((cat) => cat.subcategories.map((sub) => ({ category: cat.name, sub })))
+                                      .map(({ category, sub }) => {
+                                        const isSelected = bp.mappedSubCategories.includes(sub);
+                                        return (
+                                          <label 
+                                            key={`onboard-refine-sub-${bp.id}-${category}-${sub}`}
+                                            className={`flex items-center gap-1 p-1 rounded border text-[8.5px] select-none cursor-pointer transition-colors ${
+                                              isSelected
+                                                ? 'bg-neutral-100 border-neutral-450 text-black font-bold'
+                                                : 'bg-white border-[#E1E8ED] text-neutral-500 font-normal hover:bg-neutral-50'
+                                            }`}
+                                            style={{ fontFamily: "'Google Sans', sans-serif" }}
+                                          >
+                                            <input
+                                              type="checkbox"
+                                              checked={isSelected}
+                                              onChange={() => handleToggleSubCategoryOnEnvelope(bp.id, sub, category)}
+                                              className="w-2.5 h-2.5 rounded border-neutral-300 text-black focus:ring-black accent-black cursor-pointer"
+                                            />
+                                            <span style={{ fontSize: "12px" }} className="truncate">{sub}</span>
+                                          </label>
                                         );
                                       })}
-                                    </div>
                                   </div>
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <div className="flex flex-col gap-1 text-left relative mt-2 w-full">
+                              <button
+                                type="button"
+                                onClick={() => setExpandedEnvelopes(prev => ({ ...prev, [bp.id]: !prev[bp.id] }))}
+                                className="flex items-center justify-between px-3 py-1.5 text-[clamp(0.85rem,1.8vw,1.05rem)] text-[#444444] rounded-lg border border-[#A6DDB1] w-full bg-white font-normal text-left"
+                                style={{ fontFamily: "'Google Sans', sans-serif" }}
+                              >
+                                {expandedEnvelopes[bp.id] 
+                                  ? "Select Tracking Categories ▼" 
+                                  : `${(bp.mappedCategories.length + bp.mappedSubCategories.length)} Selected`}
+                              </button>
 
-                                  {/* Sub-categories checklist - conditional */}
-                                  {bp.mappedCategories.length > 0 && (
-                                    <div className="flex flex-col gap-1 text-left pt-2.5 border-t border-neutral-200">
+                              {/* Smooth absolute-positioned dropdown selection menu overlay */}
+                              {expandedEnvelopes[bp.id] && (
+                                <>
+                                  {/* Overlay click interceptor to close the dropdown cleanly on clicking outside */}
+                                  <div
+                                    className="fixed inset-0 z-40 bg-transparent"
+                                    onClick={() => setExpandedEnvelopes(prev => ({ ...prev, [bp.id]: false }))}
+                                  />
+                                  <div 
+                                    className="absolute left-0 right-0 top-full mt-1.5 p-3.5 bg-white rounded-xl border border-[#E1E8ED] flex flex-col gap-3 text-left shadow-lg z-50 max-h-[250px] overflow-y-auto animate-fadeIn w-full"
+                                    style={bp.categoryGroup === 'wants' || bp.categoryGroup === 'savings' ? { width: '280px', marginLeft: '-27px' } : undefined}
+                                  >
+                                    {/* Categories checklist */}
+                                    <div className="flex flex-col gap-1 text-left w-full">
                                       <span 
                                         style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} 
                                         className="text-[10px] text-black font-bold"
                                       >
-                                        Sub-Categories
+                                        Categories
                                       </span>
                                       <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[8px] text-neutral-400 font-normal leading-normal">
-                                        Refine categorization by toggling specific sub-categories below.
+                                        Toggle checklists to assign transaction categories directly to this envelope.
                                       </span>
-                                      <div className="grid grid-cols-2 gap-1.5 mt-1">
-                                        {MASTER_CATEGORIES
-                                          .filter((cat) => bp.mappedCategories.includes(cat.name))
-                                          .flatMap((cat) => cat.subcategories.map((sub) => ({ category: cat.name, sub })))
-                                          .map(({ category, sub }) => {
-                                            const isSelected = bp.mappedSubCategories.includes(sub);
-                                            return (
-                                              <label 
-                                                key={`onboard-refine-sub-${bp.id}-${category}-${sub}`}
-                                                className={`flex items-center gap-1.5 p-1.5 rounded border text-[9px] select-none cursor-pointer transition-colors ${
-                                                  isSelected
-                                                    ? 'bg-neutral-100 border-neutral-400 text-black font-bold'
-                                                    : 'bg-white border-[#E1E8ED] text-neutral-500 font-normal hover:bg-neutral-50'
-                                                }`}
-                                                style={{ fontFamily: "'Google Sans', sans-serif" }}
-                                              >
-                                                <input
-                                                  type="checkbox"
-                                                  checked={isSelected}
-                                                  onChange={() => handleToggleSubCategoryOnEnvelope(bp.id, sub, category)}
-                                                  className="w-3 h-3 rounded border-neutral-300 text-black focus:ring-black accent-black cursor-pointer"
-                                                />
-                                                <span className="truncate">{sub}</span>
-                                              </label>
-                                            );
-                                          })}
+                                      <div className="flex flex-col gap-2 mt-2">
+                                        {MASTER_CATEGORIES.map((cat) => {
+                                          const isSelected = bp.mappedCategories.includes(cat.name);
+                                          const isExpanded = (expandedCategories[bp.id] || []).includes(cat.name);
+                                          
+                                          return (
+                                            <div key={`onboard-cat-${bp.id}-${cat.name}`} className="flex flex-col gap-1">
+                                              <div className="flex items-center justify-between gap-1.5 p-1.5 rounded-lg border border-[#E1E8ED] bg-white transition-colors hover:bg-neutral-50">
+                                                <label className="flex items-center gap-2 flex-1 cursor-pointer">
+                                                  <input
+                                                    type="checkbox"
+                                                    checked={isSelected}
+                                                    onChange={() => handleToggleCategoryOnEnvelope(bp.id, cat.name)}
+                                                    className="w-3.5 h-3.5 rounded border-neutral-300 text-black focus:ring-black accent-black cursor-pointer"
+                                                  />
+                                                  <span 
+                                                    style={{ 
+                                                      fontFamily: "'Google Sans', sans-serif",
+                                                      fontSize: 'clamp(0.95rem, 2vw, 1.15rem)',
+                                                      fontWeight: 500
+                                                    }}
+                                                    className="text-neutral-800"
+                                                  >
+                                                    {cat.name}
+                                                  </span>
+                                                </label>
+                                                <button 
+                                                  type="button"
+                                                  onClick={() => setExpandedCategories(prev => ({
+                                                      ...prev,
+                                                      [bp.id]: prev[bp.id]?.includes(cat.name) 
+                                                          ? (prev[bp.id] || []).filter(c => c !== cat.name)
+                                                          : [...(prev[bp.id] || []), cat.name] 
+                                                  }))}
+                                                  className="text-neutral-400 hover:text-black transition-colors"
+                                                >
+                                                  {isExpanded ? '▲' : '▼'}
+                                                </button>
+                                              </div>
+
+                                              {isExpanded && (
+                                                <div className="flex flex-col gap-1 ml-6 pl-2 border-l-2 border-neutral-100">
+                                                  {cat.subcategories.map(sub => {
+                                                    const isSubSelected = bp.mappedSubCategories.includes(sub);
+                                                    return (
+                                                      <label 
+                                                          key={`onboard-sub-${bp.id}-${cat.name}-${sub}`}
+                                                          className="flex items-center gap-2 px-1.5 py-1 rounded-md hover:bg-neutral-50 cursor-pointer"
+                                                      >
+                                                          <input
+                                                            type="checkbox"
+                                                            checked={isSubSelected}
+                                                            onChange={() => handleToggleSubCategoryOnEnvelope(bp.id, sub, cat.name)}
+                                                            className="w-3 h-3 rounded border-neutral-300 text-neutral-600 focus:ring-neutral-400 accent-neutral-600 cursor-pointer"
+                                                          />
+                                                          <span 
+                                                            style={{ 
+                                                              fontFamily: "'Google Sans', sans-serif",
+                                                              fontSize: 'clamp(0.85rem, 1.8vw, 1rem)',
+                                                              fontWeight: 400
+                                                            }}
+                                                            className="text-neutral-600"
+                                                          >
+                                                              {sub}
+                                                          </span>
+                                                      </label>
+                                                    );
+                                                  })}
+                                                </div>
+                                              )}
+                                            </div>
+                                          );
+                                        })}
                                       </div>
                                     </div>
-                                  )}
-                                </div>
-                              </>
-                            )}
-                          </div>
+
+                                    {/* Sub-categories checklist - conditional */}
+                                    {bp.mappedCategories.length > 0 && (
+                                      <div className="flex flex-col gap-1 text-left pt-2.5 border-t border-neutral-200">
+                                        <span 
+                                          style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} 
+                                          className="text-[10px] text-black font-bold"
+                                        >
+                                          Sub-Categories
+                                        </span>
+                                        <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[8px] text-neutral-400 font-normal leading-normal">
+                                          Refine categorization by toggling specific sub-categories below.
+                                        </span>
+                                        <div className="grid grid-cols-2 gap-1.5 mt-1">
+                                          {MASTER_CATEGORIES
+                                            .filter((cat) => bp.mappedCategories.includes(cat.name))
+                                            .flatMap((cat) => cat.subcategories.map((sub) => ({ category: cat.name, sub })))
+                                            .map(({ category, sub }) => {
+                                              const isSelected = bp.mappedSubCategories.includes(sub);
+                                              return (
+                                                <label 
+                                                  key={`onboard-refine-sub-${bp.id}-${category}-${sub}`}
+                                                  className={`flex items-center gap-1.5 p-1.5 rounded border text-[9px] select-none cursor-pointer transition-colors ${
+                                                    isSelected
+                                                      ? 'bg-neutral-100 border-neutral-450 text-black font-bold'
+                                                      : 'bg-white border-[#E1E8ED] text-neutral-500 font-normal hover:bg-neutral-50'
+                                                  }`}
+                                                  style={{ fontFamily: "'Google Sans', sans-serif" }}
+                                                >
+                                                  <input
+                                                    type="checkbox"
+                                                    checked={isSelected}
+                                                    onChange={() => handleToggleSubCategoryOnEnvelope(bp.id, sub, category)}
+                                                    className="w-3 h-3 rounded border-neutral-300 text-black focus:ring-black accent-black cursor-pointer"
+                                                  />
+                                                  <span className="truncate">{sub}</span>
+                                                </label>
+                                              );
+                                            })}
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                          )}
                         </div>
                       );
                     })
@@ -2839,46 +2972,72 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
               
               <div 
                 onClick={() => setPrivacyChecked(!privacyChecked)}
-                className={`flex items-center gap-2 p-2.5 bg-neutral-50 border hover:bg-neutral-100 rounded-xl transition-all cursor-pointer ${
+                className={`flex items-center justify-between gap-2 p-2.5 bg-neutral-50 border hover:bg-neutral-100 rounded-xl transition-all cursor-pointer ${
                   privacyChecked ? 'border-black bg-white' : 'border-neutral-250'
                 }`}
               >
-                <div className="shrink-0 flex items-center justify-center">
-                  {privacyChecked ? (
-                    <div className="w-4 h-4 rounded bg-black text-[#00FF88] flex items-center justify-center">
-                      <ShieldCheck size={11} className="stroke-[3]" style={{ color: "#A6DDB1" }} />
-                    </div>
-                  ) : (
-                    <div className="w-4 h-4 rounded border border-neutral-300 bg-white" />
-                  )}
+                <div className="flex items-center gap-2 flex-1">
+                  <div className="shrink-0 flex items-center justify-center">
+                    {privacyChecked ? (
+                      <div className="w-4 h-4 rounded bg-black text-[#00FF88] flex items-center justify-center">
+                        <ShieldCheck size={11} className="stroke-[3]" style={{ color: "#A6DDB1" }} />
+                      </div>
+                    ) : (
+                      <div className="w-4 h-4 rounded border border-neutral-300 bg-white" />
+                    )}
+                  </div>
+                  <div className="text-left flex items-center">
+                    <span style={{ fontFamily: "'Google Sans', sans-serif", fontSize: "clamp(11px, 3.2vw, 13px)", fontWeight: 400 }} className="text-black block leading-tight">
+                      Accept Privacy Policy
+                    </span>
+                  </div>
                 </div>
-                <div className="text-left flex items-center">
-                  <span style={{ fontFamily: "'Google Sans', sans-serif", fontSize: "clamp(11px, 3.2vw, 13px)", fontWeight: 400 }} className="text-black block leading-tight">
-                    View and accept Privacy Policy
-                  </span>
-                </div>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    window.open("https://www.yourfinances.me/privacy", "_blank");
+                  }}
+                  style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
+                  className="px-2.5 py-1 text-[10px] text-black bg-[#A6DDB1] rounded-lg font-bold hover:scale-[1.03] transition-all cursor-pointer select-none"
+                >
+                  View
+                </button>
               </div>
 
               <div 
                 onClick={() => setTermsChecked(!termsChecked)}
-                className={`flex items-center gap-2 p-2.5 bg-neutral-50 border hover:bg-neutral-100 rounded-xl transition-all cursor-pointer ${
+                className={`flex items-center justify-between gap-2 p-2.5 bg-neutral-50 border hover:bg-neutral-100 rounded-xl transition-all cursor-pointer ${
                   termsChecked ? 'border-black bg-white' : 'border-neutral-250'
                 }`}
               >
-                <div className="shrink-0 flex items-center justify-center">
-                  {termsChecked ? (
-                    <div className="w-4 h-4 rounded bg-black text-[#00FF88] flex items-center justify-center">
-                      <ShieldCheck size={11} className="stroke-[3]" style={{ color: "#A6DDB1" }} />
-                    </div>
-                  ) : (
-                    <div className="w-4 h-4 rounded border border-neutral-300 bg-white" />
-                  )}
+                <div className="flex items-center gap-2 flex-1">
+                  <div className="shrink-0 flex items-center justify-center">
+                    {termsChecked ? (
+                      <div className="w-4 h-4 rounded bg-black text-[#00FF88] flex items-center justify-center">
+                        <ShieldCheck size={11} className="stroke-[3]" style={{ color: "#A6DDB1" }} />
+                      </div>
+                    ) : (
+                      <div className="w-4 h-4 rounded border border-neutral-300 bg-white" />
+                    )}
+                  </div>
+                  <div className="text-left flex items-center">
+                    <span style={{ fontFamily: "'Google Sans', sans-serif", fontSize: "clamp(11px, 3.2vw, 13px)", fontWeight: 400 }} className="text-black block leading-tight">
+                      Accept Terms and Conditions
+                    </span>
+                  </div>
                 </div>
-                <div className="text-left flex items-center">
-                  <span style={{ fontFamily: "'Google Sans', sans-serif", fontSize: "clamp(11px, 3.2vw, 13px)", fontWeight: 400 }} className="text-black block leading-tight">
-                    View and accept Terms and Conditions
-                  </span>
-                </div>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    window.open("https://www.yourfinances.me/terms-of-engagement", "_blank");
+                  }}
+                  style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
+                  className="px-2.5 py-1 text-[10px] text-black bg-[#A6DDB1] rounded-lg font-bold hover:scale-[1.03] transition-all cursor-pointer select-none"
+                >
+                  View
+                </button>
               </div>
 
               {/* Huge let's go action button */}
@@ -2906,7 +3065,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
           <div className="flex flex-col gap-1 self-end max-w-[85%]">
             <div className="bg-black text-white rounded-2xl rounded-tr-none p-2.5 shadow-sm">
               <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: "clamp(11px, 3.2vw, 13px)" }} className="tracking-tight font-normal">
-                Safety Charter accepted. Let's go!
+                Congratulations! Your account is set up.
               </p>
             </div>
           </div>
@@ -3096,27 +3255,58 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                     </div>
                   )}
 
-                  <div style={{ maxHeight: '50px' }} className="flex gap-1.5 w-full h-[50px] select-none">
+                  <div style={{ maxHeight: '50px' }} className="flex gap-1.5 w-full h-[50px] select-none relative">
+                    {isAddDependentDropdownOpen && (
+                      <div className="absolute bottom-[54px] left-0 w-full bg-white border border-neutral-200 rounded-xl shadow-lg p-1 z-50 flex flex-col gap-0.5 animate-fadeIn">
+                        {[
+                          { relationship: 'Father', label: 'Father', icon: 'User', color: 'text-blue-500' },
+                          { relationship: 'Mother', label: 'Mother', icon: 'User', color: 'text-pink-500' },
+                          { relationship: 'Son', label: 'Son', icon: 'Baby', color: 'text-teal-500' },
+                          { relationship: 'Daughter', label: 'Daughter', icon: 'Baby', color: 'text-purple-500' },
+                          { relationship: 'Friend', label: 'Friend', icon: 'Users', color: 'text-neutral-500' },
+                          { relationship: 'Others', label: 'Others', icon: 'HelpCircle', color: 'text-gray-400' }
+                        ].map((option) => {
+                          return (
+                            <button
+                              key={option.relationship}
+                              type="button"
+                              onClick={() => {
+                                setDependents([...dependents, { relation: '', relationship: option.relationship, age: 0 }]);
+                                setIsAddDependentDropdownOpen(false);
+                              }}
+                              className="w-full flex items-center gap-2.5 px-3 py-2 text-left text-[11px] text-neutral-800 hover:bg-neutral-50 rounded-lg cursor-pointer transition-colors"
+                              style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
+                            >
+                              {option.icon === 'User' && <User size={13} className={option.color} />}
+                              {option.icon === 'Baby' && <Baby size={13} className={option.color} />}
+                              {option.icon === 'Users' && <Users size={13} className={option.color} />}
+                              {option.icon === 'HelpCircle' && <HelpCircle size={13} className={option.color} />}
+                              <span>{option.label}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+
                     <button
                       type="button"
-                      onClick={() => setDependents([...dependents, { relation: '', relationship: '', age: 0 }])}
+                      onClick={() => setIsAddDependentDropdownOpen(!isAddDependentDropdownOpen)}
                       style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, height: '50px' }}
-                      className="flex-1 h-[50px] bg-neutral-900 text-white rounded-xl text-[11px] flex items-center justify-center gap-1 hover:bg-black transition-colors"
+                      className="flex-1 h-[50px] bg-neutral-900 text-white rounded-xl text-[11px] flex items-center justify-center gap-1.5 hover:bg-black transition-all relative"
                     >
-                      <span style={{ paddingLeft: '0px', paddingRight: '0px', paddingTop: '0px', paddingBottom: '0px', marginLeft: '0px', marginTop: '-10px' }}>
+                      <span className="flex items-center justify-center">
                         <UserPlus size={11} />
                       </span>
-                      <div className="flex items-center justify-center">
-                        <span style={{ marginTop: '-3px', marginLeft: '0px' }}>
-                          Add dependent
-                        </span>
+                      <div className="flex items-center justify-center gap-1">
+                        <span>Add dependent</span>
+                        <ChevronDown size={11} className={`transition-transform duration-200 ${isAddDependentDropdownOpen ? 'rotate-180' : ''}`} />
                       </div>
                     </button>
 
                     <button
                       onClick={() => handleStepSubmit(4)}
-                      style={{ fontFamily: "'Google Sans', sans-serif" }}
-                      className="px-4 h-full bg-[#00FF88] text-black text-[11px] rounded-xl hover:scale-[1.01] transition-all cursor-pointer flex items-center gap-1 font-bold"
+                      style={{ fontFamily: "'Google Sans', sans-serif", backgroundColor: "#A6DDB1" }}
+                      className="px-4 h-full text-black text-[11px] rounded-xl hover:scale-[1.01] transition-all cursor-pointer flex items-center gap-1 font-bold"
                     >
                       {dependents.length === 0 ? "No dependents" : "Confirm"}
                       <ChevronRight size={11} className="stroke-[3]" />
@@ -3127,7 +3317,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
 
               {/* Step 7: Goals and Experience levels */}
               {activeStep === 7 && (
-                <div style={{ fontFamily: "'Google Sans', sans-serif" }} className="w-full max-w-[600px] mx-auto select-none px-4 md:px-0 flex flex-col gap-4 text-left font-sans">
+                <div style={{ fontFamily: "'Google Sans', sans-serif" }} className="w-full max-w-[600px] mx-auto select-none px-4 md:px-0 flex flex-col gap-4 text-left font-sans max-h-[60vh] md:max-h-[70vh] overflow-y-auto scrollbar-thin pr-1">
                   <div className="bg-white border border-[#E1E8ED] rounded-2xl p-4 md:p-6 shadow-sm flex flex-col gap-4">
                     <span 
                       style={{ 
@@ -3144,58 +3334,76 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                       Choose your current financial priority:
                     </span>
 
-                    {/* Goat cards radio selector grid */}
-                    {/* On Desktop/Tablet: aligned within our 30%+ 3-column grid container */}
-                    {/* On Mobile: stacked vertically with smooth 1rem safety grid margins (gap-4) */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 animate-fadeIn">
-                      {GOALS_CONFIG.map((goal) => {
-                        const isSelected = primaryGoal === goal.key;
+                    {/* Goal Selection Dropdown with Custom Icons */}
+                    <div className="relative w-full select-none mt-1">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const nextVal = !isGoalDropdownOpen;
+                          setIsGoalDropdownOpen(nextVal);
+                          if (nextVal) {
+                            setTimeout(() => {
+                              chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+                            }, 100);
+                          }
+                        }}
+                        style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 500 }}
+                        className="w-full h-[44px] bg-white border border-neutral-250 rounded-xl px-4 flex items-center justify-between text-black outline-none focus:border-[#A6DDB1] transition-all cursor-pointer shadow-sm"
+                      >
+                        <div className="flex items-center gap-2.5">
+                          {(() => {
+                            const selectedGoal = GOALS_CONFIG.find(g => g.key === primaryGoal);
+                            if (selectedGoal) {
+                              if (selectedGoal.key === 'tackle_debt') return <TrendingDown size={14} className="text-red-500" />;
+                              if (selectedGoal.key === 'emergency_fund') return <Shield size={14} className="text-teal-500" />;
+                              if (selectedGoal.key === 'save_house') return <Home size={14} className="text-blue-500" />;
+                              if (selectedGoal.key === 'launch_business') return <Briefcase size={14} className="text-purple-500" />;
+                              if (selectedGoal.key === 'investment_portfolio') return <TrendingUp size={14} className="text-emerald-500" />;
+                              if (selectedGoal.key === 'retirement') return <Coins size={14} className="text-amber-500" />;
+                            }
+                            return <Sparkles size={14} className="text-neutral-400" />;
+                          })()}
+                          <span className="text-[12px]">
+                            {GOALS_CONFIG.find(g => g.key === primaryGoal)?.label || 'Select your financial priority...'}
+                          </span>
+                        </div>
+                        <ChevronDown size={14} className={`text-neutral-400 transition-transform duration-200 ${isGoalDropdownOpen ? 'rotate-180' : ''}`} />
+                      </button>
 
-                        // When a goal is checked, instantly collapse (hide) all other options from view
-                        if (primaryGoal !== '' && !isSelected) {
-                          return null;
-                        }
-
-                        return (
-                          <button
-                            key={goal.key}
-                            type="button"
-                            onClick={() => {
-                              if (isSelected) {
-                                setPrimaryGoal('');
-                                setFinancialGoals([]);
-                                setGoalAmount('');
-                              } else {
-                                setPrimaryGoal(goal.key);
-                                setFinancialGoals([goal.key]);
-                                setGoalAmount(''); // force empty string to expose placeholder text
-                              }
-                            }}
-                            style={{ 
-                              fontFamily: "'Google Sans', sans-serif",
-                              backgroundColor: "#FFFFFF"
-                            }}
-                            className={`w-full text-left border p-4 rounded-xl transition-all cursor-pointer flex flex-col gap-2 relative shadow-sm hover:scale-[1.01] ${
-                              isSelected 
-                                ? 'border-neutral-900 ring-1 ring-neutral-900 bg-neutral-50/50' 
-                                : 'border-[#E1E8ED] hover:border-neutral-300'
-                            }`}
-                          >
-                            <div className="flex items-center justify-between w-full">
-                              <span style={{ fontWeight: 700, fontSize: "12px" }} className="text-black font-bold">
-                                {goal.label}
-                              </span>
-                              <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all shrink-0 ${
-                                isSelected ? 'border-neutral-900 bg-neutral-900' : 'border-neutral-300'
-                              }`}>
-                                {isSelected && (
-                                  <div className="w-1.5 h-1.5 rounded-full bg-white" />
-                                )}
-                              </div>
-                            </div>
-                          </button>
-                        );
-                      })}
+                      {isGoalDropdownOpen && (
+                        <div className="absolute top-[48px] left-0 w-full bg-white border border-neutral-200 rounded-xl shadow-lg p-1 z-50 flex flex-col gap-0.5 animate-fadeIn max-h-[160px] md:max-h-[200px] overflow-y-auto scrollbar-thin">
+                          {GOALS_CONFIG.map((goal) => {
+                            const isSelected = primaryGoal === goal.key;
+                            return (
+                              <button
+                                key={goal.key}
+                                type="button"
+                                onClick={() => {
+                                  setPrimaryGoal(goal.key);
+                                  setFinancialGoals([goal.key]);
+                                  setGoalAmount('');
+                                  setIsGoalDropdownOpen(false);
+                                }}
+                                className={`w-full flex items-center justify-between px-3.5 py-2.5 text-left rounded-lg cursor-pointer transition-colors ${
+                                  isSelected ? 'bg-neutral-50 font-bold' : 'hover:bg-neutral-50'
+                                }`}
+                                style={{ fontFamily: "'Google Sans', sans-serif" }}
+                              >
+                                <div className="flex items-center gap-2.5">
+                                  {goal.key === 'tackle_debt' && <TrendingDown size={14} className="text-red-500 shrink-0" />}
+                                  {goal.key === 'emergency_fund' && <Shield size={14} className="text-teal-500 shrink-0" />}
+                                  {goal.key === 'save_house' && <Home size={14} className="text-blue-500 shrink-0" />}
+                                  {goal.key === 'launch_business' && <Briefcase size={14} className="text-purple-500 shrink-0" />}
+                                  {goal.key === 'investment_portfolio' && <TrendingUp size={14} className="text-emerald-500 shrink-0" />}
+                                  {goal.key === 'retirement' && <Coins size={14} className="text-amber-500 shrink-0" />}
+                                  <span className="text-[12px] text-neutral-800">{goal.label}</span>
+                                </div>
+                                {isSelected && <Check size={12} className="text-neutral-900 stroke-[3]" />}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
 
                     {/* Disclose single, relevant input question row below it if active selection exists */}
