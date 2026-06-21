@@ -1,4 +1,4 @@
-import { collection, addDoc, updateDoc, doc, deleteDoc } from 'firebase/firestore';
+import { collection, addDoc, updateDoc, doc, deleteDoc, getDocs } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 
 export function useVantageActions(uid?: string) {
@@ -47,6 +47,36 @@ export function useVantageActions(uid?: string) {
 
   const deleteProfile = async () => {
     const userId = getUid();
+
+    // 1. Delete transactions
+    const txsRef = collection(db, 'users', userId, 'transactions');
+    const txsSnap = await getDocs(txsRef);
+    for (const d of txsSnap.docs) {
+      await deleteDoc(d.ref);
+    }
+
+    // 2. Delete accounts
+    const accountsRef = collection(db, 'users', userId, 'accounts');
+    const accountsSnap = await getDocs(accountsRef);
+    for (const d of accountsSnap.docs) {
+      await deleteDoc(d.ref);
+    }
+
+    // 3. Delete miniBudgets
+    const budgetsRef = collection(db, 'users', userId, 'miniBudgets');
+    const budgetsSnap = await getDocs(budgetsRef);
+    for (const d of budgetsSnap.docs) {
+      await deleteDoc(d.ref);
+    }
+
+    // 4. Delete recurringTransactions
+    const recurringRef = collection(db, 'users', userId, 'recurringTransactions');
+    const recurringSnap = await getDocs(recurringRef);
+    for (const d of recurringSnap.docs) {
+      await deleteDoc(d.ref);
+    }
+
+    // 5. Delete root user profile
     const userRef = doc(db, 'users', userId);
     await deleteDoc(userRef);
   };

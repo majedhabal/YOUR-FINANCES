@@ -415,7 +415,7 @@ export const Accounts: React.FC<AccountsProps> = ({ profile, onNavigateToTransac
 
       {/* Total Combined Balance Card (Ambient Design) */}
       <div className="px-4 md:px-6 w-full">
-        <div className="relative overflow-hidden rounded-2xl p-6 bg-white border border-neutral-150 shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+        <div className="relative overflow-hidden rounded-2xl p-6 bg-white border-0 shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
           <div className="absolute -right-16 -top-16 w-48 h-48 bg-[#0D9488]/5 rounded-full blur-3xl pointer-events-none"></div>
           <div className="relative z-10">
             <span className="text-[13px] text-neutral-500 font-medium font-g-sans uppercase tracking-wider">Total Combined Balance</span>
@@ -440,7 +440,7 @@ export const Accounts: React.FC<AccountsProps> = ({ profile, onNavigateToTransac
             placeholder="Search accounts"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-11 pr-10 py-2 bg-white border border-neutral-250/80 rounded-xl text-[14px] font-normal leading-normal text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-1 focus:ring-[#0D9488]/20 focus:border-[#0D9488]/40 transition-all shadow-[0_1px_3px_rgba(0,0,0,0.01)] font-g-sans"
+            className="w-full pl-11 pr-10 py-2 bg-white border-0 rounded-xl text-[14px] font-normal leading-normal text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-1 focus:ring-[#0D9488]/20 focus:border-[#0D9488]/40 transition-all shadow-[0_1px_3px_rgba(0,0,0,0.01)] font-g-sans"
             style={{ fontFamily: "'Google Sans', sans-serif" }}
           />
           {searchTerm && (
@@ -460,7 +460,7 @@ export const Accounts: React.FC<AccountsProps> = ({ profile, onNavigateToTransac
           </span>
           <button 
             onClick={() => setShowArchived(!showArchived)}
-            className="text-xs text-neutral-600 hover:text-[#0D9488] border border-neutral-250 bg-white px-3 py-1.5 rounded-xl font-medium font-g-sans transition-colors cursor-pointer"
+            className="text-xs text-neutral-600 hover:text-[#0D9488] border-0 bg-white px-3 py-1.5 rounded-xl font-medium font-g-sans transition-colors cursor-pointer"
             style={{ fontFamily: "'Google Sans', 'Plus Jakarta Sans', sans-serif" }}
           >
             {showArchived ? "Show Active" : "Show Archived"}
@@ -471,7 +471,7 @@ export const Accounts: React.FC<AccountsProps> = ({ profile, onNavigateToTransac
       {/* Interactive Bento & Accounts Grid */}
       <div className="px-4 md:px-6 w-full">
         {filteredAndSearchedAccounts.length === 0 ? (
-          <div className="w-full py-16 flex flex-col items-center justify-center text-center gap-3 bg-white rounded-2xl border border-neutral-200 shadow-sm px-4">
+          <div className="w-full py-16 flex flex-col items-center justify-center text-center gap-3 bg-white rounded-2xl border-0 shadow-sm px-4">
             <div className="w-14 h-14 rounded-full bg-neutral-50 flex items-center justify-center text-neutral-400">
               <Landmark size={26} />
             </div>
@@ -483,135 +483,231 @@ export const Accounts: React.FC<AccountsProps> = ({ profile, onNavigateToTransac
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredAndSearchedAccounts.map((account, accountIndex) => {
-              const currentBalance = accountBalances[account.id] || 0;
-              const rate = (exchangeRates && exchangeRates[account.currency]) || DEFAULT_RATES[account.currency as keyof typeof DEFAULT_RATES] || 1;
-              const translatedBalance = (currentBalance * rate) / baseRateToAED;
+          <div className="flex flex-col gap-8">
+            {(() => {
+              const groups: { [key: string]: Account[] } = {
+                'Bank Accounts': [],
+                'Cash & Wallets': [],
+                'Investments': [],
+                'Liabilities & Loans': [],
+                'Other Accounts': []
+              };
 
-              // Calculate Loan/Mortgage repayment progress dynamically
-              const absStart = Math.abs(account.startingBalance || 0);
-              const absCurr = Math.abs(currentBalance || 0);
-              const totalDebtProgress = absStart > 0 && absStart > absCurr 
-                ? Math.min(100, Math.max(0, Math.round(((absStart - absCurr) / absStart) * 100))) 
-                : 0;
+              filteredAndSearchedAccounts.forEach(account => {
+                const t = (account.type || '').toLowerCase();
+                if (t === 'bank') {
+                  groups['Bank Accounts'].push(account);
+                } else if (t === 'cash') {
+                  groups['Cash & Wallets'].push(account);
+                } else if (t === 'investment') {
+                  groups['Investments'].push(account);
+                } else if (['credit', 'loan', 'mortgage', 'credit card', 'personal loan', 'mortgage'].includes(t)) {
+                  groups['Liabilities & Loans'].push(account);
+                } else {
+                  groups['Other Accounts'].push(account);
+                }
+              });
 
-              return (
-                <motion.div
-                  whileHover={{ y: -4, boxShadow: '0px 8px 30px rgba(16, 185, 129, 0.08)' }}
-                  whileTap={{ scale: 0.98 }}
-                  key={`act-grid-${account.id || 'none'}-${accountIndex}`}
-                  onClick={() => {
-                    setSelectedAccount(account);
-                    setModalIsManageMode(false);
-                  }}
-                  className={`bg-white p-5 rounded-2xl border border-neutral-150/80 flex flex-col justify-between h-[110px] cursor-pointer transition-all duration-200 relative group overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.015)] ${
-                    account.isArchived ? 'opacity-65 grayscale' : ''
-                  }`}
-                >
-                  <div className="flex justify-between items-start w-full">
-                    <div className="flex flex-col min-w-0 pr-2">
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        <span 
-                          className="text-[#333333] tracking-tight font-g-sans font-bold text-[16px] group-hover:text-[#0D9488] transition-colors truncate leading-tight"
-                          style={{ fontFamily: "'Google Sans', 'Plus Jakarta Sans', sans-serif" }}
-                        >
-                          {account.name}
-                        </span>
-                        {(account.name === 'ADCB' || (account.interestRate !== undefined && account.interestRate > 0)) && (
-                          <span 
-                            className="px-1.5 py-0.5 text-[9px] text-[#0D9488] bg-[#0D9488]/8 border border-[#0D9488]/15 rounded font-g-sans font-semibold leading-none"
-                            style={{ fontFamily: "'Google Sans', 'Plus Jakarta Sans', sans-serif" }}
-                          >
-                            Premium
-                          </span>
-                        )}
-                      </div>
-                      <p 
-                        className="text-[12px] text-neutral-400 font-normal leading-normal mt-1 truncate"
-                        style={{ fontFamily: "'Google Sans', 'Plus Jakarta Sans', sans-serif" }}
-                      >
-                        {getAccountDetailsText(account)}
-                      </p>
-                    </div>
+              return (Object.keys(groups) as Array<keyof typeof groups>).map((groupName) => {
+                const accountsInGroup = groups[groupName];
+                if (accountsInGroup.length === 0) return null;
 
-                    <div 
-                      className="w-10 h-10 rounded-xl bg-teal-50 text-[#0D9488] flex items-center justify-center shrink-0 border border-teal-100"
-                      style={{ borderRadius: '20px' }} // User requested rounded-20px for icons
+                return (
+                  <div key={groupName} className="flex flex-col gap-3">
+                    <h4 
+                      style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} 
+                      className="text-[17px] font-bold text-neutral-800 tracking-tight font-g-sans"
                     >
-                      {getCustomVectorIcon(account)}
+                      {groupName}
+                    </h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {accountsInGroup.map((account, accountIndex) => {
+                        const currentBalance = accountBalances[account.id] || 0;
+                        const rate = (exchangeRates && exchangeRates[account.currency]) || DEFAULT_RATES[account.currency as keyof typeof DEFAULT_RATES] || 1;
+                        const translatedBalance = (currentBalance * rate) / baseRateToAED;
+
+                        // Calculate Loan/Mortgage repayment progress dynamically
+                        const absStart = Math.abs(account.startingBalance || 0);
+                        const absCurr = Math.abs(currentBalance || 0);
+                        const totalDebtProgress = absStart > 0 && absStart > absCurr 
+                          ? Math.min(100, Math.max(0, Math.round(((absStart - absCurr) / absStart) * 100))) 
+                          : 0;
+
+                        return (
+                          <motion.div
+                            whileHover={{ y: -4, boxShadow: '0px 10px 30px rgba(16, 185, 129, 0.06)' }}
+                            whileTap={{ scale: 0.98 }}
+                            key={`act-grid-${account.id || 'none'}-${accountIndex}`}
+                            onClick={() => {
+                              setSelectedAccount(account);
+                              setModalIsManageMode(false);
+                            }}
+                            className={`bg-white p-6 rounded-[24px] border border-neutral-100 flex flex-col justify-between min-h-[195px] cursor-pointer transition-all duration-200 relative group overflow-hidden shadow-[0_4px_16px_rgba(0,0,0,0.015)] ${
+                              account.isArchived ? 'opacity-65 grayscale' : ''
+                            }`}
+                          >
+                            {/* Top Block: Casing tags, name stack, custom rounded emblem */}
+                            <div className="flex justify-between items-start w-full gap-2">
+                              <div className="flex flex-col min-w-0 pr-1 leading-none">
+                                <span 
+                                  className="text-[10px] font-bold tracking-wider text-neutral-400 font-g-sans leading-none"
+                                  style={{ fontFamily: "'Google Sans', sans-serif", letterSpacing: '0.04em' }}
+                                >
+                                  {(() => {
+                                    const t = (account.type || '').toLowerCase();
+                                    if (t === 'bank') return 'Bank Account';
+                                    if (t === 'cash') return 'Cash Account';
+                                    if (t === 'investment') return 'Investment Portfolio';
+                                    if (t === 'credit' || t === 'credit card') return 'Credit Card';
+                                    if (t === 'loan' || t === 'personal loan') return 'Personal Loan';
+                                    if (t === 'mortgage') return 'Mortgage Liability';
+                                    return `${account.type} Account`;
+                                  })()}
+                                </span>
+
+                                {(() => {
+                                  const nameParts = account.name.split(' ');
+                                  const firstLine = nameParts[0] || '';
+                                  const secondLine = nameParts.slice(1).join(' ') || (account.type === 'bank' ? 'Account' : '');
+                                  return (
+                                    <div className="flex flex-col mt-1.5 leading-[1.15] select-none">
+                                      <span 
+                                        className="text-[19px] font-bold text-[#1C2C40] tracking-tight truncate leading-[1.15] font-g-sans"
+                                        style={{ fontFamily: "'Google Sans', sans-serif" }}
+                                      >
+                                        {firstLine}
+                                      </span>
+                                      {secondLine && (
+                                        <span 
+                                          className="text-[19px] font-bold text-[#1C2C40] tracking-tight truncate leading-[1.15] font-g-sans"
+                                          style={{ fontFamily: "'Google Sans', sans-serif" }}
+                                        >
+                                          {secondLine}
+                                        </span>
+                                      )}
+                                    </div>
+                                  );
+                                })()}
+                              </div>
+
+                              {/* Custom emblem container */}
+                              {(() => {
+                                const t = (account.type || '').toLowerCase();
+                                let bgClass = 'bg-slate-50 border-slate-100 text-slate-500';
+                                if (t === 'bank') bgClass = 'bg-[#EAF7EE] border-[#EAF7EE] text-[#0F5B46]';
+                                else if (t === 'cash') bgClass = 'bg-[#FCF5EC] border-[#FCF5EC] text-[#B16F39]';
+                                else if (t === 'credit' || t === 'credit card') bgClass = 'bg-[#FDF2F2] border-[#FDF2F2] text-[#9B1C1C]';
+                                else if (t === 'investment') bgClass = 'bg-[#EEF2FF] border-[#EEF2FF] text-[#312E81]';
+                                else if (t === 'loan' || t === 'personal loan' || t === 'mortgage') bgClass = 'bg-[#F5F3FF] border-[#F5F3FF] text-[#5B21B6]';
+
+                                return (
+                                  <div 
+                                    className={`w-11 h-11 flex items-center justify-center shrink-0 border shadow-[inset_0_1px_1px_rgba(255,255,255,0.4)] ${bgClass}`}
+                                    style={{ borderRadius: '14px' }}
+                                  >
+                                    {getCustomVectorIcon(account)}
+                                  </div>
+                                );
+                              })()}
+                            </div>
+
+                            {/* Middle Block: Balances */}
+                            <div className="flex flex-col mt-2.5 leading-none select-none">
+                              <span 
+                                className="text-[11px] text-neutral-400 font-normal leading-none font-g-sans"
+                                style={{ fontFamily: "'Google Sans', sans-serif" }}
+                              >
+                                Current Balance
+                              </span>
+                              <div className="flex items-baseline mt-1.5 leading-none">
+                                <span 
+                                  className="text-[25px] font-bold text-[#1C2C40] tracking-tight leading-none font-g-sans"
+                                  style={{ fontFamily: "'Google Sans', sans-serif" }}
+                                >
+                                  {currentBalance < 0 ? '-' : ''}{(Math.abs(currentBalance)).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                </span>
+                                <span 
+                                  className="text-[12px] font-bold text-neutral-500 ml-1 leading-none font-g-sans uppercase tracking-wide"
+                                  style={{ fontFamily: "'Google Sans', sans-serif" }}
+                                >
+                                  {account.currency}
+                                </span>
+                              </div>
+                              
+                              {account.currency !== activeBaseCurr && (
+                                <span 
+                                  className="text-[9.5px] text-neutral-400 font-normal mt-1 leading-none font-g-sans"
+                                  style={{ fontFamily: "'Google Sans', sans-serif" }}
+                                >
+                                  ≈ {activeBaseCurr} {Math.abs(translatedBalance).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Bottom Block: Responsive pill badges or debt progress */}
+                            <div className="w-full mt-3">
+                              {(() => {
+                                const assetTrend = calculateAccountTrend(account.id, currentBalance, transactions, account.type, account.loanDirection);
+                                
+                                let pillBg = 'bg-[#EAF7EE] text-[#0F5B46]';
+                                let trendSymbol = '↗';
+                                let trendSign = '+';
+                                let percentageText = '12.5%';
+
+                                if (assetTrend.direction === 'down') {
+                                  pillBg = 'bg-[#FDF2F2] text-[#9B1C1C]';
+                                  trendSymbol = '↘';
+                                  trendSign = '-';
+                                  percentageText = `${Math.abs(assetTrend.percentage).toFixed(1)}%`;
+                                } else if (assetTrend.direction === 'up') {
+                                  pillBg = 'bg-[#EAF7EE] text-[#0F5B46]';
+                                  trendSymbol = '↗';
+                                  trendSign = '+';
+                                  percentageText = `${Math.abs(assetTrend.percentage).toFixed(1)}%`;
+                                } else {
+                                  pillBg = 'bg-[#F8FAFC] text-[#475569]';
+                                  trendSymbol = '→';
+                                  trendSign = '';
+                                  percentageText = '0.0%';
+                                }
+
+                                const isDebt = ['credit', 'loan', 'mortgage', 'Credit Card', 'Personal Loan', 'Mortgage'].includes(account.type);
+                                if (isDebt && totalDebtProgress > 0) {
+                                  return (
+                                    <div className="w-full">
+                                      <div className="flex justify-between text-[11px] text-neutral-400 mb-1 font-g-sans">
+                                        <span>Repaid</span>
+                                        <span className="text-[#0D9488] font-bold">{totalDebtProgress}%</span>
+                                      </div>
+                                      <div className="w-full bg-neutral-100 h-1 rounded-full overflow-hidden">
+                                        <div 
+                                          className="bg-[#0D9488] h-full rounded-full transition-all duration-300" 
+                                          style={{ width: `${totalDebtProgress}%` }}
+                                        />
+                                      </div>
+                                    </div>
+                                  );
+                                }
+
+                                return (
+                                  <div 
+                                    className={`w-full flex items-center justify-center gap-1 py-1.5 rounded-full font-bold text-[11px] leading-none select-none transition-all duration-200 group-hover:brightness-98 ${pillBg}`}
+                                    style={{ fontFamily: "'Google Sans', sans-serif" }}
+                                  >
+                                    <span>{trendSymbol}</span>
+                                    <span>{trendSign}{percentageText} this month</span>
+                                  </div>
+                                );
+                              })()}
+                            </div>
+                          </motion.div>
+                        );
+                      })}
                     </div>
                   </div>
-
-                  <div className="flex flex-col gap-1 w-full mt-auto">
-                    <div className="flex justify-between items-end w-full">
-                      <div className="flex flex-col leading-none">
-                        <span 
-                          className="text-[22px] font-bold text-neutral-900 tracking-tight leading-none font-g-sans"
-                          style={{ fontFamily: "'Google Sans', sans-serif" }}
-                        >
-                          {currentBalance < 0 ? '-' : ''}{account.currency} {Math.abs(currentBalance).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                        </span>
-                        {account.currency !== activeBaseCurr && (
-                          <span 
-                            className="text-[10px] text-neutral-400 font-normal mt-1 leading-none font-g-sans"
-                            style={{ fontFamily: "'Google Sans', sans-serif" }}
-                          >
-                            ≈ {activeBaseCurr} {Math.abs(translatedBalance).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                          </span>
-                        )}
-                      </div>
-
-                      {(() => {
-                        const isDebt = ['credit', 'loan', 'mortgage', 'Credit Card', 'Personal Loan', 'Mortgage'].includes(account.type);
-                        if (isDebt && totalDebtProgress > 0) {
-                          return null;
-                        }
-                        if (account.type === 'investment' || (account.type || '').toLowerCase() === 'investment') {
-                          const assetTrend = calculateAccountTrend(account.id, currentBalance, transactions, account.type, account.loanDirection);
-                          return (
-                            <span className={`text-[10px] font-g-sans font-bold flex items-center gap-0.5 px-2 py-0.5 rounded ${
-                              assetTrend.direction === 'up' ? 'text-emerald-600 bg-emerald-50 border border-emerald-100' : assetTrend.direction === 'down' ? 'text-rose-600 bg-rose-50 border border-rose-100' : 'text-neutral-500 bg-neutral-50'
-                            }`}>
-                              {assetTrend.direction === 'up' && '▲ '}{assetTrend.direction === 'down' && '▼ '}{assetTrend.percentage}%
-                            </span>
-                          );
-                        }
-                        return (
-                          <span 
-                            className="text-[10.5px] font-normal text-[#0D9488] bg-teal-50 border border-teal-100 px-2 py-0.5 rounded-lg font-g-sans"
-                            style={{ fontFamily: "'Google Sans', 'Plus Jakarta Sans', sans-serif" }}
-                          >
-                            Active
-                          </span>
-                        );
-                      })()}
-                    </div>
-
-                    {(() => {
-                      const isDebt = ['credit', 'loan', 'mortgage', 'Credit Card', 'Personal Loan', 'Mortgage'].includes(account.type);
-                      if (isDebt && totalDebtProgress > 0) {
-                        return (
-                          <div className="w-full mt-2">
-                            <div className="flex justify-between text-[10px] text-neutral-400 mb-0.5 font-g-sans">
-                              <span>Total Debt Repaid</span>
-                              <span className="text-[#0D9488] font-bold">{totalDebtProgress}%</span>
-                            </div>
-                            <div className="w-full bg-neutral-100 h-1 rounded-full overflow-hidden">
-                              <div 
-                                className="bg-[#0D9488] h-full rounded-full transition-all duration-300" 
-                                style={{ width: `${totalDebtProgress}%` }}
-                              />
-                            </div>
-                          </div>
-                        );
-                      }
-                      return null;
-                    })()}
-                  </div>
-                </motion.div>
-              );
-            })}
+                );
+              });
+            })()}
           </div>
         )}
       </div>

@@ -121,7 +121,7 @@ const GlassSelect: React.FC<GlassSelectProps> = ({ label, focused, children, sty
 };
 
 export const AddAccountModal: React.FC<AddAccountModalProps> = ({ isOpen, onClose, uid, onAccountAdded, profile }) => {
-  const { createAccount, addTransaction } = useVantageActions(uid);
+  const { createAccount } = useVantageActions(uid);
   const [step, setStep] = useState<'type' | 'details'>('type');
   const [selectedType, setSelectedType] = useState<AccountType | null>(null);
   const [focusedField, setFocusedField] = useState<string | null>(null);

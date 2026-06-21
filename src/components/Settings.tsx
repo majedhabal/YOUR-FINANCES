@@ -46,6 +46,11 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [currencySearch, setCurrencySearch] = useState('');
   
+  // Custom Delete Profile Warning Dialog States
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteInputVerify, setDeleteInputVerify] = useState('');
+  const [isDeletingProfile, setIsDeletingProfile] = useState(false);
+  
   // Profile form state
   const [randomPlaceholder] = useState<string>(() => {
     const list = ['John Doe', 'Sara Spence', 'Alex Mercer', 'Taylor Vance', 'Jordan Reed', 'Morgan Chase', 'Kelly Palmer'];
@@ -71,6 +76,12 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
     if (typeof window === 'undefined') return false;
     return localStorage.getItem('vantage_simulated_offline') === 'true';
   });
+
+  // Section edit states & specific values
+  const [isEditingAesthetic, setIsEditingAesthetic] = useState(false);
+  const [isEditingGraphics, setIsEditingGraphics] = useState(false);
+  const [notificationPref, setNotificationPref] = useState(profile?.notificationPref || 'Stealth');
+  const [dataRegion, setDataRegion] = useState(profile?.dataRegion || 'Globalized');
 
   // Gemini API Key Override states
   const [geminiApiKey, setGeminiApiKey] = useState('');
@@ -103,7 +114,7 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
     setIsSaving(true);
     try {
         const catSnap = await getDocs(collection(db, `users/${profile.uid}/custom_categories`));
-        const categories = catSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const categories = catSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as any));
 
         const txSnap = await getDocs(collection(db, `users/${profile.uid}/transactions`));
 
@@ -149,6 +160,12 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
       }
       if (profile.fontFamily) {
         setFontFamilyState(profile.fontFamily);
+      }
+      if (profile.notificationPref) {
+        setNotificationPref(profile.notificationPref);
+      }
+      if (profile.dataRegion) {
+        setDataRegion(profile.dataRegion);
       }
     }
   }, [profile]);
@@ -489,22 +506,26 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
     {
       title: 'Aesthetic & System',
       items: [
-        { icon: Bell, label: 'Notifications', value: 'Stealth' },
-        {
-          icon: Fingerprint,
-          label: 'Biometric Fingerprint Login',
-          isInlineToggle: true,
-          toggleValue: fingerprintLoginEnabled,
-          action: handleToggleFingerprint
+        { 
+          icon: Bell, 
+          label: 'Notifications', 
+          value: notificationPref,
+          isInput: true,
+          type: 'select',
+          options: ['Stealth', 'Audible Only', 'Vibration Match', 'Muted Archive'],
+          currentValue: notificationPref,
+          setter: setNotificationPref
         },
-        {
-          icon: Globe,
-          label: 'Simulate Offline Mode',
-          isInlineToggle: true,
-          toggleValue: simulateOffline,
-          action: handleToggleOfflineSimulation
+        { 
+          icon: Globe, 
+          label: 'Data Region', 
+          value: dataRegion,
+          isInput: true,
+          type: 'select',
+          options: ['Globalized', 'EU West Private', 'US East Standard', 'Middle East Edge'],
+          currentValue: dataRegion,
+          setter: setDataRegion
         },
-        { icon: Globe, label: 'Data Region', value: 'Globalized' },
       ]
     },
     {
@@ -631,13 +652,13 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
           icon: Shield, 
           label: 'Privacy Policy', 
           value: 'View Protocol', 
-          action: () => setActiveView('privacy')
+          action: () => window.open('https://www.yourfinances.me/privacy', '_blank')
         },
         { 
           icon: Globe, 
           label: 'Terms of Engagement', 
           value: profile?.hasAcceptedTerms ? 'Agreed & Signed' : 'Review & Sign', 
-          action: () => setActiveView('terms'),
+          action: () => window.open('https://www.yourfinances.me/terms-of-engagement', '_blank'),
           highlight: !profile?.hasAcceptedTerms
         },
       ]
@@ -684,6 +705,106 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
 
   return (
     <div className="w-full md:w-[48%] md:max-w-[48%] md:mx-auto flex flex-col gap-3 md:gap-4 pb-24 text-vantage-text">
+      <style>{`
+        div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1),
+        div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) {
+          display: none !important;
+        }
+        
+        div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > h2:nth-of-type(1),
+        div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > h2:nth-of-type(1) {
+          margin-left: 20px !important;
+        }
+        
+        div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > p:nth-of-type(1),
+        div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > p:nth-of-type(1) {
+          margin-left: 20px !important;
+        }
+        
+        div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1),
+        div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1) {
+          font-size: 14px !important;
+        }
+
+        div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1),
+        div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1) {
+          padding-top: 5px !important;
+        }
+        
+        div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2),
+        div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) {
+          height: 39px !important;
+          font-size: 14px !important;
+          padding-top: 5px !important;
+          padding-bottom: 5px !important;
+        }
+
+        /* Group 1, Row 3 */
+        div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(3) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1),
+        div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(3) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1) {
+          font-size: 14px !important;
+        }
+        
+        div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(3),
+        div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(3) {
+          padding-top: 5px !important;
+          padding-bottom: 5px !important;
+        }
+
+        /* Group 2, Row 1 */
+        div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1),
+        div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1) {
+          font-size: 14px !important;
+        }
+        
+        div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1),
+        div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1) {
+          padding-top: 5px !important;
+          padding-bottom: 5px !important;
+        }
+
+        /* Group 2, Row 2 */
+        div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1),
+        div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1) {
+          font-size: 14px !important;
+        }
+        
+        div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(2),
+        div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(2) {
+          padding-top: 5px !important;
+          padding-bottom: 5px !important;
+        }
+
+        /* Group 2, Row 3 */
+        div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(3) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1),
+        div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(3) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1) {
+          font-size: 14px !important;
+        }
+        
+        div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(3),
+        div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(3) {
+          padding-top: 5px !important;
+          padding-bottom: 5px !important;
+        }
+
+        /* Hide targeted text values and keep only the section/item names */
+        div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > span:nth-of-type(1),
+        div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > span:nth-of-type(1),
+        
+        div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(2) > span:nth-of-type(1),
+        div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(2) > span:nth-of-type(1),
+        
+        div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(3) > div:nth-of-type(1) > div:nth-of-type(2) > span:nth-of-type(1),
+        div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(3) > div:nth-of-type(1) > div:nth-of-type(2) > span:nth-of-type(1),
+        
+        div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(2) > span:nth-of-type(1),
+        div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(2) > span:nth-of-type(1),
+        
+        div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(3) > div:nth-of-type(1) > div:nth-of-type(2) > span:nth-of-type(1),
+        div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(3) > div:nth-of-type(1) > div:nth-of-type(2) > span:nth-of-type(1) {
+          display: none !important;
+        }
+      `}</style>
       <PremiumModal 
         isOpen={isPremiumModalOpen} 
         onClose={() => setIsPremiumModalOpen(false)} 
@@ -785,80 +906,162 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
       </div>
 
       <div className="flex flex-col gap-1.5 md:grid md:grid-cols-2 md:grid-flow-row-dense md:gap-4 w-full">
-        {sections.map((section, idx) => (
-          <div key={section.title} className="flex flex-col gap-1.5">
-            <div className="flex items-center justify-between px-3 mt-1">
-              <span 
-                style={{ fontSize: 'clamp(11px, 3.2vw, 13px)' }}
-                className="items-center font-bold text-vantage-muted tracking-wide shrink-0"
-              >
-                {section.title}
-              </span>
-              {section.title === 'Strategic Profile' && (
-                <button 
-                  onClick={() => {
-                    if (isEditingProfile) handleUpdateAccount();
-                    else setIsEditingProfile(true);
-                  }}
-                  disabled={isSaving}
-                  className="font-bold text-[#065F46] dark:text-vantage-green tracking-wide hover:opacity-80 transition-opacity active:scale-95 shrink-0"
-                  style={{ fontSize: 'clamp(9px, 2.6vw, 11px)' }}
-                >
-                  {isSaving ? 'Syncing...' : isEditingProfile ? 'Commit' : 'Edit profile'}
-                </button>
-              )}
-            </div>
+        {sections.map((section, idx) => {
+          const isEditing = 
+            section.title === 'Strategic Profile' ? isEditingProfile :
+            section.title === 'Aesthetic & System' ? isEditingAesthetic :
+            section.title === 'Graphics' ? isEditingGraphics :
+            false;
 
-            <div className="mx-4 bg-white dark:bg-[#111215] rounded-2xl border border-neutral-200 dark:border-white/5 overflow-hidden shadow-sm flex flex-col">
-              {section.items.map((item: any, itemIdx: any) => (
-                <div 
-                  key={itemIdx}
-                  className={`w-full flex flex-col p-4 transition-colors ${itemIdx !== section.items.length - 1 ? 'border-b border-neutral-100 dark:border-white/5' : ''}`}
+          return (
+            <div key={section.title} className="flex flex-col gap-1.5">
+              <div className="flex items-center justify-between px-3 mt-1">
+                <span 
+                  style={{ fontSize: 'clamp(11px, 3.2vw, 13px)' }}
+                  className="items-center font-bold text-vantage-muted tracking-wide shrink-0"
                 >
-                  <div className="flex items-center justify-between w-full gap-3">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <div className={`shrink-0 ${item.highlight ? 'text-[#065F46] dark:text-vantage-green' : 'text-vantage-muted'}`}>
-                        <item.icon size={15} strokeWidth={2} className={item.label === 'Restore Purchase History' && isRestoring ? 'animate-spin' : ''} />
-                      </div>
-                      <span 
-                        style={{ fontSize: '15px' }}
-                        className={`font-semibold truncate leading-tight ${item.highlight ? 'text-[#065F46] dark:text-vantage-green' : 'text-vantage-text dark:text-neutral-200'}`}
-                      >
-                        {item.label}
-                      </span>
-                    </div>
+                  {section.title}
+                </span>
+                
+                {section.title === 'Strategic Profile' && (
+                  <button 
+                    type="button"
+                    onClick={() => {
+                      if (isEditingProfile) handleUpdateAccount();
+                      else setIsEditingProfile(true);
+                    }}
+                    disabled={isSaving}
+                    className="font-bold text-[#065F46] dark:text-vantage-green tracking-wide hover:opacity-80 transition-opacity active:scale-95 shrink-0"
+                    style={{ fontSize: 'clamp(9px, 2.6vw, 11px)' }}
+                  >
+                    {isSaving ? 'Syncing...' : isEditingProfile ? 'Commit' : 'Edit profile'}
+                  </button>
+                )}
 
-                    {!isEditingProfile || !item.isInput ? (
-                      item.isInlineToggle ? (
-                        <div className={`flex items-center gap-1.5 shrink-0 ${item.disabled ? 'opacity-40' : ''}`}>
-                           {item.disabled && <Lock size={10} className="text-vantage-muted" />}
-                          <button
-                            type="button"
-                            onClick={item.action}
-                            className={`w-8 h-4 rounded-full relative transition-colors duration-200 ${item.toggleValue ? 'bg-vantage-green' : 'bg-vantage-text/20'} ${item.disabled ? 'cursor-not-allowed' : 'active:scale-95'}`}
-                          >
-                            <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all shadow-sm ${item.toggleValue ? 'right-0.5' : 'left-0.5'}`}></div>
-                          </button>
-                        </div>
-                      ) : (
-                        <button 
-                          onClick={item.action} 
-                          disabled={item.action === undefined || (item.label === 'Restore Purchase History' && isRestoring)}
-                          className="flex items-center gap-1.5 outline-none active:scale-95 transition-transform min-w-0 shrink-0 border border-neutral-200 rounded-lg px-2 py-0.5"
-                        >
+                {section.title === 'Aesthetic & System' && (
+                  <button 
+                    type="button"
+                    onClick={async () => {
+                      if (isEditingAesthetic) {
+                        setIsSaving(true);
+                        try {
+                          const userRef = doc(db, 'users', profile.uid);
+                          const updates = {
+                            notificationPref,
+                            dataRegion,
+                            updatedAt: new Date().toISOString()
+                          };
+                          await updateDoc(userRef, updates);
+                          onUpdateProfile({ ...profile, ...updates });
+                          setIsEditingAesthetic(false);
+                        } catch (err) {
+                          console.error(err);
+                        } finally {
+                          setIsSaving(false);
+                        }
+                      } else {
+                        setIsEditingAesthetic(true);
+                      }
+                    }}
+                    disabled={isSaving}
+                    className="font-bold text-[#065F46] dark:text-vantage-green tracking-wide hover:opacity-80 transition-opacity active:scale-95 shrink-0"
+                    style={{ fontSize: 'clamp(9px, 2.6vw, 11px)' }}
+                  >
+                    {isSaving ? 'Syncing...' : isEditingAesthetic ? 'Commit' : 'Edit system'}
+                  </button>
+                )}
+
+                {section.title === 'Graphics' && (
+                  <button 
+                    type="button"
+                    onClick={async () => {
+                      if (isEditingGraphics) {
+                        setIsSaving(true);
+                        try {
+                          const userRef = doc(db, 'users', profile.uid);
+                          const updates = {
+                            theme,
+                            fontSize,
+                            fontFamily,
+                            updatedAt: new Date().toISOString()
+                          };
+                          await updateDoc(userRef, updates);
+                          onUpdateProfile({ ...profile, ...updates });
+                          setIsEditingGraphics(false);
+                        } catch (err) {
+                          console.error(err);
+                        } finally {
+                          setIsSaving(false);
+                        }
+                      } else {
+                        setIsEditingGraphics(true);
+                      }
+                    }}
+                    disabled={isSaving}
+                    className="font-bold text-[#065F46] dark:text-vantage-green tracking-wide hover:opacity-80 transition-opacity active:scale-95 shrink-0"
+                    style={{ fontSize: 'clamp(9px, 2.6vw, 11px)' }}
+                  >
+                    {isSaving ? 'Syncing...' : isEditingGraphics ? 'Commit' : 'Edit graphics'}
+                  </button>
+                )}
+              </div>
+
+              <div className="mx-4 bg-white dark:bg-[#111215] rounded-2xl border border-neutral-200 dark:border-white/5 overflow-hidden shadow-sm flex flex-col">
+                {section.items.map((item: any, itemIdx: any) => {
+                  const isClickableRow = item.action && !item.isInlineToggle && (!isEditing || !item.isInput);
+                  return (
+                    <div 
+                      key={itemIdx}
+                      onClick={isClickableRow ? item.action : undefined}
+                      className={`w-full flex flex-col p-4 transition-colors ${itemIdx !== section.items.length - 1 ? 'border-b border-neutral-100 dark:border-white/5' : ''} ${isClickableRow ? 'cursor-pointer hover:bg-neutral-50 dark:hover:bg-white/5 active:opacity-90 select-none' : ''}`}
+                    >
+                      <div className="flex items-center justify-between w-full gap-3">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <div className={`shrink-0 ${item.highlight ? 'text-[#065F46] dark:text-vantage-green' : 'text-vantage-muted'}`}>
+                            <item.icon size={15} strokeWidth={2} className={item.label === 'Restore Purchase History' && isRestoring ? 'animate-spin' : ''} />
+                          </div>
                           <span 
-                            style={{ fontSize: '14px' }}
-                            className={`font-normal tracking-wide truncate max-w-[150px] ${item.highlight ? 'text-[#065F46] dark:text-vantage-green' : 'text-neutral-500 dark:text-neutral-400'}`}
+                            style={{ fontSize: '15px' }}
+                            className={`font-semibold truncate leading-tight ${item.highlight ? 'text-[#065F46] dark:text-vantage-green' : 'text-vantage-text dark:text-neutral-200'}`}
                           >
-                            {item.value}
+                            {item.label}
                           </span>
-                          {item.action && <ChevronRight size={12} className="text-vantage-muted/50 shrink-0" />}
-                        </button>
-                      )
-                    ) : null}
-                  </div>
+                        </div>
 
-                  {isEditingProfile && item.isInput && (
+                        {!isEditing || !item.isInput ? (
+                          item.isInlineToggle ? (
+                            <div className={`flex items-center gap-1.5 shrink-0 ${item.disabled ? 'opacity-40' : ''}`}>
+                               {item.disabled && <Lock size={10} className="text-vantage-muted" />}
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  item.action();
+                                }}
+                                className={`w-8 h-4 rounded-full relative transition-colors duration-200 ${item.toggleValue ? 'bg-vantage-green' : 'bg-vantage-text/20'} ${item.disabled ? 'cursor-not-allowed' : 'active:scale-95'}`}
+                              >
+                                <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all shadow-sm ${item.toggleValue ? 'right-0.5' : 'left-0.5'}`}></div>
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-1.5 min-w-0 shrink-0">
+                              {item.value && (
+                                <span 
+                                  style={{ fontSize: '14px' }}
+                                  className={`font-normal tracking-wide truncate max-w-[150px] ${item.highlight ? 'text-[#065F46] dark:text-vantage-green' : 'text-neutral-500 dark:text-neutral-400'}`}
+                                >
+                                  {item.value}
+                                </span>
+                              )}
+                              {item.action && (
+                                <ChevronRight size={14} className="text-vantage-muted/50 shrink-0" />
+                              )}
+                            </div>
+                          )
+                        ) : null}
+                      </div>
+
+                    {isEditing && item.isInput && (
                     <div className="mt-2 animate-in fade-in slide-in-from-top-1 duration-200">
                       {item.type === 'text' && (
                         <input 
@@ -966,10 +1169,12 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
                     </div>
                   )}
                 </div>
-              ))}
-            </div>
+              );
+            })}
           </div>
-        ))}
+          </div>
+          );
+        })}
 
         {/* Currency Configuration (Slim Obsidian Block) - spans 2 cols on md+ grid */}
         <div className="flex flex-col gap-1.5 md:col-span-2 w-full mt-2">
@@ -1091,25 +1296,128 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
 
         <button 
           onClick={async () => {
-             if (confirm("Are you sure you want to permanently delete your entire Vantage profile and database? This action is irreversible.")) {
-               try {
-                 await deleteProfile();
-                 const { auth } = await import('../lib/firebase');
-                 await auth.signOut();
-                 window.dispatchEvent(new CustomEvent('vantage-logout'));
-                 window.location.reload();
-               } catch (e) {
-                 console.error("Delete profile failed:", e);
-                 alert("Delete profile operation failed. Please check network.");
-               }
-             }
+             setShowDeleteModal(true);
+             setDeleteInputVerify('');
           }}
-          className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-red-500/20 bg-red-50 text-red-600 font-bold tracking-wide hover:bg-red-100 transition-colors active:scale-95 cursor-pointer w-full mb-8" 
-          style={{ fontSize: 'clamp(10px, 2.8vw, 12px)' }}
+          className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-red-500/20 bg-red-50 text-red-600 font-bold tracking-wide hover:bg-red-100 transition-colors active:scale-95 cursor-pointer w-full mb-8 font-bold" 
+          style={{ fontSize: 'clamp(10px, 2.8vw, 12px)', fontFamily: "'Google Sans', sans-serif" }}
         >
           <ZapIcon size={14} className="shrink-0" />
-          <span className="truncate">Delete profile</span>
+          <span className="truncate font-bold">Delete profile</span>
         </button>
+
+      <AnimatePresence>
+        {showDeleteModal && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => {
+                if (!isDeletingProfile) setShowDeleteModal(false);
+              }}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+
+            {/* Modal Box */}
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0, y: 10 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 10 }}
+              className="relative w-full max-w-md bg-white border border-[#E1E8ED] rounded-2xl p-6 shadow-2xl z-10 text-left overflow-hidden"
+              style={{ fontFamily: "'Google Sans', sans-serif" }}
+            >
+              <div className="flex flex-col gap-4 text-black">
+                {/* Header Icon + Label */}
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center shrink-0 border border-red-100">
+                    <ZapIcon size={18} className="text-red-500 fill-red-100 animate-pulse" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-neutral-900 leading-tight font-bold">Delete your profile</h3>
+                    <p className="text-[10px] text-red-500 font-normal">This action is permanent and irreversible</p>
+                  </div>
+                </div>
+
+                {/* Warnings List */}
+                <div className="py-2.5 px-3.5 bg-red-50/50 border border-red-500/10 rounded-xl flex flex-col gap-2">
+                  <span className="text-xs font-normal text-neutral-700 leading-relaxed font-normal">
+                    By deleting your profile, you will completely destroy your dataset permanently from Firebase:
+                  </span>
+                  <ul className="text-[10.5px] text-neutral-500 list-disc list-inside flex flex-col gap-1 pl-1 font-normal">
+                    <li>Core flat user identity document & auth parameters</li>
+                    <li>Connected bank and cash liquidity endpoints</li>
+                    <li>Investment portfolios and custom sub-assets lists</li>
+                    <li>Configured mini budgets and envelope allocations</li>
+                    <li>Recurring schedules and the historical ledger log</li>
+                  </ul>
+                </div>
+
+                {/* Verification Box */}
+                <div className="flex flex-col gap-2 pt-1">
+                  <span className="text-[10.5px] text-neutral-500 font-normal leading-normal font-normal">
+                    To confirm this decision, please type <strong className="text-neutral-900 font-bold">delete profile</strong> below:
+                  </span>
+                  <input
+                    type="text"
+                    disabled={isDeletingProfile}
+                    value={deleteInputVerify}
+                    onChange={(e) => setDeleteInputVerify(e.target.value)}
+                    placeholder="Type 'delete profile' to consent"
+                    className="w-full h-11 bg-neutral-50 border border-neutral-200 rounded-xl px-3.5 text-xs font-normal text-zinc-900 focus:bg-white focus:border-red-500 transition-all outline-none font-normal"
+                    style={{ fontFamily: "'Google Sans', sans-serif" }}
+                  />
+                </div>
+
+                {/* Actions Panel */}
+                <div className="flex gap-3 pt-3 border-t border-neutral-100 mt-1 select-none">
+                  <button
+                    type="button"
+                    disabled={isDeletingProfile}
+                    onClick={() => setShowDeleteModal(false)}
+                    className="flex-1 h-11 border border-neutral-200 text-neutral-700 hover:bg-neutral-50 text-xs font-bold rounded-xl transition-all active:scale-95 cursor-pointer flex items-center justify-center font-bold"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    disabled={isDeletingProfile || deleteInputVerify.trim().toLowerCase() !== 'delete profile'}
+                    onClick={async () => {
+                      try {
+                        setIsDeletingProfile(true);
+                        await deleteProfile();
+                        const { auth } = await import('../lib/firebase');
+                        await auth.signOut();
+                        window.dispatchEvent(new CustomEvent('vantage-logout'));
+                        window.location.reload();
+                      } catch (e) {
+                        console.error("Complete data wipe failed:", e);
+                        alert("Data deletion failed. Please check your connection and try again.");
+                        setIsDeletingProfile(false);
+                      }
+                    }}
+                    className={`flex-1 h-11 text-xs font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 font-bold ${
+                      deleteInputVerify.trim().toLowerCase() === 'delete profile'
+                        ? 'bg-red-600 text-white hover:bg-red-700 active:scale-95 cursor-pointer shadow-md'
+                        : 'bg-neutral-100 text-neutral-400 cursor-not-allowed border border-neutral-200/50'
+                    }`}
+                  >
+                    {isDeletingProfile ? (
+                      <div className="flex items-center gap-2">
+                        <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        Deleting...
+                      </div>
+                    ) : (
+                      "Delete completely"
+                    )}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

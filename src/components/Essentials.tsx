@@ -887,6 +887,7 @@ useEffect(() => {
           onDelete={(b) => setBudgetToDelete(b)} 
           onBudgetClick={(b) => setSelectedBudgetId(b.id)} 
           onAddExpense={(b) => setActiveBudgetForTx(b)} 
+          baseCurrency={activeBaseCurr}
         />
 
         {/* Budget Insight Card */}

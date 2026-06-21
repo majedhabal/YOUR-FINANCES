@@ -473,6 +473,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
   const [blueprintEnvelopes, setBlueprintEnvelopes] = useState<BlueprintEnvelope[]>([]);
   const [expandedEnvelopes, setExpandedEnvelopes] = useState<Record<string, boolean>>({});
   const [expandedCategories, setExpandedCategories] = useState<Record<string, string[]>>({});
+  const [subCategoryBudgets, setSubCategoryBudgets] = useState<Record<string, string>>({});
 
   const [initializedBlueprints, setInitializedBlueprints] = useState<boolean>(false);
   const [blueprintsApplied, setBlueprintsApplied] = useState<boolean>(false);
@@ -555,15 +556,71 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
           mappedSubCategories: ['Savings', 'Real Estate']
         }
       ]);
+
+      const initialSubBudgets: Record<string, string> = {
+        'Groceries': String(Math.round((parseFloat(needsAmt) || 0) * 0.25)),
+        'Utilities': String(Math.round((parseFloat(needsAmt) || 0) * 0.15)),
+        'Rent': String(Math.round((parseFloat(needsAmt) || 0) * 0.50)),
+        'Fuel': String(Math.round((parseFloat(needsAmt) || 0) * 0.10)),
+        'Clothes': String(Math.round((parseFloat(wantsAmt) || 0) * 0.20)),
+        'Gym': String(Math.round((parseFloat(wantsAmt) || 0) * 0.20)),
+        'Fitness': String(Math.round((parseFloat(wantsAmt) || 0) * 0.20)),
+        'Subscriptions': String(Math.round((parseFloat(wantsAmt) || 0) * 0.20)),
+        'Hobbies': String(Math.round((parseFloat(wantsAmt) || 0) * 0.20)),
+        'Savings': String(Math.round((parseFloat(savingsAmt) || 0) * 0.50)),
+        'Real Estate': String(Math.round((parseFloat(savingsAmt) || 0) * 0.50))
+      };
+      setSubCategoryBudgets(initialSubBudgets);
+
       setInitializedBlueprints(true);
     }
   }, [activeStep, initializedBlueprints, incomeTrackingType, salaryAmount, lumpSumNeeds, lumpSumWants, lumpSumSavings, primaryGoal]);
 
-  const handleUpdateEnvelopeAmount = (id: string, amountStr: string) => {
-    setBlueprintEnvelopes(prev =>
-      prev.map(bp => (bp.id === id ? { ...bp, allocatedAmount: amountStr } : bp))
-    );
+  const handleUpdateSubCategoryBudget = (sub: string, amt: string) => {
+    setSubCategoryBudgets(prev => ({
+      ...prev,
+      [sub]: amt
+    }));
   };
+
+  const handleUpdateEnvelopeAmount = (envId: string, val: string) => {
+    const numeric = parseFloat(val) || 0;
+    setBlueprintEnvelopes(prev =>
+      prev.map(bp => {
+        if (bp.id !== envId) return bp;
+        
+        const count = bp.mappedSubCategories.length || 1;
+        const share = Math.round(numeric / count);
+        bp.mappedSubCategories.forEach(sub => {
+          subCategoryBudgets[sub] = String(share);
+        });
+        
+        return { ...bp, allocatedAmount: val };
+      })
+    );
+    setSubCategoryBudgets({ ...subCategoryBudgets });
+  };
+
+  useEffect(() => {
+    if (initializedBlueprints && blueprintEnvelopes.length > 0) {
+      setBlueprintEnvelopes(prev => {
+        let changed = false;
+        const next = prev.map(bp => {
+          let sum = 0;
+          bp.mappedSubCategories.forEach(sub => {
+            sum += parseFloat(subCategoryBudgets[sub]) || 0;
+          });
+          const sumStr = String(sum);
+          if (bp.allocatedAmount !== sumStr) {
+            changed = true;
+            return { ...bp, allocatedAmount: sumStr };
+          }
+          return bp;
+        });
+        return changed ? next : prev;
+      });
+    }
+  }, [subCategoryBudgets, initializedBlueprints]);
 
   const handleDeleteEnvelope = (id: string) => {
     setBlueprintEnvelopes(prev => prev.filter(bp => bp.id !== id));
@@ -836,35 +893,67 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
       const tempBudgets: OnboardingBudget[] = [];
 
       for (const bp of blueprintEnvelopes) {
-        const evalAmt = parseFloat(evaluateMathExpression(bp.allocatedAmount)) || 0;
-        const budgetRef = doc(collection(db, `users/${uid}/miniBudgets`));
-        const payload = {
-          budgetId: budgetRef.id,
-          id: budgetRef.id,
-          userId: uid,
-          categoryTitle: bp.categoryTitle,
-          allocatedAmount: evalAmt,
-          spentAmount: 0.00,
-          currency: activeCurrency,
-          iconAsset: bp.iconAsset,
-          categoryGroup: bp.categoryGroup,
-          mappedCategories: bp.mappedCategories || [],
-          mappedSubCategories: bp.mappedSubCategories || [],
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        };
+        if (bp.mappedSubCategories.length > 0) {
+          for (const sub of bp.mappedSubCategories) {
+            const subAmt = parseFloat(subCategoryBudgets[sub]) || 0;
+            const budgetRef = doc(collection(db, `users/${uid}/miniBudgets`));
+            const payload = {
+              budgetId: budgetRef.id,
+              id: budgetRef.id,
+              userId: uid,
+              categoryTitle: sub,
+              allocatedAmount: subAmt,
+              spentAmount: 0.00,
+              currency: activeCurrency,
+              iconAsset: bp.iconAsset,
+              categoryGroup: bp.categoryGroup,
+              mappedCategories: [sub],
+              mappedSubCategories: [sub],
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString()
+            };
 
-        // Write instantly & await
-        await setDoc(budgetRef, payload);
+            await setDoc(budgetRef, payload);
 
-        tempBudgets.push({
-          title: bp.categoryTitle,
-          category: bp.categoryTitle,
-          maxBudget: evalAmt,
-          period: 'monthly',
-          currency: activeCurrency,
-          emoji: bp.emoji
-        });
+            tempBudgets.push({
+              title: sub,
+              category: sub,
+              maxBudget: subAmt,
+              period: 'monthly',
+              currency: activeCurrency,
+              emoji: bp.emoji
+            });
+          }
+        } else {
+          const evalAmt = parseFloat(evaluateMathExpression(bp.allocatedAmount)) || 0;
+          const budgetRef = doc(collection(db, `users/${uid}/miniBudgets`));
+          const payload = {
+            budgetId: budgetRef.id,
+            id: budgetRef.id,
+            userId: uid,
+            categoryTitle: bp.categoryTitle,
+            allocatedAmount: evalAmt,
+            spentAmount: 0.00,
+            currency: activeCurrency,
+            iconAsset: bp.iconAsset,
+            categoryGroup: bp.categoryGroup,
+            mappedCategories: bp.mappedCategories || [],
+            mappedSubCategories: bp.mappedSubCategories || [],
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          };
+
+          await setDoc(budgetRef, payload);
+
+          tempBudgets.push({
+            title: bp.categoryTitle,
+            category: bp.categoryTitle,
+            maxBudget: evalAmt,
+            period: 'monthly',
+            currency: activeCurrency,
+            emoji: bp.emoji
+          });
+        }
       }
 
       setOnboardingBudgets(tempBudgets);
@@ -1178,6 +1267,64 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
           setDoc(accSubRef, goalAccObj).catch(err => {
             console.warn("Optimistic background sync (goal account):", err);
           });
+
+          // Automatically initialize reference inside the 'milestones' collection if not tackle_debt
+          if (config.key !== 'tackle_debt') {
+            const milestoneRef = doc(collection(db, `users/${uid}/milestones`));
+            const milestonePayload = {
+              id: milestoneRef.id,
+              name: config.label,
+              targetAmount: goalVal,
+              currentValue: 0.00,
+              monthsToTarget: 12,
+              linkedAccountIds: [accSubRef.id],
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+              isArchived: false,
+              userId: uid
+            };
+
+            // Local cache update for offline resilience
+            const prevSavedMilestonesStr = localStorage.getItem(`vantage_offline_milestones_${uid}`);
+            let prevSavedMilestones = [];
+            try {
+              if (prevSavedMilestonesStr) {
+                prevSavedMilestones = JSON.parse(prevSavedMilestonesStr);
+              }
+            } catch (e) {
+              console.warn("Error parsing offline milestones:", e);
+            }
+            localStorage.setItem(
+              `vantage_offline_milestones_${uid}`,
+              JSON.stringify([...prevSavedMilestones, milestonePayload])
+            );
+
+            // Write to Firestore Milestones collection
+            setDoc(milestoneRef, milestonePayload).catch(err => {
+              console.warn("Optimistic background sync (milestone savings goal):", err);
+            });
+          } else {
+            // It is tackle_debt, automatically initialize reference inside the 'debtMilestones' collection
+            const debtMilestoneRef = doc(collection(db, `users/${uid}/debtMilestones`));
+            const debtMilestonePayload = {
+              id: debtMilestoneRef.id,
+              name: config.label,
+              principleAmount: goalVal,
+              paymentFrequency: "Monthly",
+              paymentAmount: (parseFloat(evaluateMathExpression(salaryAmount)) || 12000) * 0.40,
+              accountId: accSubRef.id,
+              loanDirection: "borrowed",
+              isArchived: false,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+              userId: uid
+            };
+
+            // Write to Firestore debtMilestones collection
+            setDoc(debtMilestoneRef, debtMilestonePayload).catch(err => {
+              console.warn("Optimistic background sync (debt milestone onboarding):", err);
+            });
+          }
         }
       }
 
@@ -2870,6 +3017,42 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                                   </div>
                                 </>
                               )}
+                            </div>
+                          )}
+
+                          {/* Sub-Category Budgets list */}
+                          {bp.mappedSubCategories.length > 0 && (
+                            <div className="flex flex-col gap-2 border-t border-neutral-100 pt-3 text-left mt-3">
+                              <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700, fontSize: "11px" }} className="text-black font-bold text-neutral-900">
+                                Sub-Category Budgets
+                              </span>
+                              <div className="flex flex-col gap-1.5 max-h-[140px] overflow-y-auto pr-1">
+                                {bp.mappedSubCategories.map(sub => {
+                                  return (
+                                    <div key={`sub-budget-${bp.id}-${sub}`} className="flex items-center justify-between gap-1.5 p-1 px-2 rounded-lg border border-[#E1E8ED] bg-[#F8FAFC]">
+                                      <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: "10px" }} className="text-neutral-700 font-medium truncate">
+                                        {sub}
+                                      </span>
+                                      <div className="relative flex items-center shrink-0 w-24">
+                                        <input
+                                          type="text"
+                                          placeholder="0"
+                                          value={subCategoryBudgets[sub] || ''}
+                                          onChange={(e) => {
+                                            const raw = e.target.value.replace(/[^0-9]/g, '');
+                                            handleUpdateSubCategoryBudget(sub, raw);
+                                          }}
+                                          style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
+                                          className="w-full h-[24px] bg-white border border-neutral-200 rounded px-1.5 pr-8 text-[9px] text-right font-normal outline-none text-black font-mono focus:border-black"
+                                        />
+                                        <span style={{ fontSize: "8px" }} className="absolute right-1 text-neutral-400 font-mono">
+                                          {currency || 'AED'}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
                             </div>
                           )}
                         </div>

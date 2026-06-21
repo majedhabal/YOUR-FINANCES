@@ -1335,8 +1335,8 @@ export const Reports: React.FC<ReportsProps> = ({ profile }) => {
                 <h3 style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 750, fontSize: 'clamp(11px, 3vw, 13px)' }} className="text-[#2F3542] tracking-wide">Historical budget performance</h3>
              </div>
              <div className="flex flex-col w-full bg-[#FFFFFF] border-y border-neutral-100 rounded-none divide-y divide-neutral-100">
-                {budgetHistory.sort((a,b) => new Date(b.endDate).getTime() - new Date(a.endDate).getTime()).slice(0, 3).map((h) => (
-                   <div key={h.id} className="py-3 px-1 flex flex-col gap-1.5 bg-[#FFFFFF] shadow-none">
+                {budgetHistory.sort((a,b) => new Date(b.endDate).getTime() - new Date(a.endDate).getTime()).slice(0, 3).map((h, idx) => (
+                   <div key={`${h.id || 'h'}-${idx}`} className="py-3 px-1 flex flex-col gap-1.5 bg-[#FFFFFF] shadow-none">
                       <div className="flex justify-between items-start">
                          <div className="flex flex-col min-w-0 flex-1 pr-1">
                             <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: 'clamp(12px, 3.2vw, 14px)' }} className="text-[#2F3542] truncate leading-tight mb-0.5">{h.title}</span>
@@ -1432,7 +1432,7 @@ export const Reports: React.FC<ReportsProps> = ({ profile }) => {
                 <span style={{ fontSize: 'clamp(9px, 2.5vw, 10px)' }} className="font-extrabold text-[#57606F] uppercase tracking-[0.1em] px-0.5 italic mb-0.5">Itemized Protocols</span>
                 <div className="flex flex-col gap-1.5">
                    {commitmentData.itemized.sort((a,b) => b.calculatedMonthly - a.calculatedMonthly).slice(0, 3).map((item, idx) => (
-                      <div key={item.id} className="py-2 px-2.5 bg-white rounded-xl flex items-center justify-between border border-neutral-200 shadow-sm">
+                      <div key={`${item.id || 'commitment'}-${idx}`} className="py-2 px-2.5 bg-white rounded-xl flex items-center justify-between border border-neutral-200 shadow-sm">
                         {/* 70% Information */}
                         <div className="flex items-center gap-2 min-w-0 flex-1 pr-1.5">
                            <div style={{ fontSize: 'clamp(11px, 3.2vw, 13px)' }} className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${item.type === 'income' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-crimson'}`}>

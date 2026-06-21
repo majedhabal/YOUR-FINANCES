@@ -18,8 +18,9 @@ import { VantageAI } from './components/VantageAI';
 import { Transactions } from './components/Transactions';
 import { Analytics } from './components/Analytics';
 import { SalaryBreakdownModal } from './components/SalaryBreakdownModal';
+import { DEFAULT_RATES, syncExchangeRates } from './lib/exchangeRates';
 
-export type Tab = 'essentials' | 'accounts' | 'ai' | 'activity' | 'analytics' | 'salary-breakdown';
+export type Tab = 'essentials' | 'accounts' | 'ai' | 'activity' | 'analytics' | 'settings' | 'salary-breakdown';
 
 const animation = {
   initial: { opacity: 0, y: 10 },
@@ -44,6 +45,25 @@ function AppContent() {
   const [accounts, setAccounts] = useState<any[]>([]);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [accountBalances, setAccountBalances] = useState<Record<string, number>>({});
+  const [exchangeRates, setExchangeRates] = useState<any>(DEFAULT_RATES);
+
+  const getRateToAED = (curr: string) => {
+    const c = curr || 'AED';
+    if (c === 'AED') return 1;
+    return (exchangeRates && exchangeRates[c]) || (DEFAULT_RATES as any)[c] || 1;
+  };
+
+  useEffect(() => {
+    const loadRates = async () => {
+      try {
+        const rates = await syncExchangeRates();
+        setExchangeRates(rates);
+      } catch (err) {
+        // Safe suppressor
+      }
+    };
+    loadRates();
+  }, []);
 
   useEffect(() => {
     const handleSwitchTab = (e: any) => {
@@ -135,12 +155,12 @@ function AppContent() {
 
   // GATE A: Enforce password authentication wall
   if (!user) {
-    return <BiometricLogin />;
+    return <BiometricLogin onSuccess={(profileData) => setProfile(profileData)} />;
   }
 
   // GATE B: Defer advanced features until onboarding registration checks clear
   if (!profile || profile.hasAcceptedTerms === false || !profile.baseCurrency) {
-    return <OnboardingFlow uid={user.uid} email={user.email} onSuccess={() => window.location.reload()} />;
+    return <OnboardingFlow uid={user.uid} profile={profile} onSuccess={() => window.location.reload()} />;
   }
 
   return (
@@ -165,7 +185,7 @@ function AppContent() {
   )}
   {activeTab === 'accounts' && (
     <motion.div key="accounts" {...animation}>
-      <Accounts profile={profile} accounts={accounts} />
+      <Accounts profile={profile} />
     </motion.div>
   )}
 {activeTab === 'ai' && (
@@ -183,7 +203,13 @@ function AppContent() {
 )}
   {activeTab === 'activity' && (
     <motion.div key="activity" {...animation}>
-      <Transactions uid={user.uid} accounts={accounts} profile={profile} />
+      <Transactions 
+        uid={user.uid} 
+        accounts={accounts} 
+        profile={profile} 
+        baseCurrency={profile.baseCurrency || 'AED'} 
+        getRateToAED={getRateToAED} 
+      />
     </motion.div>
   )}
 {activeTab === 'analytics' && (
@@ -198,7 +224,11 @@ function AppContent() {
 )}
   {activeTab === 'settings' && (
   <motion.div key="settings" {...animation}>
-    <Settings profile={profile} />
+    <Settings 
+      profile={profile} 
+      accounts={accounts} 
+      onUpdateProfile={(updated) => setProfile(updated)} 
+    />
   </motion.div>
 )}
 

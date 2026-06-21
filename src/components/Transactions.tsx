@@ -17,8 +17,15 @@ export interface Transaction {
   isSplit?: boolean;
   splitGroupId?: string | null;
   accountId: string;
-  type: 'Inflow' | 'Outflow' | 'Transfer';
+  type: 'Inflow' | 'Outflow' | 'Transfer' | 'income' | 'expense' | 'transfer' | string;
   status?: string;
+  recurringId?: string;
+  emoji?: string;
+  isUpcoming?: boolean;
+  toAccountId?: string;
+  transferSide?: string;
+  isUpcomingSalaryAllocation?: boolean;
+  hasMirror?: boolean;
 }
 
 interface TransactionsProps {

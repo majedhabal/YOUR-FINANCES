@@ -47,7 +47,7 @@ interface Budget {
 }
 
 interface BudgetDetailViewProps {
-  budget: Budget;
+  budget: any;
   transactions: Transaction[];
   accounts: any[];
   uid: string;

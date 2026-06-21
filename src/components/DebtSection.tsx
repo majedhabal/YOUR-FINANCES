@@ -25,7 +25,7 @@ export const DebtSection: React.FC<{
       {/* Total Debt Card */}
       <div className="bg-white rounded-2xl border border-[#E1E8ED] p-5 mb-6 shadow-sm">
         <div className="flex justify-between items-center mb-2">
-          <div className="text-[10px] uppercase text-neutral-400 tracking-wider">TOTAL COMBINED DEBT</div>
+          <div className="text-[10px] text-neutral-400">Total combined debt</div>
           <div className="bg-[#E8F5E9] text-[#2E7D32] px-2 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-0.5">
               <TrendingDown size={10} /> -2.4%
           </div>
@@ -46,8 +46,8 @@ export const DebtSection: React.FC<{
       </div>
 
       {/* Active Liabilities */}
-      <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-4" style={{ fontFamily: "'Google Sans', sans-serif" }}>
-        ACTIVE LIABILITIES
+      <h3 className="text-xs font-bold text-gray-500 mb-4" style={{ fontFamily: "'Google Sans', sans-serif" }}>
+        Active liabilities
       </h3>
       <div className="flex flex-col gap-3">
         {debtAccounts.length > 0 ? (
@@ -80,7 +80,7 @@ export const DebtSection: React.FC<{
                      </div>
                   </div>
                 </div>
-                <div className="text-[10px] text-neutral-400 uppercase mb-1">PAYOFFPROGRESS</div>
+                <div className="text-[10px] text-neutral-400 mb-1">Payoff progress</div>
                 <div className="w-full bg-neutral-100 rounded-full h-1">
                   <div className="bg-[#A6DDB1] h-1 rounded-full" style={{ width: `${payoffProgress}%` }}></div>
                 </div>

@@ -97,12 +97,10 @@ const navItems = [
       {!isSalaryModalOpen && (
         <header className="w-full sticky top-0 z-40 px-4 py-0 flex items-center justify-between select-none box-border border-b border-neutral-100 bg-white shrink-0">
           <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => setActiveTab('essentials')}>
-            <div className="w-10 h-10 flex items-center justify-center filter drop-shadow Astro-Portrait-Mode">
+            <div className="w-20 h-20 flex items-center justify-center filter drop-shadow Astro-Portrait-Mode">
               <VantageLogo size="100%" />
             </div>
             <div className="flex flex-col">
-              <h1 className="text-sm font-bold text-black font-['Google_Sans'] leading-tight">YOUR FINANCES</h1>
-              <span className="text-[10px] font-normal text-neutral-500 font-['Google_Sans'] leading-tight">by ME Vantage</span>
             </div>
           </div>
 

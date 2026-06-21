@@ -120,7 +120,6 @@ export const Budgets: React.FC<BudgetsProps> = ({ profile }) => {
                 uid={profile.uid} 
                 onBack={() => setSelectedBudget(null)} 
                 onEdit={() => {}} 
-                onArchive={async () => setSelectedBudget(null)} 
               />
             </motion.div>
           </div>

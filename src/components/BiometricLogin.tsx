@@ -546,7 +546,7 @@ export const BiometricLogin: React.FC<BiometricLoginProps> = ({ onSuccess }) => 
                   I agree to{' '}
                   <button
                     type="button"
-                    onClick={(e) => { e.preventDefault(); setActiveModal('privacy'); }}
+                    onClick={(e) => { e.preventDefault(); window.open('https://www.yourfinances.me/privacy', '_blank'); }}
                     className="text-emerald-600 font-bold hover:underline cursor-pointer"
                   >
                     Privacy Policy
@@ -554,7 +554,7 @@ export const BiometricLogin: React.FC<BiometricLoginProps> = ({ onSuccess }) => 
                   and{' '}
                   <button
                     type="button"
-                    onClick={(e) => { e.preventDefault(); setActiveModal('terms'); }}
+                    onClick={(e) => { e.preventDefault(); window.open('https://www.yourfinances.me/terms-of-engagement', '_blank'); }}
                     className="text-emerald-600 font-bold hover:underline cursor-pointer"
                   >
                     Terms & Conditions
@@ -889,7 +889,7 @@ export const BiometricLogin: React.FC<BiometricLoginProps> = ({ onSuccess }) => 
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-[10px] text-neutral-400 font-mono">yourfinances.me</span>
+            <span onClick={() => window.open('https://www.yourfinances.me/', '_blank')} className="text-[10px] text-neutral-400 font-mono cursor-pointer hover:text-emerald-700 transition-colors">yourfinances.me</span>
           </div>
         </div>
       </header>
@@ -1064,7 +1064,7 @@ export const BiometricLogin: React.FC<BiometricLoginProps> = ({ onSuccess }) => 
                   and{' '}
                   <button
                     type="button"
-                    onClick={(e) => { e.preventDefault(); setActiveModal('terms'); }}
+                    onClick={(e) => { e.preventDefault(); window.open('https://www.yourfinances.me/terms-of-engagement', '_blank'); }}
                     className="text-emerald-600 font-bold hover:underline cursor-pointer"
                   >
                     Terms & Conditions
@@ -1088,8 +1088,8 @@ export const BiometricLogin: React.FC<BiometricLoginProps> = ({ onSuccess }) => 
           </div>
 
           <div className="flex flex-col items-center sm:items-end gap-1 font-sans">
-            <span className="text-xs font-bold text-emerald-600 font-mono">yourfinances.me</span>
-            <span className="text-[9px] text-[#57606F] font-normal">&copy; 2026 ME Vantage. UAE.</span>
+            <span onClick={() => window.open('https://www.yourfinances.me/', '_blank')} className="text-xs font-bold text-emerald-600 font-mono cursor-pointer hover:text-emerald-700 transition-colors">yourfinances.me</span>
+            <span className="text-[9px] text-[#57606F] font-normal">&copy; 2026 ME Vantage FZE LLC.</span>
           </div>
         </div>
       </footer>
