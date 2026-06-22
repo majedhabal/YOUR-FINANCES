@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ChevronLeft, MessageSquare, Trash2, Calendar, Sparkles } from 'lucide-react';
+import { ChevronLeft, MessageSquare, Trash2, Calendar } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface AIConversationsHistoryViewProps {
   uid: string;
@@ -22,6 +23,7 @@ interface Conversation {
 }
 
 export const AIConversationsHistoryView: React.FC<AIConversationsHistoryViewProps> = ({ uid, onBack }) => {
+  const { t } = useTranslation();
   const [conversations, setConversations] = useState<Conversation[]>([]);
 
   const loadHistory = () => {
@@ -51,7 +53,7 @@ export const AIConversationsHistoryView: React.FC<AIConversationsHistoryViewProp
 
   const handleDeleteConversation = (id: string, e: React.MouseEvent) => {
     e.stopPropagation(); // Avoid triggering open
-    if (!confirm("Are you sure you want to delete this conversation from your secure ledger archive?")) return;
+    if (!confirm(t('ai_history.confirm_delete'))) return;
 
     const historyKey = `vantage_ai_history_${uid}`;
     const updated = conversations.filter(c => c.id !== id);
@@ -83,15 +85,15 @@ export const AIConversationsHistoryView: React.FC<AIConversationsHistoryViewProp
         >
           <ChevronLeft size={20} />
         </button>
-        <span className="text-[10px] sm:text-xs font-black uppercase text-vantage-muted tracking-[0.2em]">Archived Dialogues</span>
+        <span className="text-[10px] sm:text-xs font-black uppercase text-vantage-muted tracking-[0.2em]">{t('ai_history.archived_dialogues')}</span>
       </div>
 
       <div className="w-full max-w-2xl mx-auto px-6 flex-1 flex flex-col gap-6">
         {/* Section Headline */}
         <div className="flex flex-col gap-1.5 border-b border-neutral-100 dark:border-white/5 pb-4">
-          <h1 className="text-2xl sm:text-3xl font-black uppercase text-vantage-text dark:text-white tracking-tight">Previous AI Conversations</h1>
+          <h1 className="text-2xl sm:text-3xl font-black uppercase text-vantage-text dark:text-white tracking-tight">{t('ai_history.previous_ai_conversations')}</h1>
           <p className="text-xs text-vantage-muted tracking-wide font-semibold">
-            Instantly recall, inspect, and continue historical financial portfolio briefings.
+            {t('ai_history.history_description')}
           </p>
         </div>
 
@@ -101,9 +103,9 @@ export const AIConversationsHistoryView: React.FC<AIConversationsHistoryViewProp
               <MessageSquare size={22} />
             </div>
             <div className="flex flex-col gap-1">
-              <h3 className="text-sm font-extrabold uppercase text-vantage-text dark:text-neutral-200 tracking-wider">No Conversations Found</h3>
+              <h3 className="text-sm font-extrabold uppercase text-vantage-text dark:text-neutral-200 tracking-wider">{t('ai_history.no_conversations_found')}</h3>
               <p className="text-[11px] text-vantage-muted max-w-xs font-semibold leading-relaxed">
-                No portfolio conversations recorded inside your local ledger vault. Run a search or inquiry in the AI console below to launch a strategy session.
+                {t('ai_history.no_conversations_desc')}
               </p>
             </div>
           </div>
@@ -139,14 +141,14 @@ export const AIConversationsHistoryView: React.FC<AIConversationsHistoryViewProp
                           <Calendar size={10} />
                           <span>{dateStr}</span>
                           <span className="w-1 h-1 rounded-full bg-neutral-300 dark:bg-neutral-700"></span>
-                          <span>{convo.messages.length} messages</span>
+                          <span>{t('ai_history.messages_count', { count: convo.messages.length })}</span>
                         </div>
                       </div>
                     </div>
 
                     <button
                       onClick={(e) => handleDeleteConversation(convo.id, e)}
-                      title="Delete log"
+                      title={t('ai_history.delete_log')}
                       className="p-2 sm:p-2.5 rounded-xl text-neutral-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all opacity-100 group-hover:opacity-100 md:opacity-0 group-hover:block shrink-0 active:scale-90"
                     >
                       <Trash2 size={14} />

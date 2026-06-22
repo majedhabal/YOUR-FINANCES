@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'motion/react';
 import { Fingerprint, ShieldCheck, Lock as LockIcon, Unlock as UnlockIcon, AlertCircle, ArrowLeft, Laptop, Shield, Wallet, PiggyBank, Sparkles, Facebook, Sliders } from 'lucide-react';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
@@ -67,6 +68,7 @@ interface BiometricLoginProps {
 }
 
 export const BiometricLogin: React.FC<BiometricLoginProps> = ({ onSuccess }) => {
+  const { t } = useTranslation();
   const [view, setView] = useState<'landing' | 'auth'>('landing');
   const [status, setStatus] = useState<'idle' | 'scanning' | 'success' | 'error'>('idle');
   const [errorMsg, setErrorMsg] = useState('');
@@ -543,27 +545,27 @@ export const BiometricLogin: React.FC<BiometricLoginProps> = ({ onSuccess }) => 
                   className="mt-0.5 w-4 h-4 rounded border-[#D1D8E0] text-emerald-600 focus:ring-emerald-500 accent-emerald-600 cursor-pointer"
                 />
                 <span className="text-[#57606F] text-[10.5px] font-normal leading-relaxed select-none">
-                  I agree to{' '}
+                  {t('footer.agree_to_privacy')}{' '}
                   <button
                     type="button"
                     onClick={(e) => { e.preventDefault(); window.open('https://www.yourfinances.me/privacy', '_blank'); }}
                     className="text-emerald-600 font-bold hover:underline cursor-pointer"
                   >
-                    Privacy Policy
+                    {t('footer.privacy_policy')}
                   </button>{' '}
-                  and{' '}
+                  {t('footer.and')}{' '}
                   <button
                     type="button"
                     onClick={(e) => { e.preventDefault(); window.open('https://www.yourfinances.me/terms-of-engagement', '_blank'); }}
                     className="text-emerald-600 font-bold hover:underline cursor-pointer"
                   >
-                    Terms & Conditions
+                    {t('footer.terms_conditions')}
                   </button>{' '}
-                  to gain access.
+                  {t('footer.to_gain_access')}
                 </span>
               </label>
               <p className="text-[#8B95A5] text-[9px] font-normal leading-relaxed select-none mt-1">
-                YOUR FINANCES by ME Vantage &bull; UAE Financial Security Framework
+                {t('footer.branding')} &bull; {t('footer.framework')}
               </p>
             </div>
           </footer>

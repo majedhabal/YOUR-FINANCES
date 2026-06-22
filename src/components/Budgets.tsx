@@ -5,12 +5,14 @@ import { collection, query, onSnapshot } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { BudgetCard } from './BudgetCard';
 import { BudgetDetailView } from './BudgetDetailView';
+import { useTranslation } from 'react-i18next';
 
 interface BudgetsProps {
   profile: any;
 }
 
 export const Budgets: React.FC<BudgetsProps> = ({ profile }) => {
+  const { t } = useTranslation();
   const [envelopes, setEnvelopes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedBudget, setSelectedBudget] = useState<any | null>(null);
@@ -51,8 +53,8 @@ export const Budgets: React.FC<BudgetsProps> = ({ profile }) => {
         <div className="flex items-center gap-2.5">
           <ListTodo size={18} className="text-[#A6DDB1]" />
           <div className="flex flex-col">
-            <h4 className="text-sm font-bold text-white m-0 lowercase">envelope budget pools</h4>
-            <span className="text-[10px] text-neutral-400 font-medium mt-0.5">Automated salary breakdowns and spending caps</span>
+            <h4 className="text-sm font-bold text-white m-0 lowercase">{t('budgets.envelope_budget_pools')}</h4>
+            <span className="text-[10px] text-neutral-400 font-medium mt-0.5">{t('budgets.automated_salary_breakdowns')}</span>
           </div>
         </div>
         <button 
@@ -60,7 +62,7 @@ export const Budgets: React.FC<BudgetsProps> = ({ profile }) => {
           className="px-4 py-2.5 rounded-full font-bold text-xs bg-[#A6DDB1] text-[#1E2229] transition-all hover:brightness-105 active:scale-95 cursor-pointer border-none flex items-center gap-1.5"
         >
           <Plus size={14} strokeWidth={2.5} />
-          <span>Configure target envelope</span>
+          <span>{t('budgets.configure_target_envelope')}</span>
         </button>
       </div>
 
@@ -68,7 +70,7 @@ export const Budgets: React.FC<BudgetsProps> = ({ profile }) => {
       {loading ? (
         <div className="py-20 text-center flex items-center justify-center gap-2 text-neutral-400 text-xs font-mono select-none">
           <RefreshCw size={14} className="animate-spin text-[#A6DDB1]" />
-          <span>Syncing active constraints...</span>
+          <span>{t('budgets.syncing_active_constraints')}</span>
         </div>
       ) : envelopes.length === 0 ? (
         <div 
@@ -80,9 +82,9 @@ export const Budgets: React.FC<BudgetsProps> = ({ profile }) => {
             borderRadius: '24px'
           }}
         >
-          <span className="text-sm font-semibold text-neutral-400">No active tracking envelopes initiated</span>
+          <span className="text-sm font-semibold text-neutral-400">{t('budgets.no_active_tracking_envelopes')}</span>
           <p className="text-xs text-neutral-500 m-0 max-w-[280px] leading-relaxed">
-            Initialize an envelope allocation parameters target block from your transaction creation window panels to automate allocations.
+            {t('budgets.initialize_envelope_desc')}
           </p>
         </div>
       ) : (
@@ -93,7 +95,7 @@ export const Budgets: React.FC<BudgetsProps> = ({ profile }) => {
               budget={{
                 ...budget,
                 maxBudget: budget.limit || budget.maxBudget || 0,
-                title: budget.title || budget.category || 'Envelope limit'
+                title: budget.title || budget.category || t('budgets.envelope_limit')
               }} 
               spent={budget.spent || 0}
               onCardClick={() => setSelectedBudget(budget)} 

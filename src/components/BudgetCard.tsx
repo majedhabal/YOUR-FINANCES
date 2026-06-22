@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'motion/react';
 import { Plus, Trash2, Home, Utensils, Car, Film, ShoppingBag, HelpCircle } from 'lucide-react';
 import { triggerHaptic, hapticPresets } from '../lib/haptics';
+import { useTranslation } from 'react-i18next';
 
 export interface BudgetCategory {
   id: string;
@@ -60,6 +61,7 @@ export const BudgetCard: React.FC<BudgetCardProps> = ({
   onPlusClick,
   onDeleteClick,
 }) => {
+  const { t } = useTranslation();
   // Extract fields aligning with exact payload
   const maxLimit = budget.allocatedAmount !== undefined ? budget.allocatedAmount : (budget.maxBudget || budget.amount || 1);
   const spentVal = spent !== undefined ? spent : (budget.spentAmount !== undefined ? budget.spentAmount : (budget.spent || 0));
@@ -67,8 +69,8 @@ export const BudgetCard: React.FC<BudgetCardProps> = ({
   const progress = Math.min(ratio * 100, 100);
   const isOver = spentVal > maxLimit;
   
-  const titleText = budget.categoryTitle || budget.title || budget.category || 'Allocation';
-  const categoryText = budget.subcategory || budget.category || 'Rent & Utilities';
+  const titleText = budget.categoryTitle || budget.title || budget.category || t('budget_card.allocation');
+  const categoryText = budget.subcategory || budget.category || t('budget_card.rent_and_utilities');
 
   const IconComponent = getCategoryIcon(titleText);
 
@@ -106,7 +108,7 @@ export const BudgetCard: React.FC<BudgetCardProps> = ({
           </span>
           <span className="text-xs text-neutral-400 mt-1 font-normal leading-none"
                 style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}>
-            {progress.toFixed(0)}% Used
+            {progress.toFixed(0)}% {t('budget_card.used')}
           </span>
         </div>
       </div>
@@ -135,7 +137,7 @@ export const BudgetCard: React.FC<BudgetCardProps> = ({
               style={{ fontFamily: "'Google Sans', sans-serif" }}
               className="flex items-center gap-1 px-2 py-1 bg-neutral-50 hover:bg-[#A6DDB1]/10 text-neutral-500 hover:text-emerald-800 text-[10px] rounded-lg transition-all"
             >
-              <Plus size={10} /> Add Spend
+              <Plus size={10} /> {t('budget_card.add_spend')}
             </button>
           )}
           {onDeleteClick && (

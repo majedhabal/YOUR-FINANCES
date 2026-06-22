@@ -7,8 +7,10 @@ export const SavingsSection: React.FC<{
   accountBalances: Record<string, number>,
   transactions: any[],
   onDeleteMilestone: (ms: any) => void,
-  onAddTransaction: (ms: any) => void
-}> = ({ milestones, accounts, accountBalances, transactions, onDeleteMilestone, onAddTransaction }) => {
+  onAddTransaction: (ms: any) => void,
+  onAddGoal: () => void,
+  currency: string
+}> = ({ milestones, accounts, accountBalances, transactions, onDeleteMilestone, onAddTransaction, onAddGoal, currency }) => {
   // Use optional chaining and default to empty array to prevent crashes
   const activeMilestones = Array.isArray(milestones) 
     ? milestones.filter(m => !m.isArchived) 
@@ -30,7 +32,7 @@ export const SavingsSection: React.FC<{
       <div className="bg-white rounded-2xl border border-[#E1E8ED] p-5 mb-6 shadow-sm">
         <div className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1" style={{ fontFamily: "'Google Sans', sans-serif" }}>TOTAL SAVED</div>
         <div className="text-3xl font-bold text-[#111C2D] mb-2" style={{ fontFamily: "'Google Sans', sans-serif" }}>
-          ${totalSaved.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          {currency} {totalSaved.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </div>
         <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#E8F8EE] text-[#366945] text-xs font-bold">
           <TrendingUp size={12} />
@@ -39,9 +41,14 @@ export const SavingsSection: React.FC<{
       </div>
 
       {/* Header */}
-      <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4" style={{ fontFamily: "'Google Sans', sans-serif" }}>
-          ACTIVE GOALS
-      </h3>
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest" style={{ fontFamily: "'Google Sans', sans-serif" }}>
+            ACTIVE GOALS
+        </h3>
+        <button onClick={onAddGoal} className="text-xs text-[#366945] font-bold flex items-center gap-1">
+          <Plus size={14} /> Add Goal
+        </button>
+      </div>
 
       {/* Goals List */}
       <div className="flex flex-col gap-4">
@@ -91,8 +98,8 @@ export const SavingsSection: React.FC<{
                   </div>
                   <div className="text-right flex items-center gap-2">
                     <div className="text-right">
-                      <div className="text-sm font-bold text-[#111C2D]">${effectiveCurrentValue.toLocaleString()}</div>
-                      <div className="text-[10px] text-gray-400">of ${tar.toLocaleString()}</div>
+                      <div className="text-sm font-bold text-[#111C2D]">{currency} {effectiveCurrentValue.toLocaleString()}</div>
+                      <div className="text-[10px] text-gray-400">of {currency} {tar.toLocaleString()}</div>
                     </div>
                     <div className="flex flex-col gap-1 -mt-2">
                       <button onClick={() => onAddTransaction(m)} className="text-gray-400 hover:text-[#111C2D] transition-colors">

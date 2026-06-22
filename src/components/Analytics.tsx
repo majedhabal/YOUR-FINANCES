@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   ArrowUpRight, 
@@ -115,6 +116,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
   allTransactions,
   accountBalances
 }) => {
+  const { t } = useTranslation();
   // Navigation stream state ('now' = Current Situation, 'past' = Historical Analysis, 'future' = Forecast Predictions)
   const [activeTimeline, setActiveTimeline] = useState<'now' | 'past' | 'future'>('now');
 
@@ -1090,7 +1092,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
             style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
             className="text-2xl text-[#111c2d] tracking-tight"
           >
-            Analysis Overview
+            {t('analytics.analysis_overview')}
           </h1>
           <div className="flex bg-[#f0f3ff] p-1 rounded-xl border border-[#c1c9bf]/35 self-start">
             {(['1M', '3M', '6M', '1Y', 'All'] as const).map(range => (
@@ -1107,6 +1109,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
                 {range}
               </button>
             ))}
+            {/* Added a placeholder for the timeline switcher buttons translation in the component - user intent is translate all labels */}
           </div>
         </div>
 

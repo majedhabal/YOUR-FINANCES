@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, RefreshCw } from 'lucide-react';
 import { collection, addDoc, serverTimestamp, onSnapshot, query } from 'firebase/firestore';
@@ -7,6 +8,7 @@ import { db } from '../lib/firebase';
 export const AddTransactionModal: React.FC<any> = ({
   isOpen, onClose, uid, onSuccess, accounts = []
 }) => {
+  const { t } = useTranslation();
   const [categories, setCategories] = useState<any[]>([]);
 
   useEffect(() => {
@@ -129,28 +131,28 @@ export const AddTransactionModal: React.FC<any> = ({
           >
             {/* Header */}
             <div>
-              <h3 className="text-xl font-extrabold text-[#111c2d]">SUBMIT TRANSACTION</h3>
-              <p className="text-[10px] font-bold text-[#8c8c99] tracking-widest uppercase">CONTROL</p>
+              <h3 className="text-xl font-extrabold text-[#111c2d]">{t('add_transaction.submit_transaction')}</h3>
+              <p className="text-[10px] font-bold text-[#8c8c99] tracking-widest uppercase">{t('add_transaction.control')}</p>
             </div>
 
             {/* Inputs */}
             <form onSubmit={(e) => { e.preventDefault(); handleSave(); }} className="space-y-4">
               <div>
-                <label className={labelStyles}>SOURCE ACCOUNT (AED)</label>
+                <label className={labelStyles}>{t('add_transaction.source_account')}</label>
                 <select value={accountId} onChange={(e) => setAccountId(e.target.value)} className={inputStyles}>
                   {accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name}</option>)}
                 </select>
               </div>
 
               <div>
-                <label className={labelStyles}>CATEGORY</label>
+                <label className={labelStyles}>{t('add_transaction.category')}</label>
                 <select value={category} onChange={(e) => setCategory(e.target.value)} className={inputStyles}>
                   {categories.map(cat => <option key={cat.id} value={cat.name}>{cat.name}</option>)}
                 </select>
               </div>
 
               <div>
-                <label className={labelStyles}>SUB-CATEGORY</label>
+                <label className={labelStyles}>{t('add_transaction.sub_category')}</label>
                 <select value={subcategory} onChange={(e) => setSubcategory(e.target.value)} className={inputStyles}>
                     {categories.find(c => c.name === category)?.subcategories?.map((sub: string) => (
                         <option key={`${category}-${sub}`} value={sub}>{sub}</option>
@@ -159,20 +161,20 @@ export const AddTransactionModal: React.FC<any> = ({
               </div>
 
               <div>
-                <label className={labelStyles}>INTERACTION AMOUNT</label>
+                <label className={labelStyles}>{t('add_transaction.amount')}</label>
                 <div className="relative">
-                    <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} className={`${inputStyles} pr-12`} placeholder="0 or e.g., 7000*6" />
-                    <span className="absolute right-4 top-3 text-sm font-bold text-[#8c8c99]">AED</span>
+                    <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} className={`${inputStyles} pr-12`} placeholder={t('add_transaction.amount_placeholder')} />
+                    <span className="absolute right-4 top-3 text-sm font-bold text-[#8c8c99]">{t('add_transaction.amount_currency')}</span>
                 </div>
               </div>
 
               <div>
-                <label className={labelStyles}>INTERACTION NOTE</label>
-                <textarea value={notes} onChange={(e) => setNotes(e.target.value)} className={`${inputStyles} h-24`} placeholder="DETAILS OF THE INTERACTION..." />
+                <label className={labelStyles}>{t('add_transaction.notes')}</label>
+                <textarea value={notes} onChange={(e) => setNotes(e.target.value)} className={`${inputStyles} h-24`} placeholder={t('add_transaction.notes_placeholder')} />
               </div>
 
               <div className="flex items-center justify-between py-2">
-                <label className="text-sm font-bold text-[#111c2d]">Recurring transaction</label>
+                <label className="text-sm font-bold text-[#111c2d]">{t('add_transaction.recurring_transaction')}</label>
                 <button
                    type="button"
                    onClick={() => setIsRecurring(!isRecurring)}
@@ -185,58 +187,58 @@ export const AddTransactionModal: React.FC<any> = ({
                {isRecurring && (
                 <div className="space-y-4 pt-2">
                    <div>
-                       <label className={labelStyles}>FREQUENCY</label>
+                       <label className={labelStyles}>{t('add_transaction.frequency')}</label>
                        <select value={frequency} onChange={(e) => setFrequency(e.target.value)} className={inputStyles}>
-                         <option value="Weekly">Weekly</option>
-                         <option value="Monthly">Monthly</option>
-                         <option value="Yearly">Yearly</option>
-                         <option value="Daily">Daily</option>
+                         <option value="Weekly">{t('add_transaction.frequency_weekly')}</option>
+                         <option value="Monthly">{t('add_transaction.frequency_monthly')}</option>
+                         <option value="Yearly">{t('add_transaction.frequency_yearly')}</option>
+                         <option value="Daily">{t('add_transaction.frequency_daily')}</option>
                        </select>
                    </div>
                    <div>
-                       <label className={labelStyles}>INTERVAL</label>
+                       <label className={labelStyles}>{t('add_transaction.interval')}</label>
                        <input type="number" value={interval} onChange={(e) => setInterval(e.target.value)} className={inputStyles} />
                    </div>
                    <div>
-                       <label className={labelStyles}>DAY OPTION</label>
+                       <label className={labelStyles}>{t('add_transaction.day_option')}</label>
                        <select value={dayOption} onChange={(e) => setDayOption(e.target.value)} className={inputStyles}>
-                         <option value="sameDate">Same Date</option>
-                         <option value="sameWeekday">Same Weekday</option>
-                         <option value="specificDay">Specific Day</option>
+                         <option value="sameDate">{t('add_transaction.day_option_same')}</option>
+                         <option value="sameWeekday">{t('add_transaction.day_option_weekday')}</option>
+                         <option value="specificDay">{t('add_transaction.day_option_specific')}</option>
                        </select>
                    </div>
                    {dayOption === 'specificDay' && (
                        <div>
-                           <label className={labelStyles}>SPECIFIC DAY OF MONTH</label>
-                           <input type="number" min="1" max="31" value={specificDayOfMonth} onChange={(e) => setSpecificDayOfMonth(e.target.value)} className={inputStyles} placeholder="1-31" />
+                           <label className={labelStyles}>{t('add_transaction.day_option_specific')}</label>
+                           <input type="number" min="1" max="31" value={specificDayOfMonth} onChange={(e) => setSpecificDayOfMonth(e.target.value)} className={inputStyles} placeholder={t('add_transaction.day_option_specific_placeholder')} />
                        </div>
                    )}
                    <div>
-                       <label className={labelStyles}>DURATION</label>
+                       <label className={labelStyles}>{t('add_transaction.duration')}</label>
                        <select value={duration} onChange={(e) => setDuration(e.target.value)} className={inputStyles}>
-                         <option value="Indefinite">Indefinite</option>
-                         <option value="Limited">Limited</option>
+                         <option value="Indefinite">{t('add_transaction.duration_indefinite')}</option>
+                         <option value="Limited">{t('add_transaction.duration_limited')}</option>
                        </select>
                    </div>
                    {duration === 'Limited' && (
                        <div>
-                           <label className={labelStyles}>DURATION LIMIT</label>
-                           <input type="text" value={durationLimit} onChange={(e) => setDurationLimit(e.target.value)} className={inputStyles} placeholder="E.g., 12 months, 2026-12-31" />
+                           <label className={labelStyles}>{t('add_transaction.duration_limit')}</label>
+                           <input type="text" value={durationLimit} onChange={(e) => setDurationLimit(e.target.value)} className={inputStyles} placeholder={t('add_transaction.duration_limit_placeholder')} />
                        </div>
                    )}
                    <div>
-                       <label className={labelStyles}>START DATE</label>
+                       <label className={labelStyles}>{t('add_transaction.start_date')}</label>
                        <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className={inputStyles} />
                    </div>
                    
                    <div className="flex items-center justify-between">
-                       <label className="text-xs font-bold text-[#111c2d]">Sync to Google Calendar</label>
+                       <label className="text-xs font-bold text-[#111c2d]">{t('add_transaction.sync_calendar')}</label>
                        <button type="button" onClick={() => setIsSyncedToCalendar(!isSyncedToCalendar)} className={`w-10 h-5 rounded-full p-0.5 transition-all ${isSyncedToCalendar ? 'bg-[#a6ddb1]' : 'bg-[#d8d8e5]'}`}>
                           <div className={`w-4 h-4 rounded-full bg-white transition-all ${isSyncedToCalendar ? 'translate-x-5' : 'translate-x-0'}`} />
                        </button>
                    </div>
                    <div className="flex items-center justify-between">
-                       <label className="text-xs font-bold text-[#111c2d]">Sync to Google Tasks</label>
+                       <label className="text-xs font-bold text-[#111c2d]">{t('add_transaction.sync_tasks')}</label>
                        <button type="button" onClick={() => setIsSyncedToTasks(!isSyncedToTasks)} className={`w-10 h-5 rounded-full p-0.5 transition-all ${isSyncedToTasks ? 'bg-[#a6ddb1]' : 'bg-[#d8d8e5]'}`}>
                           <div className={`w-4 h-4 rounded-full bg-white transition-all ${isSyncedToTasks ? 'translate-x-5' : 'translate-x-0'}`} />
                        </button>
@@ -246,7 +248,7 @@ export const AddTransactionModal: React.FC<any> = ({
 
               {/* Action Button */}
               <button disabled={loading} className="w-full py-4 bg-[#a6ddb1] text-[#111c2d] rounded-2xl font-bold text-sm hover:brightness-105 transition-all flex items-center justify-center">
-                {loading ? <RefreshCw className="animate-spin" /> : "COMMIT ENTRY"}
+                {loading ? <RefreshCw className="animate-spin" /> : t('add_transaction.commit')}
               </button>
             </form>
           </motion.div>

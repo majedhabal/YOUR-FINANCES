@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Plus, 
@@ -73,6 +74,7 @@ interface Account {
 }
 
 export const Accounts: React.FC<AccountsProps> = ({ profile, onNavigateToTransactions }) => {
+  const { t } = useTranslation();
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -299,7 +301,7 @@ export const Accounts: React.FC<AccountsProps> = ({ profile, onNavigateToTransac
     return (
       <div className="flex flex-col items-center justify-center py-20 gap-4">
         <div className="w-12 h-12 border-4 border-vantage-green/20 border-t-vantage-green rounded-full animate-spin" />
-        <span className="text-[10px] font-bold text-vantage-blue-grey uppercase tracking-widest">Synchronizing Accounts...</span>
+        <span className="text-[10px] font-bold text-vantage-blue-grey uppercase tracking-widest">{t('accounts.syncing_accounts')}</span>
       </div>
     );
   }
@@ -405,10 +407,10 @@ export const Accounts: React.FC<AccountsProps> = ({ profile, onNavigateToTransac
       <header className="w-full flex justify-between items-center pt-8 px-4 md:px-6">
         <div className="flex flex-col gap-1">
           <h2 className="tracking-tight text-neutral-900 leading-none">
-            <span className="font-bold text-[28px] text-neutral-900 font-g-sans" style={{ fontFamily: "'Google Sans', sans-serif" }}>Accounts Overview</span>
+            <span className="font-bold text-[28px] text-neutral-900 font-g-sans" style={{ fontFamily: "'Google Sans', sans-serif" }}>{t('accounts.overview_title')}</span>
           </h2>
           <p className="text-[14px] text-neutral-500 font-normal font-g-sans mt-1">
-            Manage your assets and liabilities in one place.
+            {t('accounts.overview_description')}
           </p>
         </div>
       </header>
@@ -418,7 +420,7 @@ export const Accounts: React.FC<AccountsProps> = ({ profile, onNavigateToTransac
         <div className="relative overflow-hidden rounded-2xl p-6 bg-white border-0 shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
           <div className="absolute -right-16 -top-16 w-48 h-48 bg-[#0D9488]/5 rounded-full blur-3xl pointer-events-none"></div>
           <div className="relative z-10">
-            <span className="text-[13px] text-neutral-500 font-medium font-g-sans uppercase tracking-wider">Total Combined Balance</span>
+            <span className="text-[13px] text-neutral-500 font-medium font-g-sans uppercase tracking-wider">{t('accounts.total_combined_balance')}</span>
             <div className="flex flex-wrap items-baseline gap-3 mt-1.5">
               <span className="font-g-sans text-4xl font-bold text-neutral-900">
                 {activeBaseCurr} {totalCombinedBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -437,7 +439,7 @@ export const Accounts: React.FC<AccountsProps> = ({ profile, onNavigateToTransac
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400" size={18} />
           <input 
             type="text"
-            placeholder="Search accounts"
+            placeholder={t('accounts.search_accounts')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-11 pr-10 py-2 bg-white border-0 rounded-xl text-[14px] font-normal leading-normal text-neutral-800 placeholder-neutral-400 focus:outline-none focus:ring-1 focus:ring-[#0D9488]/20 focus:border-[#0D9488]/40 transition-all shadow-[0_1px_3px_rgba(0,0,0,0.01)] font-g-sans"
@@ -449,21 +451,21 @@ export const Accounts: React.FC<AccountsProps> = ({ profile, onNavigateToTransac
               className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 font-normal text-xs font-g-sans"
               style={{ fontFamily: "'Google Sans', 'Plus Jakarta Sans', sans-serif" }}
             >
-              Clear
+              {t('accounts.clear_search')}
             </button>
           )}
         </div>
 
         <div className="flex gap-2 items-center shrink-0 w-full sm:w-auto justify-between sm:justify-end">
           <span className="text-[13px] text-neutral-500 font-g-sans" style={{ fontFamily: "'Google Sans', 'Plus Jakarta Sans', sans-serif" }}>
-            {showArchived ? "Showing archived accounts" : "Showing active accounts"}
+            {showArchived ? t('accounts.showing_archived') : t('accounts.showing_active')}
           </span>
           <button 
             onClick={() => setShowArchived(!showArchived)}
             className="text-xs text-neutral-600 hover:text-[#0D9488] border-0 bg-white px-3 py-1.5 rounded-xl font-medium font-g-sans transition-colors cursor-pointer"
             style={{ fontFamily: "'Google Sans', 'Plus Jakarta Sans', sans-serif" }}
           >
-            {showArchived ? "Show Active" : "Show Archived"}
+            {showArchived ? t('accounts.show_active') : t('accounts.show_archived')}
           </button>
         </div>
       </div>
@@ -476,9 +478,9 @@ export const Accounts: React.FC<AccountsProps> = ({ profile, onNavigateToTransac
               <Landmark size={26} />
             </div>
             <div className="flex flex-col gap-1">
-              <span className="text-[14px] font-semibold text-neutral-800 font-g-sans" style={{ fontFamily: "'Google Sans', 'Plus Jakarta Sans', sans-serif" }}>No accounts found</span>
+              <span className="text-[14px] font-semibold text-neutral-800 font-g-sans" style={{ fontFamily: "'Google Sans', 'Plus Jakarta Sans', sans-serif" }}>{t('accounts.no_accounts_found')}</span>
               <p className="text-[13px] text-neutral-400 font-normal leading-normal max-w-[260px] mx-auto font-g-sans" style={{ fontFamily: "'Google Sans', 'Plus Jakarta Sans', sans-serif" }}>
-                Try refining your search terms or adding a new account.
+                {t('accounts.try_refining')}
               </p>
             </div>
           </div>
@@ -494,14 +496,14 @@ export const Accounts: React.FC<AccountsProps> = ({ profile, onNavigateToTransac
               };
 
               filteredAndSearchedAccounts.forEach(account => {
-                const t = (account.type || '').toLowerCase();
-                if (t === 'bank') {
+                const accType = (account.type || '').toLowerCase();
+                if (accType === 'bank') {
                   groups['Bank Accounts'].push(account);
-                } else if (t === 'cash') {
+                } else if (accType === 'cash') {
                   groups['Cash & Wallets'].push(account);
-                } else if (t === 'investment') {
+                } else if (accType === 'investment') {
                   groups['Investments'].push(account);
-                } else if (['credit', 'loan', 'mortgage', 'credit card', 'personal loan', 'mortgage'].includes(t)) {
+                } else if (['credit', 'loan', 'mortgage', 'credit card', 'personal loan', 'mortgage'].includes(accType)) {
                   groups['Liabilities & Loans'].push(account);
                 } else {
                   groups['Other Accounts'].push(account);
@@ -518,7 +520,7 @@ export const Accounts: React.FC<AccountsProps> = ({ profile, onNavigateToTransac
                       style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} 
                       className="text-[17px] font-bold text-neutral-800 tracking-tight font-g-sans"
                     >
-                      {groupName}
+                      {groupName === 'Bank Accounts' ? t('accounts.bank_accounts') : groupName === 'Cash & Wallets' ? t('accounts.cash_wallets') : groupName === 'Investments' ? t('accounts.investments') : groupName === 'Liabilities & Loans' ? t('accounts.liabilities_loans') : t('accounts.other_accounts')}
                     </h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                       {accountsInGroup.map((account, accountIndex) => {
@@ -554,14 +556,14 @@ export const Accounts: React.FC<AccountsProps> = ({ profile, onNavigateToTransac
                                   style={{ fontFamily: "'Google Sans', sans-serif", letterSpacing: '0.04em' }}
                                 >
                                   {(() => {
-                                    const t = (account.type || '').toLowerCase();
-                                    if (t === 'bank') return 'Bank Account';
-                                    if (t === 'cash') return 'Cash Account';
-                                    if (t === 'investment') return 'Investment Portfolio';
-                                    if (t === 'credit' || t === 'credit card') return 'Credit Card';
-                                    if (t === 'loan' || t === 'personal loan') return 'Personal Loan';
-                                    if (t === 'mortgage') return 'Mortgage Liability';
-                                    return `${account.type} Account`;
+                                    const accType = (account.type || '').toLowerCase();
+                                    if (accType === 'bank') return t('account_detail.checking');
+                                    if (accType === 'cash') return t('account_detail.cash');
+                                    if (accType === 'investment') return t('account_detail.investment');
+                                    if (accType === 'credit' || accType === 'credit card') return t('account_detail.credit');
+                                    if (accType === 'loan' || accType === 'personal loan') return t('account_detail.loan');
+                                    if (accType === 'mortgage') return t('account_detail.mortgage');
+                                    return `${account.type} ${t('account_insights.type_suffix')}`;
                                   })()}
                                 </span>
 
@@ -592,13 +594,13 @@ export const Accounts: React.FC<AccountsProps> = ({ profile, onNavigateToTransac
 
                               {/* Custom emblem container */}
                               {(() => {
-                                const t = (account.type || '').toLowerCase();
+                                const accType = (account.type || '').toLowerCase();
                                 let bgClass = 'bg-slate-50 border-slate-100 text-slate-500';
-                                if (t === 'bank') bgClass = 'bg-[#EAF7EE] border-[#EAF7EE] text-[#0F5B46]';
-                                else if (t === 'cash') bgClass = 'bg-[#FCF5EC] border-[#FCF5EC] text-[#B16F39]';
-                                else if (t === 'credit' || t === 'credit card') bgClass = 'bg-[#FDF2F2] border-[#FDF2F2] text-[#9B1C1C]';
-                                else if (t === 'investment') bgClass = 'bg-[#EEF2FF] border-[#EEF2FF] text-[#312E81]';
-                                else if (t === 'loan' || t === 'personal loan' || t === 'mortgage') bgClass = 'bg-[#F5F3FF] border-[#F5F3FF] text-[#5B21B6]';
+                                if (accType === 'bank') bgClass = 'bg-[#EAF7EE] border-[#EAF7EE] text-[#0F5B46]';
+                                else if (accType === 'cash') bgClass = 'bg-[#FCF5EC] border-[#FCF5EC] text-[#B16F39]';
+                                else if (accType === 'credit' || accType === 'credit card') bgClass = 'bg-[#FDF2F2] border-[#FDF2F2] text-[#9B1C1C]';
+                                else if (accType === 'investment') bgClass = 'bg-[#EEF2FF] border-[#EEF2FF] text-[#312E81]';
+                                else if (accType === 'loan' || accType === 'personal loan' || accType === 'mortgage') bgClass = 'bg-[#F5F3FF] border-[#F5F3FF] text-[#5B21B6]';
 
                                 return (
                                   <div 
@@ -617,7 +619,7 @@ export const Accounts: React.FC<AccountsProps> = ({ profile, onNavigateToTransac
                                 className="text-[11px] text-neutral-400 font-normal leading-none font-g-sans"
                                 style={{ fontFamily: "'Google Sans', sans-serif" }}
                               >
-                                Current Balance
+                                {t('accounts.current_balance')}
                               </span>
                               <div className="flex items-baseline mt-1.5 leading-none">
                                 <span 
@@ -676,7 +678,7 @@ export const Accounts: React.FC<AccountsProps> = ({ profile, onNavigateToTransac
                                   return (
                                     <div className="w-full">
                                       <div className="flex justify-between text-[11px] text-neutral-400 mb-1 font-g-sans">
-                                        <span>Repaid</span>
+                                        <span>{t('accounts.repaid')}</span>
                                         <span className="text-[#0D9488] font-bold">{totalDebtProgress}%</span>
                                       </div>
                                       <div className="w-full bg-neutral-100 h-1 rounded-full overflow-hidden">
@@ -695,7 +697,7 @@ export const Accounts: React.FC<AccountsProps> = ({ profile, onNavigateToTransac
                                     style={{ fontFamily: "'Google Sans', sans-serif" }}
                                   >
                                     <span>{trendSymbol}</span>
-                                    <span>{trendSign}{percentageText} this month</span>
+                                    <span>{trendSign}{percentageText} {t('accounts.this_month')}</span>
                                   </div>
                                 );
                               })()}

@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { motion } from 'motion/react';
+import { useTranslation } from 'react-i18next';
 import { 
   ChevronLeft,
   MoreHorizontal,
@@ -72,6 +73,7 @@ export const BudgetDetailView: React.FC<BudgetDetailViewProps> = ({
   onBack,
   onEdit
 }) => {
+  const { t } = useTranslation();
   const [selectedTx, setSelectedTx] = React.useState<Transaction | null>(null);
   const [txToDelete, setTxToDelete] = React.useState<any | null>(null);
   
@@ -140,17 +142,17 @@ export const BudgetDetailView: React.FC<BudgetDetailViewProps> = ({
       <section className="mx-[15px] pb-lg">
         <div className="bg-white py-[20px] px-[10px] rounded-[15px] border border-[#F2F4F7] shadow-sm h-[150px] flex flex-col justify-between">
           <div className="flex justify-between items-center mb-xs">
-            <span className="font-bold text-[#5f5e5e] text-xs">TOTAL SPENT</span>
+            <span className="font-bold text-[#5f5e5e] text-xs">{t('budget_detail.total_spent')}</span>
             <div className="bg-[#e6f7ef] text-[#366945] px-sm py-xs rounded-full text-xs font-bold uppercase">
-              {Math.min(spentUsage, 100).toFixed(0)}% USED
+              {Math.min(spentUsage, 100).toFixed(0)}% {t('budget_detail.used')}
             </div>
           </div>
 
           <h2 className="text-4xl font-extrabold text-[#111c2d]">{spentThisMonth.toLocaleString(undefined, { style: 'currency', currency: 'USD' })}</h2>
 
           <div className="flex justify-between text-xs mb-xs">
-            <span className="text-[#5f5e5e]">Budget limit: {limit.toLocaleString(undefined, { style: 'currency', currency: 'USD' })}</span>
-            <span className="font-bold text-[#111c2d]">{Math.max(0, limit - spentThisMonth).toLocaleString(undefined, { style: 'currency', currency: 'USD' })} remaining</span>
+            <span className="text-[#5f5e5e]">{t('budget_detail.budget_limit')} {limit.toLocaleString(undefined, { style: 'currency', currency: 'USD' })}</span>
+            <span className="font-bold text-[#111c2d]">{Math.max(0, limit - spentThisMonth).toLocaleString(undefined, { style: 'currency', currency: 'USD' })} {t('budget_detail.remaining')}</span>
           </div>
           
           {/* Progress Bar */}
@@ -166,11 +168,11 @@ export const BudgetDetailView: React.FC<BudgetDetailViewProps> = ({
       {/* Auto-Pay & Due Date Cards */}
       <section className="mx-[15px] pb-lg grid grid-cols-2 gap-md pt-[15px]">
         <div className="bg-white p-md rounded-[20px] border border-[#F2F4F7] shadow-sm px-[10px] mr-[10px]">
-          <span className="font-label-md text-on-surface-variant uppercase tracking-widest text-xs mt-[5px]">AUTO-PAY</span>
-          <p className="text-lg font-bold text-on-surface mt-[5px]">Active</p>
+          <span className="font-label-md text-on-surface-variant uppercase tracking-widest text-xs mt-[5px]">{t('budget_detail.auto_pay')}</span>
+          <p className="text-lg font-bold text-on-surface mt-[5px]">{t('budget_detail.active')}</p>
         </div>
         <div className="bg-white p-md rounded-[20px] border border-[#F2F4F7] shadow-sm px-[10px] ml-[10px] h-[65px]">
-          <span className="font-label-md text-on-surface-variant uppercase tracking-widest text-xs mt-[5px]">DUE DATE</span>
+          <span className="font-label-md text-on-surface-variant uppercase tracking-widest text-xs mt-[5px]">{t('budget_detail.due_date')}</span>
           <p className="text-lg font-bold text-on-surface mt-[5px]">Oct 1st</p>
         </div>
       </section>
@@ -178,8 +180,8 @@ export const BudgetDetailView: React.FC<BudgetDetailViewProps> = ({
       {/* Main Content List */}
       <main className="content-area flex-1 bg-surface-container-lowest mx-[15px] px-[10px] mt-[15px]">
         <div className="flex justify-between items-center mb-md">
-          <h3 className="text-lg font-bold text-on-surface">Recent Transactions</h3>
-          <span className="text-[#A6DDB1] font-bold text-sm cursor-pointer" onClick={() => window.dispatchEvent(new CustomEvent('switch-tab', { detail: { tab: 'activity' } }))}>View All</span>
+          <h3 className="text-lg font-bold text-on-surface">{t('budget_detail.recent_transactions')}</h3>
+          <span className="text-[#A6DDB1] font-bold text-sm cursor-pointer" onClick={() => window.dispatchEvent(new CustomEvent('switch-tab', { detail: { tab: 'activity' } }))}>{t('budget_detail.view_all')}</span>
         </div>
         <div className="space-y-md">
           {currentMonthTxs.map((tx) => (
@@ -200,7 +202,7 @@ export const BudgetDetailView: React.FC<BudgetDetailViewProps> = ({
               </div>
             </div>
           ))}
-          {currentMonthTxs.length === 0 && <p className="text-on-surface-variant">No transactions found this month.</p>}
+          {currentMonthTxs.length === 0 && <p className="text-on-surface-variant">{t('budget_detail.no_transactions')}</p>}
         </div>
       </main>
     </div>

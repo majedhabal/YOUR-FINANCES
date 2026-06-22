@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'motion/react';
 import { Tab } from '../App';
 import { VantageLogo } from './VantageLogo';
@@ -37,19 +38,20 @@ interface LayoutProps {
 export const Layout: React.FC<LayoutProps> = ({ 
   children, activeTab, setActiveTab, isAIModalOpen, setIsAIModalOpen, setIsTxModalOpen, profile, accounts, transactions, accountBalances
 }) => {
+  const { t } = useTranslation();
   const [isOffline, setIsOffline] = React.useState<boolean>(() => {
     if (typeof window === 'undefined') return false;
     return !navigator.onLine;
   });
 
   const [isFabMenuOpen, setIsFabMenuOpen] = React.useState(false);
-const navItems = [
-  { id: 'essentials' as Tab, label: 'Essentials', icon: Home },
-  { id: 'accounts' as Tab, label: 'Accounts', icon: Landmark },
-  { id: 'ai' as Tab, label: 'Vantage AI', icon: BrainCircuit },
-  { id: 'activity' as Tab, label: 'Activity', icon: Activity },
-  { id: 'analytics' as Tab, label: 'Analytics', icon: TrendingUp },
-];
+  const navItems = [
+    { id: 'essentials' as Tab, label: 'Essentials', icon: Home },
+    { id: 'accounts' as Tab, label: 'Accounts', icon: Landmark },
+    { id: 'ai' as Tab, label: 'Vantage AI', icon: BrainCircuit },
+    { id: 'activity' as Tab, label: t('activity.title'), icon: Activity },
+    { id: 'analytics' as Tab, label: t('analytics.title'), icon: TrendingUp },
+  ];
 
   const [isSalaryModalOpen, setIsSalaryModalOpen] = React.useState(false);
 

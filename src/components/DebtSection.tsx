@@ -5,8 +5,9 @@ export const DebtSection: React.FC<{
   accounts: any[], 
   transactions: any[], 
   onDeleteDebt: (acc: any) => void,
-  onAddDebtTransaction: (acc: any) => void
-}> = ({ accounts, transactions, onDeleteDebt, onAddDebtTransaction }) => {
+  onAddDebtTransaction: (acc: any) => void,
+  currency: string
+}> = ({ accounts, transactions, onDeleteDebt, onAddDebtTransaction, currency }) => {
   const debtAccounts = accounts.filter(acc => 
     ['credit', 'loan', 'mortgage', 'Credit Card', 'Personal Loan', 'Mortgage'].includes(acc.type)
   );
@@ -31,7 +32,7 @@ export const DebtSection: React.FC<{
           </div>
         </div>
         <div className="text-3xl font-bold text-[#111C2D] mb-2" style={{ fontFamily: "'Google Sans', sans-serif" }}>
-          ${totalDebt.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+          {currency} {totalDebt.toLocaleString(undefined, { minimumFractionDigits: 2 })}
         </div>
         <div className="text-xs text-[#111C2D] mb-1">
           Principal Paid Progress <span className="font-bold">{progress.toFixed(0)}%</span>
@@ -40,8 +41,8 @@ export const DebtSection: React.FC<{
           <div className="bg-[#A6DDB1] h-1.5 rounded-full" style={{ width: `${progress}%` }}></div>
         </div>
         <div className="flex justify-between text-[10px] text-neutral-400">
-          <span>${paid.toLocaleString(undefined, { maximumFractionDigits: 0 })} paid</span>
-          <span>${startingTotal.toLocaleString(undefined, { maximumFractionDigits: 0 })} total</span>
+          <span>{currency} {paid.toLocaleString(undefined, { maximumFractionDigits: 0 })} paid</span>
+          <span>{currency} {startingTotal.toLocaleString(undefined, { maximumFractionDigits: 0 })} total</span>
         </div>
       </div>
 
@@ -67,7 +68,7 @@ export const DebtSection: React.FC<{
                   </div>
                   <div className="text-right flex items-center gap-2">
                      <div>
-                        <div className="text-sm font-bold text-[#111C2D]">-${Math.abs(acc.currentBalance || 0).toLocaleString()}</div>
+                        <div className="text-sm font-bold text-[#111C2D]">-{currency} {Math.abs(acc.currentBalance || 0).toLocaleString()}</div>
                         <div className="text-xs text-neutral-400">Due in {Math.floor(Math.random() * 30) + 1} days</div>
                      </div>
                      <div className="flex flex-col gap-1">

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Plus, 
@@ -107,6 +108,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
   initialIsManageMode = false
 }) => {
   const [showInsights, setShowInsights] = useState(initialShowInsights);
+  const { t } = useTranslation();
   const [isManageMode, setIsManageMode] = useState(initialIsManageMode);
   const [isEditMode, setIsEditMode] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -636,7 +638,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                         <ArrowLeft size={18} />
                       </button>
                       <h3 style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[17px] text-neutral-800" id="edit-account-heading">
-                        Edit account
+                        {t('account_detail.title')}
                       </h3>
                     </div>
                     <button type="button" onClick={() => setIsEditMode(false)} className="p-1.5 text-neutral-400 hover:text-black hover:bg-neutral-50 transition-colors rounded-lg cursor-pointer" id="edit-account-close-button">
@@ -674,7 +676,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                         className="text-neutral-500 font-normal text-[11.5px] px-1"
                         style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
                       >
-                        Account Nickname
+                        {t('account_detail.nickname')}
                       </label>
                       <input 
                         required
@@ -691,7 +693,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                         className="text-neutral-500 font-normal text-[11.5px] px-1"
                         style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
                       >
-                        Account Type
+                        {t('account_detail.type')}
                       </label>
                       <div className="relative">
                         <select 
@@ -711,13 +713,13 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                           style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
                           className="w-full bg-white border border-[#E1E8ED] hover:border-neutral-300 focus:border-[#366945] focus:ring-1 focus:ring-[#366945] rounded-xl px-4.5 py-3 pr-10 text-sm text-neutral-800 outline-none transition-all appearance-none cursor-pointer font-normal"
                         >
-                          <option value="bank">Checking Account</option>
-                          <option value="bank_savings">Savings Account</option>
-                          <option value="cash">Cash Account</option>
-                          <option value="credit">Credit Card</option>
-                          <option value="investment">Investment Portfolio</option>
-                          <option value="loan">Personal Loan</option>
-                          <option value="mortgage">Mortgage</option>
+                          <option value="bank">{t('account_detail.checking')}</option>
+                          <option value="bank_savings">{t('account_detail.savings')}</option>
+                          <option value="cash">{t('account_detail.cash')}</option>
+                          <option value="credit">{t('account_detail.credit')}</option>
+                          <option value="investment">{t('account_detail.investment')}</option>
+                          <option value="loan">{t('account_detail.loan')}</option>
+                          <option value="mortgage">{t('account_detail.mortgage')}</option>
                         </select>
                         <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-neutral-400">
                           <ChevronRight size={14} className="rotate-90" />
@@ -730,7 +732,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                         className="text-neutral-500 font-normal text-[11.5px] px-1"
                         style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
                       >
-                        Manual Balance Adjustment
+                        {t('account_detail.balance_adjustment')}
                       </label>
                       <div className="relative flex items-center">
                         <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="absolute left-4.5 text-sm font-normal text-[#57606F]">
@@ -755,7 +757,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                       <div className="grid grid-cols-2 gap-3 w-full" id="edit-liability-extra-fields">
                         <div className="flex flex-col gap-1">
                           <label className="text-neutral-500 font-normal text-[11px] px-1" style={{ fontFamily: "'Google Sans', sans-serif" }}>
-                            Interest Rate (%)
+                            {t('account_detail.interest')}
                           </label>
                           <input 
                             type="text"
@@ -767,7 +769,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                         </div>
                         <div className="flex flex-col gap-1">
                           <label className="text-neutral-500 font-normal text-[11px] px-1" style={{ fontFamily: "'Google Sans', sans-serif" }}>
-                            Due Date
+                            {t('account_detail.due_date')}
                           </label>
                           <input 
                             type="date"
@@ -784,16 +786,16 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                   {/* DISPLAY PREFERENCES block matching mockup overlay with beautiful layout */}
                   <fieldset className="bg-[#f0f3ff]/50 hover:bg-[#f0f3ff]/70 border border-[#E1E8ED] rounded-[1.25rem] p-4 flex flex-col gap-3 transition-colors" id="edit-display-preferences">
                     <legend style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[10.5px] text-neutral-600 uppercase tracking-widest font-bold px-1 mb-1">
-                      Display Preferences
+                      {t('account_detail.display')}
                     </legend>
                     
                     <div className="flex items-center justify-between">
                       <div className="flex flex-col gap-0.5 max-w-[75%]">
                         <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[13px] text-neutral-800 font-bold">
-                          Show in Total Balance
+                          {t('account_detail.show_balance')}
                         </span>
                         <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[10px] text-neutral-500 font-normal leading-normal">
-                          Include this account's funds in your net worth view.
+                          {t('account_detail.show_balance_desc')}
                         </p>
                       </div>
                       <button
@@ -814,10 +816,10 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                     <div className="flex items-center justify-between">
                       <div className="flex flex-col gap-0.5 max-w-[75%]">
                         <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[13px] text-neutral-800 font-bold">
-                          Include in Analytics
+                          {t('account_detail.show_analytics')}
                         </span>
                         <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[10px] text-neutral-500 font-normal leading-normal">
-                          Factor transactions into budget & trend reports.
+                          {t('account_detail.show_analytics_desc')}
                         </p>
                       </div>
                       <button
@@ -846,7 +848,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                       <svg className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H16.5m-5.32 15a8 8 0 0113.54-5.228m-13.54 5.228l-3.3-3.088m3.3 3.088v-5H6" />
                       </svg>
-                      {isSyncing ? 'Syncing records...' : 'Sync Account Now'}
+                      {isSyncing ? t('account_detail.syncing') : t('account_detail.sync_now')}
                     </button>
 
                     <button
@@ -862,7 +864,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                       style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
                     >
                       <ArchiveIcon size={13} />
-                      {account.isArchived ? 'Restore Account' : 'Archive Account'}
+                      {account.isArchived ? t('account_detail.restore') : t('account_detail.archive')}
                     </button>
 
                     <button
@@ -872,7 +874,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                       style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
                     >
                       <Trash2 size={13} />
-                      Unlink Account
+                      {t('account_detail.unlink')}
                     </button>
                   </div>
 
@@ -887,7 +889,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                       className="px-5 py-3 text-neutral-500 hover:text-neutral-700 text-xs rounded-xl hover:bg-neutral-50 transition-all flex items-center justify-center cursor-pointer font-normal border border-transparent"
                       id="edit-account-cancel-button"
                     >
-                      Cancel
+                      {t('account_detail.cancel')}
                     </button>
                     <button 
                       type="button"
@@ -897,7 +899,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                       className="flex-1 bg-[#A6DDB1] hover:brightness-[1.03] text-[#1c4424] text-xs rounded-xl active:scale-[0.98] transition-all flex items-center justify-center cursor-pointer disabled:opacity-50 font-bold shadow-xs border border-transparent py-3"
                       id="edit-account-save-button"
                     >
-                      {isLoading ? 'Saving Changes...' : 'Save Changes'}
+                      {isLoading ? t('account_detail.saving') : t('account_detail.save')}
                     </button>
                   </div>
                 </div>

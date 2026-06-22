@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'motion/react';
 import { 
   ArrowLeft, 
@@ -98,6 +99,7 @@ const CATEGORY_MAP: Record<string, { icon: any, color: string }> = {
 };
 
 export const AccountInsightsView: React.FC<AccountInsightsViewProps> = ({ account, accounts, transactions, onBack, onAddTransaction, onNavigateToTransactions, onSelectTransaction, onDeleteTransaction }) => {
+  const { t } = useTranslation();
   // Sort transactions by date (only past and today)
   const now = new Date();
   const accountTransactions = transactions
@@ -245,7 +247,7 @@ export const AccountInsightsView: React.FC<AccountInsightsViewProps> = ({ accoun
             <button onClick={onBack} className="p-3 bg-white/5 rounded-2xl hover:bg-white/10 transition-colors text-vantage-blue-grey hover:text-white">
               <ArrowLeft size={22} />
             </button>
-            <h2 className="text-xl font-black uppercase tracking-tight neon-glow-text">Account Detail</h2>
+            <h2 className="text-xl font-black uppercase tracking-tight neon-glow-text">{t('account_insights.title')}</h2>
           </div>
         </div>
       </div>
@@ -260,13 +262,13 @@ export const AccountInsightsView: React.FC<AccountInsightsViewProps> = ({ accoun
             </div>
             <div className="flex flex-col gap-0.5">
                <h3 className="text-xl font-black text-white uppercase tracking-tight">{account.name}</h3>
-               <p className="text-[10px] font-black text-vantage-green/60 uppercase tracking-[0.3em]">{account.type.replace('_', ' ')} Account</p>
+               <p className="text-[10px] font-black text-vantage-green/60 uppercase tracking-[0.3em]">{account.type.replace('_', ' ')} {t('account_insights.type_suffix')}</p>
             </div>
           </div>
 
           <div className="flex justify-between items-end mb-6 px-2">
             <div className="flex flex-col">
-              <span className="text-[10px] font-black text-vantage-blue-grey uppercase tracking-[0.2em] mb-2">Current Liquidity</span>
+              <span className="text-[10px] font-black text-vantage-blue-grey uppercase tracking-[0.2em] mb-2">{t('account_insights.current_liquidity')}</span>
               <div className="flex items-center gap-3">
                 <span className="text-3xl font-mono font-bold text-white neon-glow-text">
                   {currentBalance < 0 ? '-' : ''}{account.currency} {Math.abs(currentBalance).toLocaleString(undefined, { minimumFractionDigits: 2 })}
@@ -274,7 +276,7 @@ export const AccountInsightsView: React.FC<AccountInsightsViewProps> = ({ accoun
               </div>
             </div>
             <div className="flex flex-col items-end">
-              <span className="text-[10px] font-black text-vantage-blue-grey uppercase tracking-[0.2em] mb-2">30D Delta</span>
+              <span className="text-[10px] font-black text-vantage-blue-grey uppercase tracking-[0.2em] mb-2">{t('account_insights.delta_30d')}</span>
               <span className={`text-xl font-black ${percentageChange >= 0 ? 'text-vantage-green' : 'text-[#E28743]'}`}>
                 {percentageChange > 0 ? '+' : ''}{percentageChange.toFixed(0)}%
               </span>
@@ -321,7 +323,7 @@ export const AccountInsightsView: React.FC<AccountInsightsViewProps> = ({ accoun
                 {chartData.filter((_, i) => i % 10 === 0).map((d, i) => (
                   <span key={d.date} className="text-[10px] font-black text-neutral-700 uppercase tracking-widest">{d.date}</span>
                 ))}
-                <span className="text-[10px] font-black text-vantage-green uppercase tracking-widest">Today</span>
+                <span className="text-[10px] font-black text-vantage-green uppercase tracking-widest">{t('account_insights.today')}</span>
              </div>
           </div>
         </div>
@@ -329,8 +331,8 @@ export const AccountInsightsView: React.FC<AccountInsightsViewProps> = ({ accoun
         {/* Transactions Section */}
         <div className="space-y-6">
            <div className="px-2 flex flex-col gap-1">
-              <h4 className="text-lg font-black text-white uppercase tracking-tight">Recent Activity</h4>
-              <p className="text-[10px] font-black text-vantage-blue-grey uppercase tracking-[0.2em]">Live Interaction Log</p>
+              <h4 className="text-lg font-black text-white uppercase tracking-tight">{t('account_insights.recent_activity')}</h4>
+              <p className="text-[10px] font-black text-vantage-blue-grey uppercase tracking-[0.2em]">{t('account_insights.interaction_log')}</p>
            </div>
 
            <div className="space-y-3">
@@ -352,7 +354,7 @@ export const AccountInsightsView: React.FC<AccountInsightsViewProps> = ({ accoun
                 }
                 
                 const displayCategory = tx.type === 'transfer' 
-                  ? (tx.transferSide === 'receiver' ? `From ${accounts.find(a => a.id === tx.toAccountId)?.name || 'Account'}` : `To ${accounts.find(a => a.id === tx.toAccountId)?.name || 'Account'}`)
+                  ? (tx.transferSide === 'receiver' ? `${t('account_insights.from')} ${accounts.find(a => a.id === tx.toAccountId)?.name || 'Account'}` : `${t('account_insights.to')} ${accounts.find(a => a.id === tx.toAccountId)?.name || 'Account'}`)
                   : tx.category;
                 
                 return (

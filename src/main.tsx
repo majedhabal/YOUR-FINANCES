@@ -2,6 +2,7 @@ import {StrictMode} from 'react';
 import {createRoot} from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
+import './lib/i18n';
 
 // Prevent crash when global interceptor tries to serialize console arguments containing circular structures (e.g., from raw Firebase/React errors)
 const makeSafeConsoleArg = (arg: any, seen = new WeakSet()): any => {

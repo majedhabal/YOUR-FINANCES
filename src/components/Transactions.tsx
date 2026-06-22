@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'motion/react';
 import { Search, Filter, ArrowUpRight, ArrowDownLeft, FileDown, RefreshCw, ChevronRight, Plus, Mic, GitBranch, CalendarClock } from 'lucide-react';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
@@ -39,6 +40,7 @@ interface TransactionsProps {
 export const Transactions: React.FC<TransactionsProps> = ({
   uid, accounts, baseCurrency, getRateToAED, profile
 }) => {
+  const { t } = useTranslation();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [viewMode, setViewMode] = useState<'current' | 'future'>('current');
   const [searchQuery, setSearchQuery] = useState('');
@@ -92,7 +94,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search transactions.."
+              placeholder={t('activity.search_transactions')}
               className="w-full bg-[#F9FAFB] border border-[#E5E7EB] rounded-full py-2.5 pl-11 pr-12 text-sm text-[#111C2D] focus:border-[#A6DDB1] outline-none transition-all placeholder:text-neutral-400 font-medium font-sans"
             />
             <Filter 
@@ -104,7 +106,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
           </div>
 
           <div className="flex items-center justify-end gap-3 w-full sm:w-auto">
-            <button onClick={() => setIsAddModalOpen(true)} className="flex items-center gap-2 px-5 py-2.5 rounded-full border border-transparent font-bold text-sm bg-[#A6DDB1] text-[#1E2229] transition-all hover:brightness-105 active:scale-95 cursor-pointer"><Plus size={16} strokeWidth={2.5} /><span>Add entry</span></button>
+            <button onClick={() => setIsAddModalOpen(true)} className="flex items-center gap-2 px-5 py-2.5 rounded-full border border-transparent font-bold text-sm bg-[#A6DDB1] text-[#1E2229] transition-all hover:brightness-105 active:scale-95 cursor-pointer"><Plus size={16} strokeWidth={2.5} /><span>{t('activity.add_entry')}</span></button>
           </div>
         </div>
 
@@ -112,10 +114,10 @@ export const Transactions: React.FC<TransactionsProps> = ({
           <div className="flex bg-white rounded-full p-1 shadow-sm">
             <button 
               onClick={() => setViewMode('future')}
-              className={`px-6 py-2.5 rounded-full text-sm transition-all ${viewMode === 'future' ? 'font-bold text-[#111C2D] bg-[#A6DDB1] shadow-sm' : 'font-normal text-[#57606F]'}`}>Future Transactions</button>
+              className={`px-6 py-2.5 rounded-full text-sm transition-all ${viewMode === 'future' ? 'font-bold text-[#111C2D] bg-[#A6DDB1] shadow-sm' : 'font-normal text-[#57606F]'}`}>{t('activity.future_transactions')}</button>
             <button 
               onClick={() => setViewMode('current')}
-              className={`px-6 py-2.5 rounded-full text-sm transition-all ${viewMode === 'current' ? 'font-bold text-[#111C2D] bg-[#A6DDB1] shadow-sm' : 'font-normal text-[#57606F]'}`}>Current Transactions</button>
+              className={`px-6 py-2.5 rounded-full text-sm transition-all ${viewMode === 'current' ? 'font-bold text-[#111C2D] bg-[#A6DDB1] shadow-sm' : 'font-normal text-[#57606F]'}`}>{t('activity.current_transactions')}</button>
           </div>
         </div>
       </div>
@@ -135,7 +137,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
                 }}
               >
 
-                {type === 'All' ? 'All records' : (type === 'Inflow' ? 'Confirmed inflows' : 'Outflow statements')}
+                {type === 'All' ? t('activity.all_records') : (type === 'Inflow' ? t('activity.confirmed_inflows') : t('activity.outflow_statements'))}
               </button>
             ))}
           </motion.div>
@@ -146,23 +148,23 @@ export const Transactions: React.FC<TransactionsProps> = ({
       <div className="w-full flex flex-col gap-6">
         {viewMode === 'future' ? (
            <div className="p-5 flex flex-col gap-3 bg-white border border-[#F2F4F7] rounded-[24px] shadow-sm">
-             <h3 className="text-[clamp(1.05rem,2.4vw,1.25rem)] font-semibold text-[#111C2D] m-0 flex items-center gap-2 select-none"><CalendarClock size={18} className="text-[#366945]" /><span>Upcoming transactions</span></h3>
+             <h3 className="text-[clamp(1.05rem,2.4vw,1.25rem)] font-semibold text-[#111C2D] m-0 flex items-center gap-2 select-none"><CalendarClock size={18} className="text-[#366945]" /><span>{t('activity.upcoming_transactions')}</span></h3>
              <div className="flex flex-col w-full divide-y divide-gray-100">
                {filteredUpcoming.length > 0 ? (
                  filteredUpcoming.map((tx) => (<TransactionRow key={tx.id} tx={tx} accounts={accounts} onClick={() => setSelectedTx(tx)} />))
                ) : (
-                 <div className="py-8 text-center text-gray-400 text-sm">No future transactions found.</div>
+                 <div className="py-8 text-center text-gray-400 text-sm">{t('activity.no_future_found')}</div>
                )}
              </div>
            </div>
         ) : (
           <div className="p-5 flex flex-col gap-3 min-h-[250px] bg-white border border-[#F2F4F7] rounded-[24px] shadow-sm">
-            <h3 className="text-[clamp(1.05rem,2.4vw,1.25rem)] font-semibold text-[#111C2D] m-0 flex items-center gap-2 select-none"><RefreshCw size={18} className="text-[#366945]" /><span>Activity log</span></h3>
+            <h3 className="text-[clamp(1.05rem,2.4vw,1.25rem)] font-semibold text-[#111C2D] m-0 flex items-center gap-2 select-none"><RefreshCw size={18} className="text-[#366945]" /><span>{t('activity.title')}</span></h3>
 
             {loading ? (
-              <div className="flex-1 flex justify-center items-center py-12 text-neutral-400 font-medium text-sm gap-2 select-none"><RefreshCw size={16} className="animate-spin text-[#A6DDB1]" /><span>Syncing financial database indicators...</span></div>
+              <div className="flex-1 flex justify-center items-center py-12 text-neutral-400 font-medium text-sm gap-2 select-none"><RefreshCw size={16} className="animate-spin text-[#A6DDB1]" /><span>{t('activity.syncing_db')}</span></div>
             ) : filteredHistorical.length === 0 ? (
-              <div className="flex-1 flex flex-col justify-center items-center py-16 text-center select-none"><span className="text-neutral-400 font-semibold text-sm">No recorded logs matched search filter terms</span></div>
+              <div className="flex-1 flex flex-col justify-center items-center py-16 text-center select-none"><span className="text-neutral-400 font-semibold text-sm">{t('activity.no_recorded_logs')}</span></div>
             ) : (
               <div className="flex flex-col w-full divide-y divide-white/5">
                 {filteredHistorical.map((tx) => (<TransactionRow key={tx.id} tx={tx} accounts={accounts} onClick={() => setSelectedTx(tx)} />))}

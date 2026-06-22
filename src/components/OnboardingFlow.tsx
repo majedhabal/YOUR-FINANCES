@@ -35,6 +35,8 @@ import { signInWithPopup, FacebookAuthProvider, signInWithEmailAndPassword, crea
 import { db, auth, getGoogleProvider } from '../lib/firebase';
 import { seedUserCustomCategories } from '../lib/categoryUtils';
 import { VantageLogo } from './VantageLogo';
+import { LanguageSelector } from './LanguageSelector';
+import i18n from '../lib/i18n';
 import { evaluateMathExpression, MASTER_CATEGORIES } from '../lib/constants';
 
 interface Dependent {
@@ -396,6 +398,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
     return raw;
   });
   const [goalAmount, setGoalAmount] = useState<string>(''); // force empty string initialization to let hints show
+  const [selectedLanguage, setSelectedLanguage] = useState(i18n.language || 'en');
 
   
   // Profile fields state
@@ -1058,6 +1061,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
       financialGoals: primaryGoal || (Array.isArray(financialGoals) ? financialGoals.join(', ') : (financialGoals || "Buy a family villa, optimize long-term savings")),
       createdAt: existingCreatedAt,
       updatedAt: new Date().toISOString(),
+      language: selectedLanguage,
       geminiInsightsEnabled: profile?.geminiInsightsEnabled !== undefined ? profile.geminiInsightsEnabled : true,
       hasAcceptedTerms: true,
       onboardedAt: new Date().toISOString(),
@@ -1660,6 +1664,22 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
             </p>
           </div>
         </div>
+
+        {/* --- LANGUAGE SELECTION --- */}
+        {activeStep === 1 && (
+          <div className="flex flex-col gap-1.5 self-start w-full max-w-[85%] animate-fadeIn">
+            <div className="bg-[#E9ECEF] text-[#000000] rounded-2xl rounded-tl-none p-2.5 shadow-sm border border-[#D1D8DD]/50">
+              <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: "clamp(11px, 3.2vw, 13px)" }} className="leading-relaxed">
+                Also, please select your preferred language:
+              </p>
+            </div>
+            <div className="bg-white border border-[#E1E8ED] rounded-2xl p-4 shadow-sm mt-1">
+              <LanguageSelector onLanguageChange={(lng) => {
+                 setSelectedLanguage(lng);
+              }} />
+            </div>
+          </div>
+        )}
 
         {/* --- USER RESPONSE 1 --- */}
         {activeStep > 1 && fullName && (

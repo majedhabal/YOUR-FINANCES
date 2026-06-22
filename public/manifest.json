@@ -11,16 +11,32 @@
   "id": "com.yourfinances.analytics",
   "shortcuts": [
     {
-      "name": "View Budgets",
-      "short_name": "Budgets",
-      "description": "Check real-time budget thresholds",
-      "url": "/?tab=budgets"
+      "name": "Add Transaction",
+      "short_name": "Add",
+      "description": "Log a new transaction",
+      "url": "/add-transaction",
+      "icons": [{ "src": "/icons/add.png", "sizes": "192x192" }]
     },
     {
-      "name": "Quick Add Outflow",
-      "short_name": "Quick Add",
-      "description": "Instantly log an expense to your connected envelopes",
-      "url": "/?quickadd=true"
+      "name": "View Essentials",
+      "short_name": "Essentials",
+      "description": "Access essential financial tools",
+      "url": "/essentials",
+      "icons": [{ "src": "/icons/essentials.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "My Accounts",
+      "short_name": "Accounts",
+      "description": "View account balances and details",
+      "url": "/accounts",
+      "icons": [{ "src": "/icons/accounts.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Analytics",
+      "short_name": "Analytics",
+      "description": "View financial trends and insights",
+      "url": "/analytics",
+      "icons": [{ "src": "/icons/analytics.png", "sizes": "192x192" }]
     }
   ],
   "widgets": [

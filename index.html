@@ -14,7 +14,7 @@
           else if (size === 'xlarge') sizePx = '20px';
           document.documentElement.style.fontSize = sizePx;
           document.documentElement.style.setProperty('--app-base-font-size', sizePx);
-
+ 
           const font = localStorage.getItem('vantage_font_family') || 'Google Sans';
           let fontFamilyVal = "'Google Sans', sans-serif";
           if (font === 'Plus Jakarta Sans') {
@@ -39,6 +39,15 @@
     <link rel="icon" type="image/png" href="/icons/Your_Finances_Logo_Loading.png" />
     <link rel="apple-touch-icon" href="/icons/Your_Finances_Logo_Loading.png" />
     <title>YOUR FINANCES</title>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-TVMMKL3JQD"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+ 
+      gtag('config', 'G-TVMMKL3JQD');
+    </script>
     <style>
       #splash-screen {
         position: fixed;

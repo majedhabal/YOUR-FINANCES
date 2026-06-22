@@ -12,6 +12,7 @@ import { AddTransactionModal } from './components/AddTransactionModal';
 import { AddAccountModal } from './components/AddAccountModal';
 import { VantageDataErrorBoundary } from './components/VantageDataErrorBoundary';
 import { RefreshCw } from 'lucide-react';
+import i18n from './lib/i18n';
 import { Essentials } from './components/Essentials';
 import { Accounts } from './components/Accounts';
 import { VantageAI } from './components/VantageAI';
@@ -84,6 +85,11 @@ function AppContent() {
           if (docSnap.exists()) {
             const profileData = docSnap.data();
             setProfile({ uid: currentUser.uid, ...profileData });
+            
+            // Sync saved language if available
+            if (profileData.language) {
+              i18n.changeLanguage(profileData.language);
+            }
             
             // Trigger tactical tour sequence dynamically if onboarding just cleared
             if (profileData.hasAcceptedTerms && !localStorage.getItem(`vantage_tour_completed_${currentUser.uid}`)) {

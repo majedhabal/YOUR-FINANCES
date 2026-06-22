@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'motion/react';
 import { User, Shield, Bell, CreditCard, LogOut, ChevronRight, Moon, Globe, Sparkles, Zap, PackageOpen, RotateCcw, LayoutGrid, RefreshCw, Calendar, CheckSquare, Brain, Lock, Fingerprint, MessageSquare, Zap as ZapIcon, Type, ZoomIn } from 'lucide-react';
+import { LanguageSelector } from './LanguageSelector';
 
 import { doc, updateDoc, getDoc, setDoc, writeBatch, collection, getDocs } from 'firebase/firestore';
 import { db } from '../lib/firebase';
@@ -39,6 +41,7 @@ interface SettingsProps {
 }
 
 export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateProfile }) => {
+  const { t } = useTranslation();
   const { deleteProfile } = useVantageActions(profile?.uid);
   const [activeView, setActiveView] = useState<'main' | 'categories' | 'recurring' | 'privacy' | 'terms' | 'ai_conversations'>('main');
   const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false);
@@ -517,6 +520,16 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
           setter: setNotificationPref
         },
         { 
+          icon: Globe,
+          label: 'Language',
+          isLanguageSelector: true,
+          action: async (newLang: string) => {
+            const userRef = doc(db, 'users', profile.uid);
+            await updateDoc(userRef, { language: newLang });
+            onUpdateProfile({ ...profile, language: newLang });
+          }
+        },
+        { 
           icon: Globe, 
           label: 'Data Region', 
           value: dataRegion,
@@ -879,8 +892,8 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
       </AnimatePresence>
 
       <div className="flex flex-col gap-1 px-md mb-xl">
-        <h2 className="font-bold text-vantage-text tracking-tight" style={{ fontSize: '24px', fontWeight: 'bold' }}>Dashboard controls</h2>
-        <p className="text-vantage-muted tracking-wide font-normal" style={{ fontSize: '14px' }}>Strategic infrastructure</p>
+        <h2 className="font-bold text-vantage-text tracking-tight" style={{ fontSize: '24px', fontWeight: 'bold' }}>{t('settings.dashboard_controls')}</h2>
+        <p className="text-vantage-muted tracking-wide font-normal" style={{ fontSize: '14px' }}>{t('settings.strategic_infrastructure')}</p>
       </div>
 
       {/* High-density User Profile Card */}
@@ -1008,7 +1021,7 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
 
               <div className="mx-4 bg-white dark:bg-[#111215] rounded-2xl border border-neutral-200 dark:border-white/5 overflow-hidden shadow-sm flex flex-col">
                 {section.items.map((item: any, itemIdx: any) => {
-                  const isClickableRow = item.action && !item.isInlineToggle && (!isEditing || !item.isInput);
+                  const isClickableRow = item.action && !item.isInlineToggle && !item.isLanguageSelector && (!isEditing || !item.isInput);
                   return (
                     <div 
                       key={itemIdx}
@@ -1040,9 +1053,11 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
                                 }}
                                 className={`w-8 h-4 rounded-full relative transition-colors duration-200 ${item.toggleValue ? 'bg-vantage-green' : 'bg-vantage-text/20'} ${item.disabled ? 'cursor-not-allowed' : 'active:scale-95'}`}
                               >
-                                <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all shadow-sm ${item.toggleValue ? 'right-0.5' : 'left-0.5'}`}></div>
+                                <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all ${item.toggleValue ? 'right-0.5 shadow-sm' : 'left-0.5'}`}></div>
                               </button>
                             </div>
+                          ) : item.isLanguageSelector ? (
+                            <LanguageSelector onLanguageChange={(lng) => item.action(lng)} />
                           ) : (
                             <div className="flex items-center gap-1.5 min-w-0 shrink-0">
                               {item.value && (

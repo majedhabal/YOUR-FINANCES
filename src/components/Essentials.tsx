@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Plus, 
@@ -48,6 +49,7 @@ import { BudgetSection } from './BudgetSection';
 import { BudgetDetailView } from './BudgetDetailView';
 import { SavingsSection } from './SavingsSection';
 import { DebtSection } from './DebtSection';
+import { AddGoalModal } from './AddGoalModal';
 import { GoalTransactionModal } from './GoalTransactionModal';
 import { DebtTransactionModal } from './DebtTransactionModal';
 import { BudgetTransactionModal } from './BudgetTransactionModal';
@@ -112,13 +114,13 @@ interface DailyLogProps {
   profile: any;
 }
 
-const NAVIGATION_TABS = [
-  { id: 'daily' as const, label: 'Budget allocation' },
-  { id: 'savings' as const, label: 'Savings goals' },
-  { id: 'debt' as const, label: 'Debt management' }
-];
-
 export const Essentials: React.FC<DailyLogProps> = ({ profile }) => {
+  const { t } = useTranslation();
+  const NAVIGATION_TABS = [
+    { id: 'daily' as const, label: t('essentials.budget_allocation') },
+    { id: 'savings' as const, label: t('essentials.savings_goals') },
+    { id: 'debt' as const, label: t('essentials.debt_management') }
+  ];
   const [budgets, setBudgets] = useState<BudgetCategory[]>([]);
   const [accounts, setAccounts] = useState<any[]>([]);
   const [recentTransactions, setRecentTransactions] = useState<any[]>([]);
@@ -137,6 +139,7 @@ export const Essentials: React.FC<DailyLogProps> = ({ profile }) => {
     return [];
   });
   const [isMilestoneModalOpen, setIsMilestoneModalOpen] = useState(false);
+  const [isAddGoalModalOpen, setIsAddGoalModalOpen] = useState(false);
   const [editingMilestone, setEditingMilestone] = useState<any | null>(null);
   const [milestoneToDelete, setMilestoneToDelete] = useState<any | null>(null);
   const [showArchivedGoals, setShowArchivedGoals] = useState(false);
@@ -847,7 +850,7 @@ useEffect(() => {
       {/* Header - Sticky */}
       <div className="sticky top-0 z-40 bg-[#F8FAFC] flex justify-between items-center p-[5px]">
         <h2 className="font-bold tracking-tighter text-black">
-          <span style={{ fontFamily: "'Google Sans', sans-serif", fontSize: '26px' }}>Essentials</span>
+          <span style={{ fontFamily: "'Google Sans', sans-serif", fontSize: '26px' }}>{t('essentials.title')}</span>
         </h2>
         <button
           onClick={() => {
@@ -863,7 +866,7 @@ useEffect(() => {
           className="flex items-center gap-1.5 px-4 py-2 rounded-full text-[12px] hover:brightness-95 active:scale-95 transition-all cursor-pointer border-none shadow-sm"
         >
           <Calendar size={14} />
-          <span>Income allocation</span>
+          <span>{t('essentials.income_allocation')}</span>
         </button>
         <SalaryBreakdownModal 
           isOpen={isSalaryModalOpen}
@@ -897,11 +900,10 @@ useEffect(() => {
         >
           <div className="flex items-center gap-2 text-[#366945] mb-3">
             <Lightbulb size={20} />
-            <span className="font-bold text-sm">Vantage Insight</span>
+            <span className="font-bold text-sm">{t('essentials.vantage_insight')}</span>
           </div>
           <p className="text-[#366945] text-sm leading-relaxed">
-            Your total budget allocation this month is 5% higher than last month. 
-            This increase is primarily driven by adjustments in your discretionary spending categories.
+            {t('essentials.budget_insight_text')}
           </p>
         </div>
 
@@ -912,6 +914,8 @@ useEffect(() => {
         transactions={allTransactions}
         onDeleteMilestone={(ms) => setSavingsGoalAction({ type: 'delete', ms })}
         onAddTransaction={(ms) => setTargetForTx({ type: 'milestone', target: ms })}
+        onAddGoal={() => setIsAddGoalModalOpen(true)}
+        currency={profile.baseCurrency || 'AED'}
          />
 
         {/* Column 3: Debt Management */}
@@ -920,6 +924,7 @@ useEffect(() => {
           transactions={allTransactions} 
           onDeleteDebt={(acc) => setDebtMilestoneAction({ type: 'delete', ms: acc })}                
           onAddDebtTransaction={(acc) => setTargetForTx({ type: 'debt', target: acc })}
+          currency={profile.baseCurrency || 'AED'}
         />
 
         {/* Debt Insight Card */}
@@ -929,7 +934,7 @@ useEffect(() => {
         >
           <div className="flex items-center gap-2 text-[#B91C1C] mb-3">
             <Lightbulb size={20} />
-            <span className="font-bold text-sm">Vantage Insight</span>
+            <span className="font-bold text-sm">{t('essentials.vantage_insight')}</span>
           </div>
           <p className="text-[#B91C1C] text-sm leading-relaxed">
             { (() => {
@@ -1036,6 +1041,13 @@ useEffect(() => {
         accounts={accounts}
         allTransactions={allTransactions}
         exchangeRates={exchangeRates}
+      />
+
+      <AddGoalModal 
+        isOpen={isAddGoalModalOpen} 
+        onClose={() => setIsAddGoalModalOpen(false)} 
+        uid={profile.uid}
+        currency={profile.baseCurrency || 'AED'}
       />
 
       {/* Centralized Protective Confirmation Pop-up Overlay for Savings Goals */}

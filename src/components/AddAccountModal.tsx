@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Wallet, Building2 as BankIcon, Landmark, CreditCard, HandCoins, Home, ChevronRight, Check, Plus } from 'lucide-react';
 import { collection, serverTimestamp } from 'firebase/firestore';
@@ -121,6 +122,7 @@ const GlassSelect: React.FC<GlassSelectProps> = ({ label, focused, children, sty
 };
 
 export const AddAccountModal: React.FC<AddAccountModalProps> = ({ isOpen, onClose, uid, onAccountAdded, profile }) => {
+  const { t } = useTranslation();
   const { createAccount } = useVantageActions(uid);
   const [step, setStep] = useState<'type' | 'details'>('type');
   const [selectedType, setSelectedType] = useState<AccountType | null>(null);
@@ -320,14 +322,14 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({ isOpen, onClos
               }}
               className="relative w-full max-w-[92%] md:max-w-[450px] max-h-[90dvh] overflow-y-auto shadow-2xl [WebkitOverflowScrolling:touch]"
             >
-            <div className="p-6 md:p-8 flex flex-col gap-5">
+              <div className="p-6 md:p-8 flex flex-col gap-5">
               <div className="flex justify-between items-center">
                 <div className="flex flex-col gap-0.5 animate-none">
                   <h3 style={{ fontFamily: "'Google Sans', sans-serif", fontSize: 'clamp(1.3rem, 4vw, 1.5rem)', color: '#1E2229' }} className="font-bold tracking-tight leading-tight">
-                    {step === 'type' ? 'Define identity' : 'Account details'}
+                    {step === 'type' ? t('add_account.define_identity') : t('add_account.account_details')}
                   </h3>
                   <p style={{ fontFamily: "'Google Sans', sans-serif", fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)', color: '#57606F' }} className="tracking-wide font-normal leading-tight">
-                    {step === 'type' ? 'Select account source' : `${selectedType ? selectedType.charAt(0).toUpperCase() + selectedType.slice(1) : ''} configuration`}
+                    {step === 'type' ? t('add_account.select_source') : `${selectedType ? selectedType.charAt(0).toUpperCase() + selectedType.slice(1) : ''} ${t('add_account.configuration')}`}
                   </p>
                 </div>
                 <button onClick={handleClose} className="p-2 text-vantage-muted hover:text-vantage-text transition-colors active:scale-90 cursor-pointer">
@@ -360,13 +362,29 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({ isOpen, onClos
                             style={{ fontFamily: "'Google Sans', sans-serif", fontSize: 'clamp(1rem, 3.2vw, 1.15rem)' }} 
                             className="font-bold text-[#1E2229] group-hover:text-[#20C997] transition-colors truncate whitespace-nowrap overflow-hidden"
                           >
-                            {type.label}
+                            {(() => {
+                              switch(type.id) {
+                                case 'bank': return t('add_account.bank_account');
+                                case 'cash': return t('add_account.cash_account');
+                                case 'credit': return t('add_account.credit_card');
+                                case 'investment': return t('add_account.investment_portfolio');
+                                default: return type.label;
+                              }
+                            })()}
                           </span>
                           <p 
                             style={{ fontFamily: "'Google Sans', sans-serif", fontSize: 'clamp(0.85rem, 2.5vw, 0.95rem)' }} 
                             className="text-[#57606F] tracking-tight font-normal truncate whitespace-nowrap overflow-hidden"
                           >
-                            {type.desc}
+                            {(() => {
+                              switch(type.id) {
+                                case 'bank': return t('add_account.bank_account_desc');
+                                case 'cash': return t('add_account.cash_account_desc');
+                                case 'credit': return t('add_account.credit_card_desc');
+                                case 'investment': return t('add_account.investment_portfolio_desc');
+                                default: return type.desc;
+                              }
+                            })()}
                           </p>
                         </div>
                       </div>
@@ -383,10 +401,10 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({ isOpen, onClos
                     <GlassInput
                       required
                       type="text"
-                      label="Account label"
+                      label={t('add_account.account_label')}
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      placeholder="e.g. Personal Savings"
+                      placeholder={t('add_account.placeholder_label')}
                       focused={focusedField === 'name'}
                       onFocus={() => setFocusedField('name')}
                       onBlur={() => setFocusedField(null)}
@@ -394,7 +412,7 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({ isOpen, onClos
 
                     {/* Currency */}
                     <GlassSelect
-                      label="Currency"
+                      label={t('add_account.currency')}
                       value={currency}
                       onChange={(e) => setCurrency(e.target.value)}
                       focused={focusedField === 'currency'}
@@ -408,14 +426,14 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({ isOpen, onClos
                     <GlassInput
                       required
                       type="text"
-                      label="Starting balance"
+                      label={t('add_account.starting_balance')}
                       value={startingBalance}
                       onChange={(e) => setStartingBalance(e.target.value.replace(/[^0-9+\-*/.()]/g, ''))}
                       onBlur={() => {
                         setStartingBalance(prev => evaluateMathExpression(prev));
                         setFocusedField(null);
                       }}
-                      placeholder="0 or e.g., 7000*6"
+                      placeholder={t('add_account.placeholder_balance')}
                       prefixElement={
                         <span style={{ fontFamily: "'Google Sans', sans-serif" }} className="font-bold text-[#1E2229] select-none whitespace-nowrap">
                           {currency}
@@ -434,27 +452,27 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({ isOpen, onClos
                         {/* Account Sub-Type */}
                         <div className="w-full flex flex-col gap-1.5 animate-none">
                            <label style={{ fontFamily: "'Google Sans', sans-serif", fontSize: 'clamp(0.9rem, 2vw, 1.05rem)', fontWeight: 400, color: '#1E2229' }} className="px-1 text-left">
-                             Account sub-type
+                             {t('add_account.sub_type')}
                            </label>
                            <div className="grid grid-cols-2 gap-3 w-full animate-none">
-                              {['Checking', 'Savings'].map((t) => (
+                              {['Checking', 'Savings'].map((tVal) => (
                                 <button
-                                  key={t}
+                                  key={tVal}
                                   type="button"
-                                  onClick={() => setBankAccountType(t as any)}
+                                  onClick={() => setBankAccountType(tVal as any)}
                                   style={{ 
                                     fontFamily: "'Google Sans', sans-serif",
                                     fontSize: 'clamp(1.05rem, 2.5vw, 1.25rem)',
-                                    fontWeight: bankAccountType === t ? 700 : 400,
-                                    background: bankAccountType === t ? '#A6DDB1' : 'rgba(255, 255, 255, 0.40)',
-                                    border: bankAccountType === t ? '1.5px solid #A6DDB1' : '1px solid rgba(30, 34, 41, 0.08)',
+                                    fontWeight: bankAccountType === tVal ? 700 : 400,
+                                    background: bankAccountType === tVal ? '#A6DDB1' : 'rgba(255, 255, 255, 0.40)',
+                                    border: bankAccountType === tVal ? '1.5px solid #A6DDB1' : '1px solid rgba(30, 34, 41, 0.08)',
                                     color: '#1E2229',
-                                    boxShadow: bankAccountType === t ? '0 0 8px rgba(166, 221, 177, 0.3)' : 'none',
+                                    boxShadow: bankAccountType === tVal ? '0 0 8px rgba(166, 221, 177, 0.3)' : 'none',
                                     borderRadius: '12px'
                                   }}
                                   className="h-12 min-h-[48px] transition-all active:scale-95 flex items-center justify-center cursor-pointer"
                                 >
-                                  {t}
+                                  {tVal === 'Checking' ? t('add_account.checking') : t('add_account.savings')}
                                 </button>
                               ))}
                            </div>
@@ -462,8 +480,8 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({ isOpen, onClos
 
                         {/* Bank Account Number */}
                         <GlassInput
-                          label="Bank account number (IBAN)"
-                          placeholder="AE00 0000 0000 0000"
+                          label={t('add_account.iban')}
+                          placeholder={t('add_account.placeholder_iban')}
                           value={bankAccountNumber}
                           onChange={(e) => setBankAccountNumber(e.target.value)}
                           focused={focusedField === 'bankAccountNumber'}
@@ -473,8 +491,8 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({ isOpen, onClos
 
                         {/* Interest Rate */}
                         <GlassInput
-                          label="Interest rate (%)"
-                          placeholder="0 or e.g., 1.50+0.50"
+                          label={t('add_account.interest_rate')}
+                          placeholder={t('add_account.placeholder_interest')}
                           value={interestRate}
                           onChange={(e) => setInterestRate(e.target.value.replace(/[^0-9+\-*/.()]/g, ''))}
                           onBlur={() => {
@@ -488,8 +506,8 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({ isOpen, onClos
 
                         {/* Min Balance Floor */}
                         <GlassInput
-                          label="Min balance floor"
-                          placeholder="0 or e.g., 1000*3"
+                          label={t('add_account.min_balance')}
+                          placeholder={t('add_account.placeholder_min_balance')}
                           value={minBalanceFloor}
                           onChange={(e) => setMinBalanceFloor(e.target.value.replace(/[^0-9+\-*/.()]/g, ''))}
                           onBlur={() => {
@@ -503,8 +521,8 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({ isOpen, onClos
 
                         {/* Default Transfer Fee */}
                         <GlassInput
-                          label="Default transfer fee"
-                          placeholder="0 or e.g., 1+1.5"
+                          label={t('add_account.transfer_fee')}
+                          placeholder={t('add_account.placeholder_transfer_fee')}
                           value={defaultTransferFee}
                           onChange={(e) => setDefaultTransferFee(e.target.value.replace(/[^0-9+\-*/.()]/g, ''))}
                           onBlur={() => {
@@ -522,8 +540,8 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({ isOpen, onClos
                       <div className="w-full flex flex-col gap-4 animate-none">
                         {/* Platform Fees */}
                         <GlassInput
-                          label="Platform fees"
-                          placeholder="0 or e.g., 5.00"
+                          label={t('add_account.platform_fees')}
+                          placeholder={t('add_account.placeholder_platform_fees')}
                           value={platformFees}
                           onChange={(e) => setPlatformFees(e.target.value.replace(/[^0-9+\-*/.()]/g, ''))}
                           onBlur={() => {
@@ -537,8 +555,8 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({ isOpen, onClos
 
                         {/* Total Gain/Loss */}
                         <GlassInput
-                          label="Total gain/loss"
-                          placeholder="0 or e.g., 2000-500"
+                          label={t('add_account.total_gain_loss')}
+                          placeholder={t('add_account.placeholder_gain_loss')}
                           value={totalGainLoss}
                           onChange={(e) => setTotalGainLoss(e.target.value.replace(/[^0-9+\-*/.()]/g, ''))}
                           onBlur={() => {
@@ -562,8 +580,8 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({ isOpen, onClos
                           className="w-full flex items-center justify-between px-4 h-14 shrink-0 animate-none"
                         >
                            <div className="flex flex-col gap-0.5 animate-none">
-                             <span style={{ fontFamily: "'Google Sans', sans-serif", fontSize: 'clamp(0.95rem, 2vw, 1.1rem)', fontWeight: 700, color: '#1E2229' }} className="tracking-wide text-left justify-start">Liquid asset</span>
-                             <p style={{ fontFamily: "'Google Sans', sans-serif", fontSize: 'clamp(0.75rem, 2vw, 0.85rem)', color: '#57606F' }} className="text-left font-normal capitalize-none leading-tight">Include in cash liquidity</p>
+                             <span style={{ fontFamily: "'Google Sans', sans-serif", fontSize: 'clamp(0.95rem, 2vw, 1.1rem)', fontWeight: 700, color: '#1E2229' }} className="tracking-wide text-left justify-start">{t('add_account.liquid_asset')}</span>
+                             <p style={{ fontFamily: "'Google Sans', sans-serif", fontSize: 'clamp(0.75rem, 2vw, 0.85rem)', color: '#57606F' }} className="text-left font-normal capitalize-none leading-tight">{t('add_account.liquid_asset_desc')}</p>
                            </div>
                            <button 
                              type="button"
@@ -583,14 +601,14 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({ isOpen, onClos
 
                         {/* Sub-Asset Manager Title & Trigger */}
                         <div className="w-full flex justify-between items-center px-1 mt-1 shrink-0 select-none animate-none">
-                            <span style={{ fontFamily: "'Google Sans', sans-serif", fontSize: 'clamp(0.95rem, 2vw, 1.1rem)', fontWeight: 700, color: '#1E2229' }} className="tracking-wide">Sub-asset manager</span>
+                            <span style={{ fontFamily: "'Google Sans', sans-serif", fontSize: 'clamp(0.95rem, 2vw, 1.1rem)', fontWeight: 700, color: '#1E2229' }} className="tracking-wide">{t('add_account.sub_asset_manager')}</span>
                             <button 
                               type="button"
                               onClick={() => setSubAssets([...subAssets, { id: Math.random().toString(36).substring(2, 12), name: '', principalInvested: '', currentValue: '', passiveIncome: '', estimatedYield: '', yieldPeriod: 'monthly' }])}
                               style={{ fontFamily: "'Google Sans', sans-serif" }}
                               className="text-[13px] text-[#20C997] font-bold tracking-normal flex items-center gap-1 hover:text-[#1E2229] transition-colors cursor-pointer"
                             >
-                              <Plus size={14} /> Add asset
+                              <Plus size={14} /> {t('add_account.add_asset')}
                             </button>
                         </div>
 
@@ -747,7 +765,7 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({ isOpen, onClos
                               </div>
                             ))}
                             {subAssets.length === 0 && (
-                              <p style={{ fontFamily: "'Google Sans', sans-serif" }} className="text-xs text-[#57606F] italic text-center py-4 bg-white/20 rounded-xl border border-dashed border-vantage-text/10 w-full shrink-0 select-none">No sub-assets defined. Add physical or digital assets to track granular performance.</p>
+                              <p style={{ fontFamily: "'Google Sans', sans-serif" }} className="text-xs text-[#57606F] italic text-center py-4 bg-white/20 rounded-xl border border-dashed border-vantage-text/10 w-full shrink-0 select-none">{t('add_account.no_sub_assets')}</p>
                             )}
                          </div>
                       </div>
@@ -757,8 +775,8 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({ isOpen, onClos
                       <div className="w-full flex flex-col gap-4 animate-none">
                         {/* Credit Limit */}
                         <GlassInput
-                          label="Credit limit"
-                          placeholder="0 or e.g., 7000*6"
+                          label={t('add_account.credit_limit')}
+                          placeholder={t('add_account.placeholder_balance')}
                           value={creditLimit}
                           onChange={(e) => setCreditLimit(e.target.value.replace(/[^0-9+\-*/.()]/g, ''))}
                           onBlur={() => {
@@ -772,7 +790,7 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({ isOpen, onClos
 
                         {/* Payment Due Date */}
                         <GlassInput
-                          label="Payment due date"
+                          label={t('add_account.due_date')}
                           type="date"
                           placeholder=""
                           value={paymentDueDate}
@@ -788,8 +806,8 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({ isOpen, onClos
                       <div className="w-full flex flex-col gap-4 animate-none">
                         {/* Interest Rate */}
                         <GlassInput
-                          label="Interest rate (%)"
-                          placeholder="0 or e.g., 4+0.5"
+                          label={t('add_account.interest_rate')}
+                          placeholder={t('add_account.placeholder_interest')}
                           value={interestRate}
                           onChange={(e) => setInterestRate(e.target.value)}
                           prefixElement={<span style={{ fontFamily: "'Google Sans', sans-serif" }} className="font-bold text-[#1E2229]">%</span>}
@@ -800,8 +818,8 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({ isOpen, onClos
 
                         {/* Recurring Payment Protocol */}
                         <GlassInput
-                          label="Recurring payment protocol"
-                          placeholder="e.g. AED 2,500 Monthly"
+                          label={t('add_account.recurring_protocol')}
+                          placeholder={t('add_account.placeholder_recurring')}
                           value={recurringProtocol}
                           onChange={(e) => setRecurringProtocol(e.target.value)}
                           focused={focusedField === 'recurringProtocol'}

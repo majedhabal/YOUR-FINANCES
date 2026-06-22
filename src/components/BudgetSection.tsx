@@ -1,5 +1,6 @@
 import React from 'react';
 import { Wallet, ShoppingBag, CreditCard, Home, Utensils, Trash2, Plus } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export const BudgetSection: React.FC<{ 
   budgets: any[], 
@@ -10,21 +11,25 @@ export const BudgetSection: React.FC<{
   onAddExpense: (budget: any) => void,
   baseCurrency?: string
 }> = ({ budgets, accounts, transactions, onDelete, onBudgetClick, onAddExpense, baseCurrency = 'AED' }) => {
+  const { t } = useTranslation();
   const totalBudgeted = budgets.reduce((sum, b) => sum + (b.allocatedAmount || b.maxBudget || 0), 0);
   const totalSpent = budgets.reduce((sum, b) => sum + (b.spentAmount || 0), 0);
   const spentPercentage = totalBudgeted > 0 ? (totalSpent / totalBudgeted) * 100 : 0;
 
   const getSubLabel = (title: string, group: string) => {
-    const t = title.toLowerCase();
-    if (t.includes('rent') || t.includes('util') || t.includes('hous') || t === 'housing') return 'Rent & Utilities';
-    if (t.includes('grocer') || t.includes('dine') || t.includes('food') || t === 'groceries') return 'Food & Dining';
-    if (t.includes('fuel') || t.includes('car') || t.includes('transport') || t === 'fuel') return 'Travel & Fuel';
-    if (t.includes('gym') || t.includes('fitness') || t.includes('sport') || t.includes('clothes') || t.includes('shop') || t === 'fitness') return 'Shopping & Lifestyle';
-    if (t.includes('saving') || t.includes('invest') || t.includes('estate') || t === 'savings') return 'Savings & Growth';
+    const tLabel = title.toLowerCase();
+    if (tLabel.includes('rent') || tLabel.includes('util') || tLabel.includes('hous') || tLabel === 'housing') return 'budget_section.rent_and_utilities';
+    if (tLabel.includes('grocer') || tLabel.includes('dine') || tLabel.includes('food') || tLabel === 'groceries') return 'budget_section.food_and_dining';
+    if (tLabel.includes('fuel') || tLabel.includes('car') || tLabel.includes('transport') || tLabel === 'fuel') return 'budget_section.travel_and_fuel';
+    if (tLabel.includes('gym') || tLabel.includes('fitness') || tLabel.includes('sport') || tLabel.includes('clothes') || tLabel.includes('shop') || tLabel === 'fitness') return 'budget_section.shopping_and_lifestyle';
+    if (tLabel.includes('saving') || tLabel.includes('invest') || tLabel.includes('estate') || tLabel === 'savings') return 'budget_section.savings_and_growth';
     if (group) {
-      return group.charAt(0).toUpperCase() + group.slice(1).toLowerCase();
+        // Simple map for now based on group
+        if (group === 'needs') return 'budget_section.essential_needs';
+        if (group === 'wants') return 'budget_section.personal_wants';
+        return `budget_section.${group.toLowerCase()}`;
     }
-    return 'Allocated Budget';
+    return 'budget_section.allocated_budget';
   };
 
   const renderIcon = (iconAsset: string | undefined, categoryTitle?: string) => {
@@ -74,7 +79,7 @@ export const BudgetSection: React.FC<{
                 {b.categoryTitle}
               </span>
               <span className="text-[12px] text-neutral-500 font-normal mt-0.5" style={{ fontWeight: 400 }}>
-                {subLabel}
+                {t(subLabel)}
               </span>
             </div>
           </div>
@@ -85,7 +90,7 @@ export const BudgetSection: React.FC<{
               {currencySymbol}{bSpent.toLocaleString()}{currencySuffix} / {currencySymbol}{bAllocated.toLocaleString()}{currencySuffix}
             </span>
             <span className="text-[12px] text-neutral-500 font-medium mt-0.5" style={{ fontWeight: 500 }}>
-              {bProgress.toFixed(0)}% Used
+              {bProgress.toFixed(0)}% {t('budget_section.used')}
             </span>
           </div>
         </div>
@@ -127,7 +132,7 @@ export const BudgetSection: React.FC<{
     <section className="bg-white rounded-2xl border border-[#E1E8ED] p-6 shadow-sm">
       <div className="flex justify-between items-center mb-6">
         <h3 className="text-xl font-bold mb-0 text-[#111C2D]" style={{ fontFamily: "'Google Sans', sans-serif" }}>
-          Budget Allocation
+          {t('budget_section.budget_allocation')}
         </h3>
       </div>
       
