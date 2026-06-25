@@ -2,8 +2,46 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, RefreshCw } from 'lucide-react';
-import { collection, addDoc, serverTimestamp, onSnapshot, query } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, onSnapshot, query, doc, updateDoc, increment } from 'firebase/firestore';
 import { db } from '../lib/firebase';
+import { formatLabel } from '../lib/stringUtils';
+import { getCachedAccessToken, createGoogleCalendarEvent, createGoogleTask, connectGoogleWorkspace } from '../lib/googleAuth';
+
+// Helper to calculate next generation date for recurring logic
+const calculateNextDate = (baseDate: string, freq: string, interval: number, dayOption: string = 'sameDate') => {
+  const [year, month, day] = baseDate.split('-').map(Number);
+  const d = new Date(year, month - 1, day, 12, 0, 0);
+  const originalDay = d.getDate();
+  const originalWeekday = d.getDay();
+
+  if (freq === 'daily') {
+    d.setDate(d.getDate() + interval);
+  } else if (freq === 'weekly') {
+    d.setDate(d.getDate() + (interval * 7));
+  } else if (freq === 'monthly') {
+    if (dayOption === 'sameDate') {
+      d.setMonth(d.getMonth() + interval);
+      if (d.getDate() < originalDay) d.setDate(0);
+    } else {
+      d.setMonth(d.getMonth() + interval);
+      const diff = originalWeekday - d.getDay();
+      d.setDate(d.getDate() + diff);
+    }
+  } else if (freq === 'yearly') {
+    if (dayOption === 'sameDate') {
+      d.setFullYear(d.getFullYear() + interval);
+    } else {
+      d.setFullYear(d.getFullYear() + interval);
+      const diff = originalWeekday - d.getDay();
+      d.setDate(d.getDate() + diff);
+    }
+  }
+  
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+};
 
 export const AddTransactionModal: React.FC<any> = ({
   isOpen, onClose, uid, onSuccess, accounts = []
@@ -56,6 +94,17 @@ export const AddTransactionModal: React.FC<any> = ({
   const [isSyncedToTasks, setIsSyncedToTasks] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
   // --- Aesthetic Helpers ---
   const inputStyles = "w-full bg-[#f4f4f8] border border-[#d8d8e5] rounded-xl px-4 py-3 text-sm text-[#111c2d] focus:border-[#a6ddb1] outline-none transition-all";
   const labelStyles = "text-[10px] font-bold text-[#8c8c99] mb-1 block";
@@ -66,7 +115,9 @@ export const AddTransactionModal: React.FC<any> = ({
     try {
       const selectedCategoryEntry = categories.find(c => c.name === category);
       const transactionType = selectedCategoryEntry?.nature === 'Income' ? 'Inflow' : 'Outflow';
-      
+      const today = new Date().toISOString().split('T')[0];
+      const isStartingToday = startDate === today;
+
       const transactionData = {
         amount: Number(amount),
         notes: notes.trim(),
@@ -75,20 +126,42 @@ export const AddTransactionModal: React.FC<any> = ({
         emoji: selectedCategoryEntry?.emoji || '📁',
         accountId,
         type: transactionType,
-        date: new Date().toISOString().split('T')[0],
+        date: today,
         createdAt: serverTimestamp(),
         status: 'confirmed',
         isRecurring
       };
       
-      await addDoc(collection(db, 'users', uid, 'transactions'), transactionData);
+      // If NOT recurring, we create confirmed tx today. 
+      // If recurring, we only create confirmed tx today IF start date is today.
+      const shouldCreateNow = !isRecurring || (isRecurring && isStartingToday);
+
+      if (shouldCreateNow) {
+        await addDoc(collection(db, 'users', uid, 'transactions'), transactionData);
+        
+        // Rule 16: Atomic Balance Update
+        const accountRef = doc(db, 'users', uid, 'accounts', accountId);
+        const amountChange = transactionType === 'Inflow' ? Number(amount) : -Number(amount);
+        await updateDoc(accountRef, {
+          currentBalance: increment(amountChange),
+          updatedAt: serverTimestamp()
+        });
+      }
       
       if (isRecurring) {
+          // If starting today, next generation should be one interval later.
+          // Otherwise, next generation is the future startDate itself.
+          const nextGenDate = isStartingToday 
+            ? calculateNextDate(startDate, frequency.toLowerCase(), Number(interval), dayOption)
+            : startDate;
+
           await addDoc(collection(db, 'users', uid, 'recurringTransactions'), {
               userId: uid,
               title: notes.trim() || 'Recurring Transaction',
               amount: Number(amount),
+              type: transactionType === 'Inflow' ? 'income' : 'expense',
               transactionType: transactionType === 'Inflow' ? 'income' : 'outflow',
+              recurrency: frequency.toLowerCase(),
               frequency,
               interval: Number(interval),
               dayOption,
@@ -100,12 +173,55 @@ export const AddTransactionModal: React.FC<any> = ({
               isSyncedToTasks,
               category,
               subcategory,
+              accountId,
               sourceAccountId: accountId,
-              nextExecutionDate: startDate,
+              nextGenerationDate: nextGenDate,
+              nextExecutionDate: nextGenDate,
               isActive: true,
+              emoji: selectedCategoryEntry?.emoji || '📁',
+              notes: notes.trim(),
               createdAt: serverTimestamp(),
               updatedAt: serverTimestamp()
           });
+
+          // Sync to Google Workspace if requested
+          if (isSyncedToCalendar || isSyncedToTasks) {
+            try {
+              let token = getCachedAccessToken();
+              if (!token) {
+                token = await connectGoogleWorkspace();
+              }
+              
+              if (token) {
+                const accountName = accounts.find((a: any) => a.id === accountId)?.name || 'Account';
+                
+                if (isSyncedToCalendar) {
+                  await createGoogleCalendarEvent(token, {
+                    title: notes.trim() || 'Recurring Transaction',
+                    amount: Number(amount),
+                    currency: 'AED',
+                    accountName,
+                    dueDate: startDate,
+                    recurrency: frequency,
+                    interval: Number(interval)
+                  });
+                }
+                
+                if (isSyncedToTasks) {
+                  await createGoogleTask(token, {
+                    title: notes.trim() || 'Recurring Transaction',
+                    amount: Number(amount),
+                    currency: 'AED',
+                    accountName,
+                    dueDate: startDate
+                  });
+                }
+              }
+            } catch (syncErr) {
+              console.error("Google Workspace Sync Error:", syncErr);
+              // We don't block the transaction save if sync fails, but we log it
+            }
+          }
       }
       
       onSuccess();
@@ -120,14 +236,14 @@ export const AddTransactionModal: React.FC<any> = ({
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-white" />
+        <div className="fixed inset-0 z-[9999] flex items-start justify-center p-4 overflow-y-auto bg-black/10 backdrop-blur-[2px]">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0" />
           
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            className="relative w-full max-w-[400px] max-h-[95vh] overflow-y-auto bg-white rounded-[30px] shadow-xl border border-[#ececf1] p-6 pb-40 flex flex-col gap-5"
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            className="relative w-full max-w-[400px] mt-8 mb-24 bg-white rounded-[30px] shadow-2xl border border-[#ececf1] p-6 pb-12 flex flex-col gap-5"
           >
             {/* Header */}
             <div>
@@ -147,7 +263,7 @@ export const AddTransactionModal: React.FC<any> = ({
               <div>
                 <label className={labelStyles}>{t('add_transaction.category')}</label>
                 <select value={category} onChange={(e) => setCategory(e.target.value)} className={inputStyles}>
-                  {categories.map(cat => <option key={cat.id} value={cat.name}>{cat.name}</option>)}
+                  {categories.map(cat => <option key={cat.id} value={cat.name}>{formatLabel(t(`categories.${cat.name}`, cat.name) as string)}</option>)}
                 </select>
               </div>
 
@@ -155,8 +271,8 @@ export const AddTransactionModal: React.FC<any> = ({
                 <label className={labelStyles}>{t('add_transaction.sub_category')}</label>
                 <select value={subcategory} onChange={(e) => setSubcategory(e.target.value)} className={inputStyles}>
                     {categories.find(c => c.name === category)?.subcategories?.map((sub: string) => (
-                        <option key={`${category}-${sub}`} value={sub}>{sub}</option>
-                    )) || <option value="General">General</option>}
+                        <option key={`${category}-${sub}`} value={sub}>{formatLabel(t(`subcategories.${sub}`, sub) as string)}</option>
+                    )) || <option value="General">{t('subcategories.General', 'General')}</option>}
                 </select>
               </div>
 
@@ -232,13 +348,13 @@ export const AddTransactionModal: React.FC<any> = ({
                    </div>
                    
                    <div className="flex items-center justify-between">
-                       <label className="text-xs font-bold text-[#111c2d]">{t('add_transaction.sync_calendar')}</label>
+                       <label className="text-[14px] font-bold text-[#111c2d]">{t('add_transaction.sync_calendar')}</label>
                        <button type="button" onClick={() => setIsSyncedToCalendar(!isSyncedToCalendar)} className={`w-10 h-5 rounded-full p-0.5 transition-all ${isSyncedToCalendar ? 'bg-[#a6ddb1]' : 'bg-[#d8d8e5]'}`}>
                           <div className={`w-4 h-4 rounded-full bg-white transition-all ${isSyncedToCalendar ? 'translate-x-5' : 'translate-x-0'}`} />
                        </button>
                    </div>
                    <div className="flex items-center justify-between">
-                       <label className="text-xs font-bold text-[#111c2d]">{t('add_transaction.sync_tasks')}</label>
+                       <label className="text-[14px] font-bold text-[#111c2d]">{t('add_transaction.sync_tasks')}</label>
                        <button type="button" onClick={() => setIsSyncedToTasks(!isSyncedToTasks)} className={`w-10 h-5 rounded-full p-0.5 transition-all ${isSyncedToTasks ? 'bg-[#a6ddb1]' : 'bg-[#d8d8e5]'}`}>
                           <div className={`w-4 h-4 rounded-full bg-white transition-all ${isSyncedToTasks ? 'translate-x-5' : 'translate-x-0'}`} />
                        </button>

@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   X, Check, AlertCircle, RefreshCw, ArrowRight, ShieldCheck, Sparkles, Building, Landmark, ChevronRight, CheckSquare 
@@ -27,6 +28,7 @@ export const SalaryBreakdownVerificationModal: React.FC<SalaryBreakdownVerificat
   uid,
   onTransactionApproved
 }) => {
+  const { t, i18n } = useTranslation();
   const [isProcessingTier1, setIsProcessingTier1] = useState(false);
   const [processingItemsStates, setProcessingItemsStates] = useState<Record<string, boolean>>({});
 
@@ -37,7 +39,7 @@ export const SalaryBreakdownVerificationModal: React.FC<SalaryBreakdownVerificat
   const yearMonthStr = sb?.id || '';
   const [year, month] = yearMonthStr.split('-');
   const monthName = yearMonthStr 
-    ? new Date(Number(year), Number(month) - 1, 1).toLocaleString('default', { month: 'long' })
+    ? new Date(Number(year), Number(month) - 1, 1).toLocaleString(i18n.language || 'en-US', { month: 'long' })
     : '';
 
   // Filter all active allocation items
@@ -275,10 +277,10 @@ export const SalaryBreakdownVerificationModal: React.FC<SalaryBreakdownVerificat
             <div className="absolute inset-0 bg-[#FFFFFF] z-[300] flex flex-col items-center justify-center p-6 text-center animate-fade-in" style={{ fontFamily: "'Google Sans', sans-serif" }}>
               <div className="w-10 h-10 border-4 border-indigo-650 border-[#4F46E5] border-t-transparent rounded-full animate-spin mb-4" />
               <span className="text-neutral-800 text-sm tracking-normal mb-1 block" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, textTransform: 'none' }}>
-                Validating payroll...
+                {t('salary_breakdown_verification.validating_payroll', 'Validating payroll...')}
               </span>
               <p className="text-xs text-[#57606F] leading-relaxed max-w-[280px]" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, textTransform: 'none' }}>
-                updating ledger balances and committing payroll confirmation
+                {t('salary_breakdown_verification.updating_ledger_balances', 'updating ledger balances and committing payroll confirmation')}
               </p>
             </div>
           )}
@@ -291,10 +293,10 @@ export const SalaryBreakdownVerificationModal: React.FC<SalaryBreakdownVerificat
               </div>
               <div className="flex flex-col">
                 <span className="text-neutral-800 text-base font-bold tracking-tight" style={{ fontWeight: 700 }}>
-                  Verify monthly budget allocations
+                  {t('salary_breakdown_verification.verify_allocations', 'Verify monthly budget allocations')}
                 </span>
                 <span className="text-[11px] text-neutral-400 font-normal">
-                  Configure and lock payroll entries for {monthName} {year}
+                  {t('salary_breakdown_verification.configure_lock_entries', 'Configure and lock payroll entries for')} {monthName} {year}
                 </span>
               </div>
             </div>
@@ -323,16 +325,16 @@ export const SalaryBreakdownVerificationModal: React.FC<SalaryBreakdownVerificat
               >
                 <div className="flex items-center justify-between gap-1 mb-3">
                   <span className="text-neutral-500 text-[11px] font-normal" style={{ fontWeight: 400 }}>
-                    Tier 1: Parent payroll validation
+                    {t('salary_breakdown_verification.tier1_validation', 'Tier 1: Parent payroll validation')}
                   </span>
                   
                   {isTier1Approved ? (
                     <span className="text-[10px] bg-emerald-50 text-emerald-650 border border-emerald-100 px-2.5 py-0.5 rounded-full font-bold">
-                      Payout confirmed
+                      {t('salary_breakdown_verification.payout_confirmed', 'Payout confirmed')}
                     </span>
                   ) : (
                     <span className="text-[10px] bg-indigo-50 text-indigo-650 border border-indigo-100 px-2.5 py-0.5 rounded-full font-bold animate-pulse">
-                      Awaiting payout
+                      {t('salary_breakdown_verification.awaiting_payout', 'Awaiting payout')}
                     </span>
                   )}
                 </div>
@@ -342,12 +344,12 @@ export const SalaryBreakdownVerificationModal: React.FC<SalaryBreakdownVerificat
                     {sb.currency || 'AED'} {sb.baseSalaryInput?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </span>
                   <span className="text-neutral-400 text-xs font-normal">
-                    total drop
+                    {t('salary_breakdown_verification.total_drop', 'total drop')}
                   </span>
                 </div>
 
                 <p className="text-xs text-neutral-500 mb-5 leading-relaxed font-normal" style={{ fontWeight: 400 }}>
-                  Confirming this main tier locks in the total incoming cash injection value, updates the parent salary account balance, and activates the individual breakdown review states.
+                  {t('salary_breakdown_verification.confirming_locks', 'Confirming this main tier locks in the total incoming cash injection value, updates the parent salary account balance, and activates the individual breakdown review states.')}
                 </p>
 
                 {!isTier1Approved ? (
@@ -360,19 +362,19 @@ export const SalaryBreakdownVerificationModal: React.FC<SalaryBreakdownVerificat
                     {isProcessingTier1 ? (
                       <React.Fragment>
                         <RefreshCw size={13} className="animate-spin" />
-                        Validating payroll...
+                        {t('salary_breakdown_verification.validating_payroll', 'Validating payroll...')}
                       </React.Fragment>
                     ) : (
                       <React.Fragment>
                         <ShieldCheck size={14} />
-                        Confirm payout
+                        {t('salary_breakdown_verification.confirm_payout', 'Confirm payout')}
                       </React.Fragment>
                     )}
                   </button>
                 ) : (
                   <div className="w-full py-2.5 bg-emerald-50 border border-emerald-150 text-emerald-700 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 select-none font-sans" style={{ fontWeight: 700 }}>
                     <Check size={14} />
-                    Verified on salary day
+                    {t('salary_breakdown_verification.verified_salary_day', 'Verified on salary day')}
                   </div>
                 )}
               </div>
@@ -380,21 +382,21 @@ export const SalaryBreakdownVerificationModal: React.FC<SalaryBreakdownVerificat
               {/* STATS DETAILS FLAT CONTAINER CARD */}
               <div className="p-4 border border-neutral-150/90 rounded-2xl flex flex-col gap-3 bg-[#FFFFFF]">
                 <span className="text-neutral-800 text-xs font-bold tracking-tight border-b border-neutral-100 pb-1.5" style={{ fontWeight: 700 }}>
-                  Allocation statistics
+                  {t('salary_breakdown_verification.alloc_stats', 'Allocation statistics')}
                 </span>
                 
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-neutral-500 font-normal">Income cycle month</span>
+                  <span className="text-neutral-500 font-normal">{t('salary_breakdown_verification.income_cycle_month', 'Income cycle month')}</span>
                   <span className="text-neutral-800 font-bold" style={{ fontWeight: 700 }}>{monthName} {year}</span>
                 </div>
 
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-neutral-500 font-normal">Scheduled payday</span>
-                  <span className="text-neutral-800 font-bold" style={{ fontWeight: 700 }}>Day {sb.payday || 28}</span>
+                  <span className="text-neutral-500 font-normal">{t('salary_breakdown_verification.scheduled_payday', 'Scheduled payday')}</span>
+                  <span className="text-neutral-800 font-bold" style={{ fontWeight: 700 }}>{t('salary_breakdown_modal.day', 'Day')} {sb.payday || 28}</span>
                 </div>
 
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-neutral-500 font-normal">Budget items progress</span>
+                  <span className="text-neutral-500 font-normal">{t('salary_breakdown_verification.budget_progress', 'Budget items progress')}</span>
                   <span className="text-neutral-800 font-bold" style={{ fontWeight: 700 }}>
                     {confirmedItemsCount} / {totalItemsCount}
                   </span>
@@ -409,7 +411,7 @@ export const SalaryBreakdownVerificationModal: React.FC<SalaryBreakdownVerificat
                     />
                   </div>
                   <div className="flex justify-between items-center mt-1.5">
-                    <span className="text-[10px] text-neutral-400 font-normal">Completion percentage</span>
+                    <span className="text-[10px] text-neutral-400 font-normal">{t('salary_breakdown_verification.completion_percent', 'Completion percentage')}</span>
                     <span className="text-[10px] text-indigo-650 font-bold" style={{ fontWeight: 700 }}>{currentProgressPercent}%</span>
                   </div>
                 </div>
@@ -421,10 +423,10 @@ export const SalaryBreakdownVerificationModal: React.FC<SalaryBreakdownVerificat
             <div className="md:col-span-7 flex flex-col gap-3">
               <div className="flex items-center justify-between mb-0.5">
                 <span className="text-neutral-500 text-[11px] font-bold tracking-tight" style={{ fontWeight: 700, textTransform: 'none' }}>
-                  Itemized allocation checklist
+                  {t('salary_breakdown_verification.itemized_checklist', 'Itemized allocation checklist')}
                 </span>
                 <span className="text-[10px] bg-neutral-50 text-neutral-500 border border-neutral-150 px-2 py-0.5 rounded-full font-sans">
-                  {totalItemsCount - confirmedItemsCount} remaining
+                  {totalItemsCount - confirmedItemsCount} {t('salary_breakdown_verification.remaining', 'remaining')}
                 </span>
               </div>
 
@@ -439,10 +441,10 @@ export const SalaryBreakdownVerificationModal: React.FC<SalaryBreakdownVerificat
                   <div className="absolute inset-0 bg-[#FFFFFF]/85 backdrop-blur-xs z-20 flex flex-col items-center justify-center text-center p-6 rounded-2xl border border-dashed border-neutral-200">
                     <AlertCircle size={22} className="text-neutral-400 mb-2 stroke-[1.5]" />
                     <span className="text-sm text-neutral-800 font-bold mb-1" style={{ fontWeight: 700 }}>
-                      Checklist locked
+                      {t('salary_breakdown_verification.checklist_locked', 'Checklist locked')}
                     </span>
                     <p className="text-xs text-neutral-400 max-w-[280px]">
-                      Approve Tier 1 payroll validation first to activate itemized review queues.
+                      {t('salary_breakdown_verification.approve_tier1_first', 'Approve Tier 1 payroll validation first to activate itemized review queues.')}
                     </p>
                   </div>
                 )}
@@ -451,7 +453,7 @@ export const SalaryBreakdownVerificationModal: React.FC<SalaryBreakdownVerificat
                   <div className="py-12 text-center border rounded-2xl bg-neutral-50 border-neutral-150-90 flex flex-col items-center justify-center gap-1.5">
                     <CheckSquare size={18} className="text-neutral-300" />
                     <span className="text-xs text-neutral-500 font-normal">
-                      No active envelope allocations configured for this period
+                      {t('salary_breakdown_verification.no_allocations', 'No active envelope allocations configured for this period')}
                     </span>
                   </div>
                 ) : (
@@ -480,7 +482,7 @@ export const SalaryBreakdownVerificationModal: React.FC<SalaryBreakdownVerificat
                               {item.label}
                             </span>
                             <span className="text-[9px] text-neutral-400 font-normal" style={{ textTransform: 'none' }}>
-                              {isTransfer ? 'Account transfer' : 'Budget envelope'}
+                              {isTransfer ? t('salary_breakdown_verification.account_transfer', 'Account transfer') : t('salary_breakdown_verification.budget_envelope', 'Budget envelope')}
                             </span>
                           </div>
                         </div>
@@ -494,7 +496,7 @@ export const SalaryBreakdownVerificationModal: React.FC<SalaryBreakdownVerificat
                           {isItemConfirmed ? (
                             <div className="flex items-center justify-center w-[120px] py-1.5 bg-emerald-50 border border-emerald-150 rounded-xl text-emerald-700 text-[10px] font-bold gap-1 font-sans select-none" style={{ fontWeight: 700 }}>
                               <Check size={11} className="stroke-[2.5]" />
-                              Confirmed
+                              {t('salary_breakdown_verification.confirmed', 'Confirmed')}
                             </div>
                           ) : (
                             <button
@@ -507,7 +509,7 @@ export const SalaryBreakdownVerificationModal: React.FC<SalaryBreakdownVerificat
                                 <RefreshCw size={10} className="animate-spin" />
                               ) : (
                                 <React.Fragment>
-                                  Confirm allocation
+                                  {t('salary_breakdown_verification.confirm_allocation', 'Confirm allocation')}
                                 </React.Fragment>
                               )}
                             </button>

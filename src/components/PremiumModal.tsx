@@ -4,6 +4,7 @@ import { Sparkles, ShieldCheck, Zap, Camera, Brain, X, Check, CreditCard } from 
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { handleFirestoreError, OperationType } from '../lib/firebaseUtils';
+import { useTranslation } from 'react-i18next';
 
 interface PremiumModalProps {
   isOpen: boolean;
@@ -14,6 +15,7 @@ interface PremiumModalProps {
 }
 
 export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, uid, onSuccess, profile }) => {
+  const { t } = useTranslation();
   const [isProcessing, setIsProcessing] = useState(false);
   const [step, setStep] = useState<'benefits' | 'payment' | 'success'>('benefits');
   const [hasReadTerms, setHasReadTerms] = useState(!!profile?.hasAcceptedTerms);
@@ -21,22 +23,22 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, uid
   const benefits = [
     {
       icon: ShieldCheck,
-      title: 'Ad-Free Experience',
-      desc: 'Focus on your wealth without distractions. Zero third-party interruptions.',
+      title: t('premium_modal.benefits.ad_free.title'),
+      desc: t('premium_modal.benefits.ad_free.desc'),
       color: 'text-vantage-green',
       bg: 'bg-vantage-green/10'
     },
     {
       icon: Camera,
-      title: 'Vision Receipt Scanning',
-      desc: 'Automatic expense extraction. Stop manual entry, start living.',
+      title: t('premium_modal.benefits.receipt.title'),
+      desc: t('premium_modal.benefits.receipt.desc'),
       color: 'text-vantage-green',
       bg: 'bg-vantage-green/10'
     },
     {
       icon: Brain,
-      title: 'AI Wealth Advisor',
-      desc: 'Deep forecasting, proactive portfolio pivots, and 24/7 strategic chat.',
+      title: t('premium_modal.benefits.ai.title'),
+      desc: t('premium_modal.benefits.ai.desc'),
       color: 'text-vantage-green',
       bg: 'bg-vantage-green/10'
     }
@@ -45,7 +47,6 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, uid
   const handleSubscribe = async () => {
     if (!hasReadTerms) return;
     setIsProcessing(true);
-    // Mock payment delay
     await new Promise(resolve => setTimeout(resolve, 1000));
     
     try {
@@ -90,11 +91,11 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, uid
                   <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-2">
                       <Sparkles className="text-vantage-green" size={24} />
-                      <h3 className="text-[5vw] font-bold tracking-tight text-vantage-green leading-tight">YOUR FINANCES Premium</h3>
+                      <h3 className="text-[5vw] font-bold tracking-tight text-vantage-green leading-tight">{t('premium_modal.sparkles_title')}</h3>
                     </div>
-                    <p className="text-[2.5vw] text-vantage-muted tracking-wide font-bold">The strategic edge</p>
+                    <p className="text-[2.5vw] text-vantage-muted tracking-wide font-bold">{t('premium_modal.strategic_edge')}</p>
                   </div>
-                  <button onClick={onClose} className="p-3 text-vantage-muted hover:text-vantage-text transition-colors active:scale-90">
+                  <button onClick={onClose} className="p-3 text-vantage-muted hover:text-vantage-text transition-colors active:scale-90" aria-label={t('premium_modal.close', 'Close')}>
                     <X size={24} />
                   </button>
                 </div>
@@ -116,11 +117,11 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, uid
                 <div className="flex flex-col gap-4">
                    <div className="p-6 rounded-2xl bg-vantage-text/5 border border-vantage-text/10 flex justify-between items-center">
                       <div className="flex flex-col">
-                         <span className="text-[2.5vw] font-bold text-vantage-green tracking-wide">Signature plan</span>
-                         <span className="text-[6vw] font-bold text-vantage-text leading-none">$19.99 <span className="text-[3vw] text-vantage-muted tracking-tight">/ month</span></span>
+                         <span className="text-[2.5vw] font-bold text-vantage-green tracking-wide">{t('premium_modal.plan_title')}</span>
+                         <span className="text-[6vw] font-bold text-vantage-text leading-none">{t('premium_modal.price_label')}</span>
                       </div>
                       <div className="flex flex-col items-end">
-                         <span className="text-[2vw] text-vantage-green font-bold tracking-wide px-3 py-1 rounded-full bg-vantage-green/10 border border-vantage-green/20">Secure</span>
+                         <span className="text-[2vw] text-vantage-green font-bold tracking-wide px-3 py-1 rounded-full bg-vantage-green/10 border border-vantage-green/20">{t('premium_modal.secure_label')}</span>
                       </div>
                    </div>
 
@@ -128,9 +129,9 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, uid
                     onClick={() => setStep('payment')}
                     className="w-full py-5 bg-vantage-green text-white font-bold tracking-wide rounded-xl shadow-sm active:scale-95 transition-all text-[3vw]"
                    >
-                     Initialize upgrade
+                     {t('premium_modal.upgrade_btn')}
                    </button>
-                   <p className="text-[2vw] text-center text-vantage-muted font-bold tracking-wide">Cancel anytime. Your privacy is our highest mandate.</p>
+                   <p className="text-[2vw] text-center text-vantage-muted font-bold tracking-wide">{t('premium_modal.cancel_label')}</p>
                 </div>
               </div>
             )}
@@ -139,36 +140,35 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, uid
               <div className="p-8 flex flex-col gap-8">
                  <div className="flex justify-between items-start">
                   <button onClick={() => setStep('benefits')} className="text-[2.5vw] font-bold text-vantage-muted tracking-wide hover:text-vantage-green transition-colors">
-                    Back to benefits
+                    {t('premium_modal.back_btn')}
                   </button>
-                  <h3 className="text-[4vw] font-bold tracking-tight text-vantage-text">Premium authorization</h3>
+                  <h3 className="text-[4vw] font-bold tracking-tight text-vantage-text">{t('premium_modal.auth_title')}</h3>
                   <div className="w-10"></div>
                 </div>
 
                 <div className="flex flex-col gap-6">
                   <div className="flex flex-col gap-2">
-                    <label className="text-[2.5vw] font-bold text-vantage-muted tracking-wide px-2">Payment instrument</label>
+                    <label className="text-[2.5vw] font-bold text-vantage-muted tracking-wide px-2">{t('premium_modal.payment_instrument')}</label>
                     <div className="p-6 rounded-2xl bg-vantage-text/5 border border-vantage-text/10 flex items-center justify-between">
                        <div className="flex items-center gap-4">
                           <CreditCard className="text-vantage-muted" size={20} />
                           <span className="text-[3.5vw] font-bold text-vantage-text">•••• •••• •••• 8812</span>
                        </div>
-                       <span className="text-[2vw] font-bold text-vantage-muted tracking-wide">Mock card</span>
+                       <span className="text-[2vw] font-bold text-vantage-muted tracking-wide">{t('premium_modal.mock_card')}</span>
                     </div>
                   </div>
 
                    <div className="flex flex-col gap-3">
                      <div className="flex justify-between px-2">
-                        <span className="text-[3vw] text-vantage-muted font-bold">Transaction value</span>
-                        <span className="text-[3vw] font-bold text-vantage-text">$19.99</span>
+                        <span className="text-[3vw] text-vantage-muted font-bold">{t('premium_modal.tx_value')}</span>
+                        <span className="text-[3vw] font-bold text-vantage-text">{t('premium_modal.price_label')}</span>
                      </div>
                      <div className="flex justify-between px-2">
-                        <span className="text-[3vw] text-vantage-muted font-bold">Service period</span>
-                        <span className="text-[3vw] font-bold text-vantage-text">Monthly recurring</span>
+                        <span className="text-[3vw] text-vantage-muted font-bold">{t('premium_modal.service_period')}</span>
+                        <span className="text-[3vw] font-bold text-vantage-text">{t('premium_modal.monthly_recurring')}</span>
                      </div>
                   </div>
 
-                  {/* Terms Acceptance Checkbox */}
                   <div className="flex items-start gap-4 p-5 bg-white/[0.02] border border-white/5 rounded-2xl">
                     <input 
                       type="checkbox" 
@@ -178,7 +178,7 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, uid
                       className="mt-1.5 w-4 h-4 rounded border-white/10 bg-neutral-950 text-vantage-green focus:ring-vantage-green cursor-pointer"
                     />
                     <label htmlFor="opt-terms-check" className="text-[2.8vw] sm:text-[11px] text-vantage-muted font-bold leading-relaxed cursor-pointer select-none tracking-wide">
-                      I have read and agree to the <span className="text-white underline decoration-vantage-green cursor-pointer">Terms of Engagement</span> of YOUR FINANCES.
+                      {t('premium_modal.terms_label')}
                     </label>
                   </div>
                 </div>
@@ -193,7 +193,7 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, uid
                    ) : (
                      <>
                         <ShieldCheck size={20} />
-                        Confirm strategic upgrade
+                        {t('premium_modal.confirm_btn')}
                      </>
                    )}
                 </button>
@@ -212,15 +212,15 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, uid
                  </motion.div>
                  
                  <div className="flex flex-col gap-2">
-                    <h3 className="text-[1.8rem] font-medium tracking-tight text-vantage-green leading-tight">Welcome to YOUR FINANCES Premium</h3>
-                    <p className="text-[0.8rem] text-vantage-blue-grey font-medium">Your strategic advantages have been provisioned in the YOUR FINANCES Dashboard.</p>
+                    <h3 className="text-[1.8rem] font-medium tracking-tight text-vantage-green leading-tight">{t('premium_modal.welcome')}</h3>
+                    <p className="text-[0.8rem] text-vantage-blue-grey font-medium">{t('premium_modal.advantages_provisioned')}</p>
                  </div>
 
                  <button 
                    onClick={onClose}
                    className="mt-[1rem] px-[2.5rem] py-[1.25rem] bg-vantage-green text-black font-bold tracking-wide rounded-full shadow-2xl shadow-vantage-green/30 active:scale-95 transition-all text-[0.75rem]"
                  >
-                    Enter private sector
+                    {t('premium_modal.enter_private')}
                  </button>
               </div>
             )}

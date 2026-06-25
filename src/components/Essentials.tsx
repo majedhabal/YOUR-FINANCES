@@ -41,11 +41,14 @@ import { handleFirestoreError, OperationType } from '../lib/firebaseUtils';
 import { ConfirmationModal } from './ConfirmationModal';
 import { BudgetCard } from './BudgetCard';
 import { MASTER_CATEGORIES, evaluateMathExpression } from '../lib/constants';
+import { formatLabel } from '../lib/stringUtils';
 import { DEFAULT_RATES, syncExchangeRates } from '../lib/exchangeRates';
 import { calculateAccountBalances } from '../lib/trendUtils';
 import { DebtMilestoneConfigModal } from './DebtMilestoneConfigModal';
 import { SalaryBreakdownModal } from './SalaryBreakdownModal';
 import { BudgetSection } from './BudgetSection';
+import { SalaryOverviewSection } from './SalaryOverviewSection';
+import { EssentialsHeader } from './EssentialsHeader';
 import { BudgetDetailView } from './BudgetDetailView';
 import { SavingsSection } from './SavingsSection';
 import { DebtSection } from './DebtSection';
@@ -165,7 +168,6 @@ export const Essentials: React.FC<DailyLogProps> = ({ profile }) => {
 
   // Salary Breakdown Blueprints State & Helpers
   const [isSalaryModalOpen, setIsSalaryModalOpen] = useState(false);
-  const [hasAutoPrompted, setHasAutoPrompted] = useState(false);
   const [dbSalary, setDbSalary] = useState<number>(5000);
   const [dbPayday, setDbPayday] = useState<number>(28);
 
@@ -185,6 +187,8 @@ export const Essentials: React.FC<DailyLogProps> = ({ profile }) => {
     }
     return `${initYear}-${String(initMonth + 1).padStart(2, '0')}`;
   };
+
+  const [selectedPeriod, setSelectedPeriod] = useState<string>(getCurrentPeriodYearMonth());
 
   const getSalaryBreakdownTitle = (yrMo: string) => {
     const [year, month] = yrMo.split('-').map(Number);
@@ -239,34 +243,6 @@ export const Essentials: React.FC<DailyLogProps> = ({ profile }) => {
     });
     return () => unsub();
   }, [profile?.uid]);
-
-  // Check if upcoming payday (within 2 days before or on payday itself)
-  const isPrePayday = React.useMemo(() => {
-    if (!dbPayday || !dbSalary) return false;
-    const now = new Date();
-    const curYear = now.getFullYear();
-    const curMonth = now.getMonth();
-
-    const targetPaydayThisMonth = new Date(curYear, curMonth, dbPayday);
-    const diffTime = targetPaydayThisMonth.getTime() - now.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-    if (diffDays >= 0 && diffDays <= 2) {
-      return true;
-    } else {
-      const targetPaydayNextMonth = new Date(curYear, curMonth + 1, dbPayday);
-      const diffTimeNext = targetPaydayNextMonth.getTime() - now.getTime();
-      const diffDaysNext = Math.ceil(diffTimeNext / (1000 * 60 * 60 * 24));
-      return diffDaysNext >= 0 && diffDaysNext <= 2;
-    }
-  }, [dbPayday, dbSalary]);
-
-  useEffect(() => {
-    if (isPrePayday && !hasAutoPrompted && !isSalaryModalOpen) {
-      setIsSalaryModalOpen(true);
-      setHasAutoPrompted(true);
-    }
-  }, [isPrePayday, hasAutoPrompted]);
 
   useEffect(() => {
     const loadRates = async () => {
@@ -717,21 +693,21 @@ useEffect(() => {
         {/* Header Info */}
         <div className="flex items-center justify-between border-b border-neutral-100 pb-2.5">
           <div className="flex flex-col">
-            <span className="text-[10px] uppercase tracking-wider text-[#57606F] font-normal" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}>
-              {budget.period === 'daily' || budget.title?.toLowerCase().includes('daily') || budget.category?.toLowerCase().includes('daily') ? 'DAILY SPENDS OVERVIEW' : 'ASSOCIATED LEDGER'}
+            <span className="text-[10px] text-[#57606F] font-normal" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}>
+              {budget.period === 'daily' || budget.title?.toLowerCase().includes('daily') || budget.category?.toLowerCase().includes('daily') ? t('essentials.daily_spends_overview', 'DAILY SPENDS OVERVIEW') : t('essentials.associated_ledger', 'ASSOCIATED LEDGER')}
             </span>
-            <h5 className="text-[13px] text-black tracking-wide uppercase font-bold" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}>
-              {budget.title || budget.category} Detail
+            <h5 className="text-[13px] text-black font-bold" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}>
+              {budget.title || budget.category} {t('essentials.detail', 'Detail')}
             </h5>
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
             <button
               type="button"
               onClick={() => setEditingBudget(budget)}
-              className="px-2.5 py-1 text-[10px] hover:bg-neutral-50 active:scale-95 text-neutral-600 font-bold border border-neutral-200 rounded-lg uppercase tracking-wider transition-all cursor-pointer"
+              className="px-2.5 py-1 text-[10px] hover:bg-neutral-50 active:scale-95 text-neutral-600 font-bold border border-neutral-200 rounded-lg transition-all cursor-pointer"
               style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
             >
-              Edit Limit
+              {t('essentials.edit_limit', 'Edit Limit')}
             </button>
             <button
               type="button"
@@ -756,7 +732,7 @@ useEffect(() => {
                       type="button"
                       onClick={async (e) => {
                         e.stopPropagation();
-                        if (confirm("Are you sure you want to delete this transaction from your budget sub-ledger?")) {
+                        if (confirm(t('essentials.confirm_delete_tx_budget_ledger', "Are you sure you want to delete this transaction from your budget sub-ledger?"))) {
                           try {
                             await deleteDoc(doc(db, `users/${profile.uid}/transactions`, tx.id));
                           } catch (err) {
@@ -779,10 +755,10 @@ useEffect(() => {
                           fontSize: 'clamp(11px, 2.5vw, 13px)'
                         }}
                       >
-                        {tx.notes || tx.title || 'Untitled Expense'}
+                        {tx.notes || tx.title || t('essentials.untitled_expense', 'Untitled Expense')}
                       </span>
                       <span 
-                        className="text-[9px] text-neutral-400 block uppercase tracking-wide leading-none mt-0.5"
+                        className="text-[9px] text-neutral-400 block leading-none mt-0.5"
                         style={{ 
                           fontFamily: "'Google Sans', sans-serif", 
                           fontWeight: 400
@@ -810,8 +786,8 @@ useEffect(() => {
             })
           ) : (
             <div className="py-8 text-center">
-              <span className="text-[11px] text-[#57606F] uppercase tracking-widest font-normal opacity-50" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}>
-                No past transactions logged for this period
+              <span className="text-[11px] text-[#57606F] font-normal opacity-50" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}>
+                {t('essentials.no_past_transactions', 'No past transactions logged for this period')}
               </span>
             </div>
           )}
@@ -819,8 +795,8 @@ useEffect(() => {
 
         {/* Summary Row */}
         <div className="border-t border-neutral-150 pt-2 flex items-center justify-between">
-          <span className="text-[10px] uppercase font-bold text-neutral-400 tracking-wider" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}>
-            Total Transaction Values
+          <span className="text-[10px] font-bold text-neutral-400" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}>
+            {t('essentials.total_transaction_values', 'Total Transaction Values')}
           </span>
           <span className="text-[13px] text-neutral-800 font-bold" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}>
             {totalSpent.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {budget.currency || 'AED'}
@@ -848,40 +824,28 @@ useEffect(() => {
       </AnimatePresence>
 
       {/* Header - Sticky */}
-      <div className="sticky top-0 z-40 bg-[#F8FAFC] flex justify-between items-center p-[5px]">
-        <h2 className="font-bold tracking-tighter text-black">
-          <span style={{ fontFamily: "'Google Sans', sans-serif", fontSize: '26px' }}>{t('essentials.title')}</span>
-        </h2>
-        <button
-          onClick={() => {
-            triggerHaptic(hapticPresets.medium);
-            setIsSalaryModalOpen(true);
-          }}
-          style={{ 
-            fontFamily: "'Google Sans', sans-serif", 
-            fontWeight: 700,
-            backgroundColor: '#A6DDB1',
-            color: '#1E293B'
-          }}
-          className="flex items-center gap-1.5 px-4 py-2 rounded-full text-[12px] hover:brightness-95 active:scale-95 transition-all cursor-pointer border-none shadow-sm"
-        >
-          <Calendar size={14} />
-          <span>{t('essentials.income_allocation')}</span>
-        </button>
-        <SalaryBreakdownModal 
-          isOpen={isSalaryModalOpen}
-          onClose={() => setIsSalaryModalOpen(false)}
-          profile={profile}
-          budgets={budgets}
-          onSuccess={() => {
-            setShowSuccess(true);
-            setTimeout(() => setShowSuccess(false), 2000);
-          }}
-        />
-      </div>
+      <EssentialsHeader 
+        title={t('essentials.title')}
+      />
+      <SalaryBreakdownModal 
+        isOpen={isSalaryModalOpen}
+        onClose={() => setIsSalaryModalOpen(false)}
+        profile={profile}
+        budgets={budgets}
+        onSuccess={() => {
+          setShowSuccess(true);
+          setTimeout(() => setShowSuccess(false), 2000);
+        }}
+      />
 
       {/* Unified Grid Layout */}
       <div className="flex flex-col gap-6 p-[5px] border-0 h-auto">
+        <SalaryOverviewSection 
+          salary={dbSalary} 
+          currency={activeBaseCurr} 
+          onOpenBreakdown={() => setIsSalaryModalOpen(true)} 
+        />
+
         {/* Column 1: Budget Allocation */}
         <BudgetSection 
           budgets={budgets} 
@@ -891,21 +855,12 @@ useEffect(() => {
           onBudgetClick={(b) => setSelectedBudgetId(b.id)} 
           onAddExpense={(b) => setActiveBudgetForTx(b)} 
           baseCurrency={activeBaseCurr}
+          currentPeriod={selectedPeriod}
+          payday={dbPayday}
+          onPeriodChange={(p) => setSelectedPeriod(p)}
+          isCurrentPeriod={selectedPeriod === getCurrentPeriodYearMonth()}
         />
 
-        {/* Budget Insight Card */}
-        <div 
-          id="essentials-budget-insight"
-          className="relative overflow-hidden flex flex-col transition-all bg-[#F0F9F4] border border-[#DCFCE7] rounded-2xl p-6"
-        >
-          <div className="flex items-center gap-2 text-[#366945] mb-3">
-            <Lightbulb size={20} />
-            <span className="font-bold text-sm">{t('essentials.vantage_insight')}</span>
-          </div>
-          <p className="text-[#366945] text-sm leading-relaxed">
-            {t('essentials.budget_insight_text')}
-          </p>
-        </div>
 
         {/* Column 2: Savings Goals */}
         <SavingsSection milestones={milestones}
@@ -936,14 +891,20 @@ useEffect(() => {
             <Lightbulb size={20} />
             <span className="font-bold text-sm">{t('essentials.vantage_insight')}</span>
           </div>
-          <p className="text-[#B91C1C] text-sm leading-relaxed">
+          <p className="text-[#B91C1C] text-sm leading-relaxed" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}>
             { (() => {
               const debtNow = accounts.filter(a => ['Credit Card', 'Personal Loan', 'Mortgage'].includes(a.type)).reduce((sum, a) => sum + Math.abs(a.currentBalance || 0), 0);
               const debtPast = accounts.filter(a => ['Credit Card', 'Personal Loan', 'Mortgage'].includes(a.type)).reduce((sum, a) => sum + Math.abs(a.startingBalance || 0), 0);
               const diff = debtNow - debtPast;
               const pct = debtPast > 0 ? (Math.abs(diff) / debtPast) * 100 : 0;
               
-              return `Your total debt ${diff > 0 ? 'increased' : diff < 0 ? 'decreased' : 'remained stable'} by ${pct.toFixed(1)}% this month compared to last month.`;
+              const direction = diff > 0 
+                ? t('common.increased', 'increased') 
+                : diff < 0 
+                  ? t('common.decreased', 'decreased') 
+                  : t('common.remained_stable', 'remained stable');
+                  
+              return t('essentials.debt_insight_text', { status: direction, pct: pct.toFixed(1) });
             })() }
           </p>
         </div>
@@ -1079,16 +1040,16 @@ useEffect(() => {
                 {/* Title in bold 700 with fluid scaling */}
                 <h3 
                   style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
-                  className="text-[#1F2937] uppercase tracking-wider text-[clamp(12px,3.2vw,14px)] font-bold"
+                  className="text-[#1F2937] text-[clamp(12px,3.2vw,14px)] font-bold"
                 >
-                  {savingsGoalAction.type === 'delete' ? 'DELETE TARGET GOAL' : (savingsGoalAction.ms?.isArchived ? 'RESTORE TARGET GOAL' : 'ARCHIVE TARGET GOAL')}
+                  {savingsGoalAction.type === 'delete' ? t('essentials.delete_target_goal', 'Delete Target Goal') : (savingsGoalAction.ms?.isArchived ? t('essentials.restore_target_goal', 'Restore Target Goal') : t('essentials.archive_target_goal', 'Archive Target Goal'))}
                 </h3>
                 {/* Regular weight 400 for parsing descriptive query text to load beautifully */}
                 <p 
                   style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
                   className="text-neutral-500 tracking-wide leading-relaxed text-[clamp(12px,3vw,14px)] mt-1 md:mt-1.5"
                 >
-                  Are you sure you want to proceed?
+                  {t('essentials.are_you_sure_to_proceed', 'Are you sure you want to proceed?')}
                 </p>
               </div>
 
@@ -1106,7 +1067,7 @@ useEffect(() => {
                   }}
                   className="w-full h-[38px] md:h-[42px] text-[clamp(11px,2.8vw,13px)] flex items-center justify-center rounded-xl shadow-sm uppercase tracking-[0.1em] hover:brightness-95 active:scale-95 transition-all text-center cursor-pointer font-normal border-none outline-none"
                 >
-                  {isLoading ? "Processing..." : "PROCEED"}
+                  {isLoading ? t('common.processing', 'Processing...') : t('common.proceed', 'PROCEED')}
                 </button>
                 {/* CANCEL Dismiss button with regular weight 400 and scaled font to avoid looking disproportionate on desktop */}
                 <button
@@ -1116,9 +1077,9 @@ useEffect(() => {
                     fontFamily: "'Google Sans', sans-serif",
                     fontWeight: 400
                   }}
-                  className="w-full flex items-center justify-center text-neutral-500 hover:text-black transition-colors font-normal cursor-pointer bg-transparent border-none outline-none text-[clamp(11px,2.8vw,13px)] uppercase tracking-[0.1em] "
+                  className="w-full flex items-center justify-center text-neutral-500 hover:text-black transition-colors font-normal cursor-pointer bg-transparent border-none outline-none text-[clamp(11px,2.8vw,13px)]"
                 >
-                  CANCEL
+                  {t('common.cancel', 'CANCEL')}
                 </button>
               </div>
             </motion.div>
@@ -1155,16 +1116,16 @@ useEffect(() => {
                 {/* Title in bold 700 with fluid scaling */}
                 <h3 
                   style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
-                  className="text-[#1F2937] uppercase tracking-wider text-[clamp(12px,3.2vw,14px)] font-bold"
+                  className="text-[#1F2937] text-[clamp(12px,3.2vw,14px)] font-bold"
                 >
-                  {debtMilestoneAction.type === 'delete' ? 'DELETE DEBT' : (debtMilestoneAction.ms?.isArchived ? 'RESTORE DEBT' : 'ARCHIVE DEBT')}
+                  {debtMilestoneAction.type === 'delete' ? t('essentials.delete_debt', 'Delete Debt') : (debtMilestoneAction.ms?.isArchived ? t('essentials.restore_debt', 'Restore Debt') : t('essentials.archive_debt', 'Archive Debt'))}
                 </h3>
                 {/* Regular weight 400 for parsing descriptive query text to load beautifully */}
                 <p 
                   style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
                   className="text-neutral-500 tracking-wide leading-relaxed text-[clamp(12px,3vw,14px)] mt-1 md:mt-1.5"
                 >
-                  Are you sure you want to proceed?
+                  {t('essentials.are_you_sure_to_proceed', 'Are you sure you want to proceed?')}
                 </p>
               </div>
 
@@ -1182,7 +1143,7 @@ useEffect(() => {
                   }}
                   className="w-full h-[38px] md:h-[42px] text-[clamp(11px,2.8vw,13px)] flex items-center justify-center rounded-xl shadow-sm uppercase tracking-[0.1em] hover:brightness-95 active:scale-95 transition-all text-center cursor-pointer font-normal border-none outline-none"
                 >
-                  {isLoading ? "Processing..." : "PROCEED"}
+                  {isLoading ? t('common.processing', 'Processing...') : t('common.proceed', 'PROCEED')}
                 </button>
                 {/* CANCEL Dismiss button with regular weight 400 and scaled font to avoid looking disproportionate on desktop */}
                 <button
@@ -1194,7 +1155,7 @@ useEffect(() => {
                   }}
                   className="w-full flex items-center justify-center text-neutral-500 hover:text-black transition-colors font-normal cursor-pointer bg-transparent border-none outline-none text-[clamp(11px,2.8vw,13px)] uppercase tracking-[0.1em]"
                 >
-                  CANCEL
+                  {t('common.cancel', 'CANCEL')}
                 </button>
               </div>
             </motion.div>
@@ -1232,16 +1193,16 @@ useEffect(() => {
                 {/* Title in bold 700 with fluid scaling */}
                 <h3 
                   style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
-                  className="text-[#1F2937] uppercase tracking-wider text-[clamp(12px,3.2vw,14px)] font-bold"
+                  className="text-[#1F2937] text-[clamp(12px,3.2vw,14px)] font-bold"
                 >
-                  {debtMilestoneAction.type === 'delete' ? 'DELETE DEBT MILESTONE' : (debtMilestoneAction.ms?.isArchived ? 'RESTORE DEBT MILESTONE' : 'ARCHIVE DEBT MILESTONE')}
+                  {debtMilestoneAction.type === 'delete' ? t('essentials.delete_debt_milestone', 'Delete Debt Milestone') : (debtMilestoneAction.ms?.isArchived ? t('essentials.restore_debt_milestone', 'Restore Debt Milestone') : t('essentials.archive_debt_milestone', 'Archive Debt Milestone'))}
                 </h3>
                 {/* Regular weight 400 for parsing descriptive query text to load beautifully */}
                 <p 
                   style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
                   className="text-neutral-500 tracking-wide leading-relaxed text-[clamp(12px,3vw,14px)] mt-1 md:mt-1.5"
                 >
-                  Are you sure you want to proceed?
+                  {t('essentials.are_you_sure_to_proceed', 'Are you sure you want to proceed?')}
                 </p>
               </div>
 
@@ -1259,7 +1220,7 @@ useEffect(() => {
                   }}
                   className="w-full h-[38px] md:h-[42px] text-[clamp(11px,2.8vw,13px)] flex items-center justify-center rounded-xl shadow-sm uppercase tracking-[0.1em] hover:brightness-95 active:scale-95 transition-all text-center cursor-pointer font-normal border-none outline-none"
                 >
-                  {isLoading ? "Processing..." : "PROCEED"}
+                  {isLoading ? t('common.processing', 'Processing...') : t('common.proceed', 'PROCEED')}
                 </button>
                 {/* CANCEL Dismiss button with regular weight 400 and scaled font to avoid looking disproportionate on desktop */}
                 <button
@@ -1271,7 +1232,7 @@ useEffect(() => {
                   }}
                   className="w-full flex items-center justify-center text-neutral-500 hover:text-black transition-colors font-normal cursor-pointer bg-transparent border-none outline-none text-[clamp(11px,2.8vw,13px)] uppercase tracking-[0.1em]"
                 >
-                  CANCEL
+                  {t('common.cancel', 'CANCEL')}
                 </button>
               </div>
             </motion.div>
@@ -1332,9 +1293,9 @@ useEffect(() => {
                 {/* Warning Title in bold 700 exclusively */}
                 <h3 
                   style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} 
-                  className="text-sm text-black uppercase tracking-tight mb-2 leading-tight font-bold"
+                  className="text-sm text-black mb-2 leading-tight font-bold"
                 >
-                  Manage Linked Account
+                  {t('essentials.manage_linked_account', 'Manage Linked Account')}
                 </h3>
                 
                 {/* Body message in regular 400 with high-density line constraints */}
@@ -1342,9 +1303,9 @@ useEffect(() => {
                   style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} 
                   className="text-[10px] text-[#57606F] leading-snug tracking-normal mb-4 font-normal max-w-[280px]"
                 >
-                  This active repayment milestone is linked to the liability node: <span className="text-black">{linkedAcc?.name || 'Unknown'}</span>. Would you like to wipe its overall balance-sheet node or keep/archive the ledger logs?
+                  {t('essentials.linked_account_warning', 'This active repayment milestone is linked to the liability node: ')}<span className="text-black">{linkedAcc?.name || 'Unknown'}</span>{t('essentials.linked_account_question', '. Would you like to wipe its overall balance-sheet node or keep/archive the ledger logs?')}
                 </p>
-
+ 
                 {/* Clear action selector keys in a confirmation layout row or stacked status layout */}
                 <div className="flex flex-col gap-2 w-full">
                   <button
@@ -1353,7 +1314,7 @@ useEffect(() => {
                     style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} 
                     className="w-full h-8.5 bg-red-600 hover:bg-red-700 text-white font-normal rounded-xl transition-colors cursor-pointer border-none text-[10px] uppercase tracking-wider"
                   >
-                    Delete Account
+                    {t('essentials.delete_account', 'Delete Account')}
                   </button>
                   <button
                     onClick={() => handleManageLinkedAccount('archive')}
@@ -1361,7 +1322,7 @@ useEffect(() => {
                     style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} 
                     className="w-full h-8.5 bg-[#f1f2f6] hover:bg-neutral-200 text-neutral-800 font-normal rounded-xl transition-colors cursor-pointer border-none text-[10px] uppercase tracking-wider"
                   >
-                    Archive Account
+                    {t('essentials.archive_account', 'Archive Account')}
                   </button>
                   <button
                     onClick={() => handleManageLinkedAccount('keep')}
@@ -1369,7 +1330,7 @@ useEffect(() => {
                     style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} 
                     className="w-full h-8.5 bg-vantage-green/10 hover:bg-vantage-green/20 text-vantage-green font-normal rounded-xl transition-colors cursor-pointer border-none text-[10px] uppercase tracking-wider"
                   >
-                    Keep Active
+                    {t('essentials.keep_active', 'Keep Active')}
                   </button>
                 </div>
               </motion.div>
@@ -1942,11 +1903,11 @@ export const QuickTransactionModal: React.FC<{
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-white" />
         <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="relative w-full max-w-[420px] bg-vantage-card border-[1.5px] border-[#E1E8ED] rounded-[1.25rem] p-4 sm:p-6 md:p-7 shadow-2xl">
           <div className="flex flex-col items-center gap-0.5 mb-4 sm:mb-5">
-            <h4 className="font-black text-black uppercase tracking-tighter leading-none"
+            <h4 className="font-black text-black leading-none"
                 style={{ fontSize: 'clamp(18px, 5vw, 22px)' }}>
               Submit Transaction
             </h4>
-            <p className="text-emerald-700 uppercase tracking-[0.25em] font-black mt-1"
+            <p className="text-emerald-700 font-black mt-1"
                style={{ fontSize: 'clamp(9px, 2vw, 11px)' }}>
               {budget.title} Control
             </p>
@@ -1981,7 +1942,7 @@ export const QuickTransactionModal: React.FC<{
                 className="w-full bg-vantage-text/5 border border-[#E1E8ED] rounded-lg px-2 text-black font-black focus:border-vantage-green outline-none transition-all h-[36px] max-h-[36px] md:h-[40px] md:max-h-[40px] text-[13px] md:text-[14px]"
               >
                 {allowedCategories.map((cat, idx) => (
-                  <option key={`tx-cat-opt-${cat}-${idx}`} value={cat} className="bg-white">{cat}</option>
+                  <option key={`tx-cat-opt-${cat}-${idx}`} value={cat} className="bg-white">{formatLabel(cat)}</option>
                 ))}
                 {allowedCategories.length === 0 && <option disabled>No categories assigned</option>}
               </select>
@@ -1998,7 +1959,7 @@ export const QuickTransactionModal: React.FC<{
                 className="w-full bg-vantage-text/5 border border-[#E1E8ED] rounded-lg px-2 text-black font-black focus:border-vantage-green outline-none transition-all h-[36px] max-h-[36px] md:h-[40px] md:max-h-[40px] text-[13px] md:text-[14px]"
               >
                 {allowedSubcategories.map((sub, idx) => (
-                  <option key={`tx-sub-opt-${sub}-${idx}`} value={sub} className="bg-white">{sub}</option>
+                  <option key={`tx-sub-opt-${sub}-${idx}`} value={sub} className="bg-white">{formatLabel(sub)}</option>
                 ))}
                 {allowedSubcategories.length === 0 && <option value="">None</option>}
               </select>

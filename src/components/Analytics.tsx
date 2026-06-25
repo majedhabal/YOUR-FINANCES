@@ -150,6 +150,11 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
   const [recurring, setRecurring] = useState<any[]>([]);
   const [dynamicBaseSalary, setDynamicBaseSalary] = useState<number>(0);
 
+  useEffect(() => {
+    const isOpen = isNetWorthBreakdownOpen || isCashBreakdownOpen || isDebtBreakdownOpen || isRecurringBreakdownOpen;
+    window.dispatchEvent(new CustomEvent('breakdown-modal-toggled', { detail: { isOpen } }));
+  }, [isNetWorthBreakdownOpen, isCashBreakdownOpen, isDebtBreakdownOpen, isRecurringBreakdownOpen]);
+
   // Predictions states
   const [aiForecast, setAiForecast] = useState<string | null>(null);
   const [aiForecastLoading, setAiForecastLoading] = useState(false);
@@ -246,7 +251,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
     
     return allTransactions
       .filter(tx => 
-        tx.type === 'expense' && 
+        (tx.type === 'expense' || tx.type === 'Outflow') && 
         new Date(tx.date) >= thirtyDaysAgo && 
         new Date(tx.date) <= now
       )
@@ -260,7 +265,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
     
     return allTransactions
       .filter(tx => 
-        tx.type === 'income' && 
+        (tx.type === 'income' || tx.type === 'Inflow') && 
         new Date(tx.date) >= thirtyDaysAgo && 
         new Date(tx.date) <= now
       )
@@ -288,15 +293,36 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
       return sum + (Math.abs(bal) * rate);
     }, 0);
 
-    const calculatedNetWorth = (assetsSum - liabilitiesSum) / baseRateToAED;
-      
-    const calculatedTotalDebt = liabilityAccounts.reduce((sum, acc) => {
-      const bal = accountBalances[acc.id] || 0;
-      const rate = getRateToAED(acc.currency);
-      const convertedBal = bal * rate;
-      return sum + (convertedBal < 0 ? Math.abs(convertedBal) : 0);
-    }, 0) / baseRateToAED;
+    const calculatedTotalDebt = liabilitiesSum / baseRateToAED;
 
+    // Confirmed income = Total confirmed income transactions + account starting balances (Rule 17)
+    // Refined to include both 'income' and 'Inflow' types and only asset account starting balances
+    const totalConfirmedIncomeTxSum = allTransactions
+      .filter(tx => 
+        (tx.type === 'income' || tx.type === 'Inflow') && 
+        tx.status !== 'draft' && 
+        tx.status !== 'pending' && 
+        tx.status !== 'upcoming' &&
+        tx.status !== 'Pending Schedule' &&
+        !tx.isUpcomingSalaryAllocation &&
+        selectedAccIds.has(tx.accountId)
+      )
+      .reduce((sum, tx) => sum + (Number(tx.amount || 0) * getRateToAED(tx.currency || 'AED')), 0);
+
+    const totalStartingBalances = accounts
+      .filter(acc => 
+        !acc.isArchived && 
+        selectedAccIds.has(acc.id) && 
+        !liabilityTypes.includes(acc.type) && 
+        acc.loanDirection !== 'lent'
+      )
+      .reduce((sum, acc) => sum + (Number(acc.startingBalance || 0) * getRateToAED(acc.currency || 'AED')), 0);
+
+    const calculatedTotalConfirmedIncome = (totalConfirmedIncomeTxSum + totalStartingBalances) / baseRateToAED;
+
+    // User requested formula: Net Worth = Confirmed income - Total Debt
+    const calculatedNetWorth = calculatedTotalConfirmedIncome - calculatedTotalDebt;
+      
     const totalRecurringIncome = recurring.filter(r => ['income', 'inflow'].includes(r.transactionType?.toLowerCase() || '')).reduce((sum, r) => sum + Number(r.amount || 0), 0);
     const totalRecurringExpenses = recurring.filter(r => ['outflow', 'expense'].includes(r.transactionType?.toLowerCase() || '')).reduce((sum, r) => sum + Number(r.amount || 0), 0);
 
@@ -407,11 +433,11 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
           } else if (isSender && String(tx.accountId) === acc.id) {
             return sum - amount;
           }
-        } else if (tx.type === 'income') {
+        } else if (tx.type === 'income' || tx.type === 'Inflow') {
           if (String(tx.accountId) === acc.id) {
             return sum + amount;
           }
-        } else if (tx.type === 'expense') {
+        } else if (tx.type === 'expense' || tx.type === 'Outflow') {
           if (String(tx.accountId) === acc.id) {
             return sum - amount;
           }
@@ -464,11 +490,11 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
           } else if (isSender && String(tx.accountId) === acc.id) {
             return sum - amount;
           }
-        } else if (tx.type === 'income') {
+        } else if (tx.type === 'income' || tx.type === 'Inflow') {
           if (String(tx.accountId) === acc.id) {
             return sum + amount;
           }
-        } else if (tx.type === 'expense') {
+        } else if (tx.type === 'expense' || tx.type === 'Outflow') {
           if (String(tx.accountId) === acc.id) {
             return sum - amount;
           }
@@ -1092,7 +1118,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
             style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
             className="text-2xl text-[#111c2d] tracking-tight"
           >
-            {t('analytics.analysis_overview')}
+            Your Analytics
           </h1>
           <div className="flex bg-[#f0f3ff] p-1 rounded-xl border border-[#c1c9bf]/35 self-start">
             {(['1M', '3M', '6M', '1Y', 'All'] as const).map(range => (
@@ -1127,7 +1153,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
                   style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
                   className="text-xs text-gray-500 block mb-2 font-normal"
                 >
-                  Total Savings
+                  {t('analytics.total_savings')}
                 </span>
                 <span 
                   style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
@@ -1149,7 +1175,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
                 )}
                 <span>
                   {historicalStats.savingsChangePct >= 0 ? '+' : ''}
-                  {historicalStats.savingsChangePct.toFixed(1)}% vs prev. period
+                  {historicalStats.savingsChangePct.toFixed(1)}% {t('analytics.vs_prev_period')}
                 </span>
               </div>
             </div>
@@ -1164,7 +1190,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
                   style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
                   className="text-xs text-gray-500 block mb-2 font-normal"
                 >
-                  Avg. Monthly Spend
+                  {t('analytics.avg_monthly_spend')}
                 </span>
                 <span 
                   style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
@@ -1186,7 +1212,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
                 )}
                 <span>
                   {historicalStats.spendChangePct >= 0 ? '+' : ''}
-                  {historicalStats.spendChangePct.toFixed(1)}% higher spend
+                  {historicalStats.spendChangePct.toFixed(1)}% {t('analytics.higher_spend')}
                 </span>
               </div>
             </div>
@@ -1203,13 +1229,13 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
                   style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
                   className="text-sm text-[#111c2d] font-bold"
                 >
-                  Income vs Expenses
+                  {t('analytics.income_vs_expenses')}
                 </h2>
                 <p 
                   style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
                   className="text-xs text-gray-400 mt-1 font-normal"
                 >
-                  Cash flow performance ({pastTimeRange === 'All' ? 'Complete history' : `Last ${pastTimeRange}`})
+                  {t('analytics.cash_flow_performance')} ({pastTimeRange === 'All' ? t('analytics.complete_history') : `${t('analytics.last')} ${pastTimeRange}`})
                 </p>
               </div>
               <div className="flex gap-4 select-none">
@@ -1219,7 +1245,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
                     style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
                     className="text-xs text-gray-500 font-normal"
                   >
-                    Income
+                    {t('analytics.income')}
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5">
@@ -1228,7 +1254,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
                     style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
                     className="text-xs text-gray-500 font-normal"
                   >
-                    Expenses
+                    {t('analytics.expenses')}
                   </span>
                 </div>
               </div>
@@ -1269,12 +1295,12 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
                         style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
                         className="text-[11px] text-slate-400 border-b border-slate-800 pb-1 mb-1 font-bold"
                       >
-                        {d.month} Performance
+                        {d.month} {t('analytics.performance')}
                       </p>
                       <div className="flex items-center justify-between gap-3 text-[10px]">
                         <span className="flex items-center gap-1 font-sans text-slate-300">
                           <span className="w-1.5 h-1.5 rounded-full bg-[#a6ddb1]" />
-                          Inflow:
+                          {t('analytics.inflow')}:
                         </span>
                         <span 
                           style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 750 }}
@@ -1286,7 +1312,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
                       <div className="flex items-center justify-between gap-3 text-[10px]">
                         <span className="flex items-center gap-1 font-sans text-slate-300">
                           <span className="w-1.5 h-1.5 rounded-full bg-[#c1c9bf]/40" />
-                          Outflow:
+                          {t('analytics.outflow')}:
                         </span>
                         <span 
                           style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 750 }}
@@ -1312,13 +1338,13 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
               style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
               className="text-lg text-[#111c2d] font-bold"
             >
-              Spending by Category
+              {t('analytics.spending_by_category')}
             </h2>
             <button 
               style={{ fontFamily: "'Google Sans', sans-serif" }}
               className="text-[#366945] text-xs font-bold hover:underline"
             >
-              View details
+              {t('analytics.view_details')}
             </button>
           </div>
 
@@ -2236,7 +2262,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
             style={{ fontSize: 'clamp(0.85rem, 1.8vw, 0.95rem)', fontFamily: "'Google Sans', sans-serif" }}
             className="font-medium tracking-tight text-[#1E2229] opacity-70 leading-none"
           >
-            YOUR ANALYTICS
+            {t('analytics.your_analytics')}
           </h1>
         </div>
         
@@ -2255,7 +2281,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
             className="flex items-center gap-1.5 px-3.5 py-2 rounded-full border border-[#E1E8ED] bg-white text-slate-800 hover:bg-neutral-50 hover:border-neutral-300 active:scale-95 transition-all text-xs font-bold leading-none select-none cursor-pointer shadow-[0_1px_2px_rgba(0,0,0,0.05)] animate-fade-in"
           >
             <FileDown size={13} className="text-[#15803D]" />
-            <span>Export PDF Summary</span>
+            <span>{t('analytics.export_pdf_summary')}</span>
           </button>
 
           {/* Floating AI advisory assist if premium */}
@@ -2278,9 +2304,9 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
         className="sticky top-0 z-40 w-full flex bg-white border-b border-[#E1E8ED] items-center justify-around select-none h-[64px]"
       >
         {[
-          { id: 'now', label: 'Current situation' },
-          { id: 'past', label: 'Historical analysis' },
-          { id: 'future', label: 'Forecast' }
+          { id: 'now', label: t('analytics.current_situation') },
+          { id: 'past', label: t('analytics.historical_analysis') },
+          { id: 'future', label: t('analytics.forecast') }
         ].map(tab => {
           const isSelected = activeTimeline === tab.id;
           return (
@@ -2316,12 +2342,12 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
             <div className="md:col-span-8 bg-white border border-[#E1E8ED] rounded-2xl p-6 flex flex-col h-full min-h-[400px] shadow-sm">
               <div className="flex justify-between items-start mb-6">
                  <div>
-                  <h3 className="font-bold text-2xl text-[#111c2d] mb-1" id="chart-title">Net Cash Flow</h3>
-                  <p className="text-sm text-[#8c8c99]" id="chart-subtitle">Last 30 days comparison</p>
+                  <h3 className="font-bold text-2xl text-[#111c2d] mb-1" id="chart-title">{t('analytics.net_cash_flow')}</h3>
+                  <p className="text-sm text-[#8c8c99]" id="chart-subtitle">{t('analytics.last_30_days_comparison')}</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="w-3 h-3 rounded-full bg-[#A6DDB1]"></span>
-                  <span className="text-sm text-[#8c8c99]">Income</span>
+                  <span className="text-sm text-[#8c8c99]">{t('analytics.income')}</span>
                 </div>
               </div>
               
@@ -2337,16 +2363,16 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
                 ))}
               </div>
 
-               {/* Stats Row */}
+              {/* Stats Row */}
               <div className="grid grid-cols-2 gap-4 pt-6 mt-auto border-t border-[#E1E8ED]">
                 <div>
-                  <p className="text-[10px] font-bold text-[#8c8c99] uppercase tracking-widest mb-1">TOTAL INFLOW</p>
+                  <p className="text-[10px] font-bold text-[#8c8c99] mb-1">{t('analytics.total_inflow')}</p>
                   <p className="text-xl font-bold text-[#366945]">
                     {profile?.baseCurrency || profile?.currency || 'AED'} {totalInflow.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold text-[#8c8c99] uppercase tracking-widest mb-1">BURN RATE</p>
+                  <p className="text-[10px] font-bold text-[#8c8c99] mb-1">{t('analytics.burn_rate')}</p>
                   <p className="text-xl font-bold text-[#111c2d]">
                     {profile?.baseCurrency || profile?.currency || 'AED'} {burnRate.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </p>
@@ -2363,14 +2389,14 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
                 className="relative overflow-hidden flex flex-col transition-all cursor-pointer hover:shadow-sm bg-white border border-[#E1E8ED] rounded-2xl p-6 shadow-sm mb-4"
               >
                 <div className="flex justify-between items-start mb-2">
-                  <span className="text-sm text-[#8c8c99]">Net Worth</span>
+                  <span className="text-sm text-[#8c8c99]">{t('analytics.net_worth')}</span>
                   <span className="bg-[#A6DDB1]/20 text-[#366945] text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
                     <TrendingUp size={12} /> {netWorthChangePct.toFixed(1)}%
                   </span>
                 </div>
                 <div className="flex items-baseline gap-1 mb-4">
                   <span className="text-sm text-[#8c8c99]">{primaryCurrency}</span>
-                  <span className="text-2xl font-bold text-[#ba1a1a]">{netWorth < 0 ? '-' : ''}{Math.abs(netWorth || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                  <span className="text-2xl font-bold text-[#366945]">{netWorth < 0 ? '-' : ''}{Math.abs(netWorth || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                 </div>
                 <div className="h-12 w-full opacity-50">
                    <svg className="w-full h-full" viewBox="0 0 105 35" preserveAspectRatio="none">
@@ -2395,7 +2421,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
                 className="relative overflow-hidden flex flex-col transition-all cursor-pointer hover:shadow-sm bg-white border border-[#E1E8ED] rounded-2xl p-6 shadow-sm mb-4"
               >
                 <div className="flex justify-between items-start mb-2">
-                  <span className="text-sm text-[#8c8c99]">Cash available</span>
+                  <span className="text-sm text-[#8c8c99]">{t('analytics.cash_available')}</span>
                   <span className="bg-[#A6DDB1]/20 text-[#366945] text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
                     <TrendingUp size={12} /> +100.0%
                   </span>
@@ -2418,11 +2444,11 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
               >
                 <div className="flex items-center gap-2 text-[#366945] mb-3">
                   <Lightbulb size={20} />
-                  <span className="font-bold text-sm">Vantage Insight</span>
+                  <span className="font-bold text-sm">{t('analytics.vantage_insight')}</span>
                 </div>
                 <p className="text-[#366945] text-sm leading-relaxed">
-                  Your savings {cashChangePct >= 0 ? 'grew by' : 'fell by'} {Math.abs(cashChangePct).toFixed(1)}% this month compared to last month.
-                  {cashChangePct >= 0 ? ' Consistent contributions to your savings account are helping build your financial buffer.' : ' Consider reviewing your recent expenses to maintain your savings goals.'}
+                  {t('analytics.vantage_insight_savings_prefix')} {cashChangePct >= 0 ? t('analytics.vantage_insight_grew_by') : t('analytics.vantage_insight_fell_by')} {Math.abs(cashChangePct).toFixed(1)}% {t('analytics.vantage_insight_suffix')}
+                  {cashChangePct >= 0 ? t('analytics.vantage_insight_positive_tip') : t('analytics.vantage_insight_negative_tip')}
                 </p>
               </div>
 
@@ -2433,7 +2459,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
                 className="relative overflow-hidden flex flex-col transition-all cursor-pointer hover:shadow-sm bg-white border border-[#E1E8ED] rounded-2xl p-6 shadow-sm mb-4"
               >
                 <div className="flex justify-between items-start mb-2">
-                  <span className="text-sm text-[#8c8c99]">Total debts</span>
+                  <span className="text-sm text-[#8c8c99]">{t('analytics.total_debts')}</span>
                   <span className="bg-[#ba1a1a]/10 text-[#ba1a1a] text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
                     <TrendingDown size={12} />
                   </span>
@@ -2454,7 +2480,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
               >
                 <div className="flex flex-col gap-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-[#8c8c99]">Monthly recurring income</span>
+                    <span className="text-sm text-[#8c8c99]">{t('analytics.monthly_recurring_income')}</span>
                     <span className="bg-[#366945]/10 text-[#366945] text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
                       <TrendingUp size={12} />
                     </span>
@@ -2469,7 +2495,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
                   <div className="border-t border-[#f0f0f0] my-0" />
                   
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-[#8c8c99]">Monthly recurring expenses</span>
+                    <span className="text-sm text-[#8c8c99]">{t('analytics.monthly_recurring_expenses')}</span>
                     <span className="bg-[#ba1a1a]/10 text-[#ba1a1a] text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
                       <TrendingDown size={12} />
                     </span>
@@ -2591,7 +2617,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
                         style={{ fontFamily: "'Google Sans', sans-serif" }}
                         className="text-xs font-normal text-gray-500 uppercase tracking-wide block mb-1"
                       >
-                        Projected net worth
+                        {t('analytics.projected_net_worth')}
                       </span>
                       <h2 
                         style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
@@ -2604,7 +2630,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
                         className="text-xs text-emerald-600 flex items-center mt-2 font-normal"
                       >
                         <TrendingUp size={16} className="mr-1 shrink-0" />
-                        <span>+{growthPercentage.toFixed(1)}% projected growth in 12 months</span>
+                        <span>+{growthPercentage.toFixed(1)}% {t('analytics.projected_growth_suffix')}</span>
                       </p>
                     </div>
 
@@ -2640,19 +2666,19 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
                         style={{ fontFamily: "'Google Sans', sans-serif" }}
                         className="text-xs text-white/80 uppercase tracking-wide block mb-1"
                       >
-                        Scenario planner
+                        {t('analytics.scenario_planner')}
                       </span>
                       <h3 
                         style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
                         className="text-2xl text-white block mb-2"
                       >
-                        What if?
+                        {t('analytics.what_if')}
                       </h3>
                       <p 
                         style={{ fontFamily: "'Google Sans', sans-serif" }}
                         className="text-xs text-white/90 leading-relaxed font-normal"
                       >
-                        Adjust your monthly savings to see the impact on your long-term wealth.
+                        {t('analytics.adjust_savings_description')}
                       </p>
                     </div>
 
@@ -2663,7 +2689,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
                             style={{ fontFamily: "'Google Sans', sans-serif" }}
                             className="text-xs font-normal text-white/90"
                           >
-                            Extra savings
+                            {t('analytics.extra_savings')}
                           </span>
                           <span 
                             style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
@@ -2690,7 +2716,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
                           style={{ fontFamily: "'Google Sans', sans-serif" }}
                           className="text-[10px] text-white/70 block mb-1 font-normal"
                         >
-                          10-Year capital impact (7% compounding)
+                          {t('analytics.capital_impact')}
                         </span>
                         <div 
                           style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
@@ -2708,7 +2734,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
                         style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
                         className="w-full py-3.5 bg-[#a6ddb1] hover:bg-[#92c99d] active:scale-98 text-[#00210d] text-xs rounded-xl transition-all shadow-md block"
                       >
-                        Apply to Budget
+                        {t('analytics.apply_to_budget')}
                       </button>
 
                       <AnimatePresence>
@@ -2738,13 +2764,13 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
                             style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
                             className="text-sm font-bold text-gray-800"
                           >
-                            Future cash flow
+                            {t('analytics.future_cash_flow')}
                           </h3>
                           <p 
                             style={{ fontFamily: "'Google Sans', sans-serif" }}
                             className="text-xs text-gray-400 mt-1 font-normal"
                           >
-                            Projected for the next 6 months
+                            {t('analytics.projected_6_months')}
                           </p>
                         </div>
                         <div className="flex gap-4">
@@ -2754,7 +2780,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
                               style={{ fontFamily: "'Google Sans', sans-serif" }}
                               className="text-[10px] text-gray-500 font-normal"
                             >
-                              Income
+                              {t('analytics.income')}
                             </span>
                           </div>
                           <div className="flex items-center gap-1.5 font-normal">
@@ -2763,7 +2789,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
                               style={{ fontFamily: "'Google Sans', sans-serif" }}
                               className="text-[10px] text-gray-500 font-normal"
                             >
-                              Expenses
+                              {t('analytics.expenses')}
                             </span>
                           </div>
                         </div>
@@ -2830,7 +2856,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
                           style={{ fontFamily: "'Google Sans', sans-serif" }}
                           className="text-[10px] text-gray-500 block font-normal"
                         >
-                          Avg. net surplus
+                          {t('analytics.avg_net_surplus')}
                         </span>
                         <p 
                           style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
@@ -2844,7 +2870,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
                           style={{ fontFamily: "'Google Sans', sans-serif" }}
                           className="text-[10px] text-gray-500 block font-normal"
                         >
-                          Liquidity score
+                          {t('analytics.liquidity_score')}
                         </span>
                         <p 
                           style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
@@ -2869,15 +2895,18 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
                       <div className="flex-1 min-w-0">
                         <h4 
                           style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
-                          className="text-xs text-gray-800"
+                          className="text-xs text-gray-900"
                         >
-                          Vantage AI prediction
+                          {t('analytics.vantage_ai_prediction')}
                         </h4>
                         <p 
-                          style={{ fontFamily: "'Google Sans', sans-serif" }}
+                          style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
                           className="text-xs text-gray-500 mt-1.5 leading-relaxed font-normal"
                         >
-                          Emergency Fund of <span className="font-bold text-[#366945]">{formatCurrencyLocal(targetAmount)}</span> will be 100% completed by <span className="font-bold text-gray-800">{targetDateStr}</span> based on your current savings rate.
+                          {t('analytics.emergency_fund_prediction', { 
+                            amount: <span className="font-bold text-[#366945]">{formatCurrencyLocal(targetAmount)}</span>, 
+                            date: <span className="font-bold text-gray-800">{targetDateStr}</span> 
+                          })}
                         </p>
                         <div className="mt-3.5 bg-neutral-100 h-1 w-full rounded-full overflow-hidden select-none">
                           <div 
@@ -2886,10 +2915,10 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
                           />
                         </div>
                         <p 
-                          style={{ fontFamily: "'Google Sans', sans-serif" }}
+                          style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
                           className="text-[10px] text-gray-400 mt-1.5 block font-normal"
                         >
-                          {emProgressPct}% of goal reached
+                          {t('analytics.goal_reached', { percentage: emProgressPct })}
                         </p>
                       </div>
                     </div>
@@ -2905,25 +2934,28 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
                       <div>
                         <h4 
                           style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
-                          className="text-xs text-gray-800"
+                          className="text-xs text-gray-900"
                         >
-                          Optimization insight
+                          {t('analytics.optimization_insight')}
                         </h4>
                         <p 
-                          style={{ fontFamily: "'Google Sans', sans-serif" }}
+                          style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
                           className="text-xs text-gray-500 mt-1.5 leading-relaxed font-normal"
                         >
-                          If subscription spending is reduced by <span className="font-bold text-gray-800">15%</span>, you could add an additional <span className="font-bold text-[#366945]">{formatCurrencyLocal(subSavingsReward)}</span> to your retirement portfolio this year.
+                          {t('analytics.optimization_insight_description', {
+                            percentage: '15',
+                            amount: <span className="font-bold text-[#366945]">{formatCurrencyLocal(subSavingsReward)}</span>
+                          })}
                         </p>
                         <button 
                           onClick={() => {
                             setGrouping('category');
                             setActiveTimeline('past');
                           }}
-                          style={{ fontFamily: "'Google Sans', sans-serif" }}
+                          style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
                           className="mt-3.5 text-xs text-[#366945] flex items-center hover:underline focus:outline-none font-normal"
                         >
-                          <span>View suggested cuts</span>
+                          <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}>{t('analytics.view_suggested_cuts')}</span>
                           <ChevronRight size={14} className="ml-0.5" />
                         </button>
                       </div>
@@ -2940,15 +2972,18 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
                       <div>
                         <h4 
                           style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
-                          className="text-xs text-gray-800"
+                          className="text-xs text-gray-900"
                         >
-                          Risk assessment
+                          {t('analytics.risk_assessment')}
                         </h4>
                         <p 
-                          style={{ fontFamily: "'Google Sans', sans-serif" }}
+                          style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
                           className="text-xs text-gray-500 mt-1.5 leading-relaxed font-normal"
                         >
-                          Your forecast shows a <span className="text-emerald-700 font-bold font-sans">Low Risk</span> of cash flow deficit in December due to holiday spending trends.
+                          {t('analytics.risk_assessment_description', {
+                            risk_level: <span className="text-emerald-700 font-bold font-sans">{t('analytics.low_risk')}</span>,
+                            month: 'December'
+                          })}
                         </p>
                       </div>
                     </div>
@@ -2960,7 +2995,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
                       style={{ fontFamily: "'Google Sans', sans-serif" }}
                       className="text-[10px] text-gray-400 leading-relaxed font-normal"
                     >
-                      Forecasts are based on trailing 12-month transaction data and recurring bank statements. Actual results may vary based on market conditions.
+                      {t('analytics.forecast_disclaimer')}
                     </p>
                   </div>
                 </>
@@ -2993,6 +3028,8 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
         primaryCurrency={primaryCurrency}
         exchangeRates={exchangeRates}
         defaultRates={DEFAULT_RATES}
+        transactions={allTransactions}
+        selectedAccIds={selectedAccIds}
       />
 
       {/* Cash Available Breakdown Modal popup */}

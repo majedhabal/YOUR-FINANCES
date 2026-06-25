@@ -39,7 +39,7 @@ const privacySections = [
 const termsSections = [
   {
     title: '1. Acceptance of Terms',
-    desc: 'By accessing Vantage AI Wallet (the "App"), operated by ME Vantage Analytics and Strategy, you agree to be bound by these Terms of Engagement. If you are using the App on behalf of a business entity (e.g., an Odoo consultancy), you represent that you have the authority to bind that entity to these terms.'
+    desc: 'By accessing YOUR FINANCES by ME Vantage (the "App"), operated by ME Vantage Analytics and Strategy, you agree to be bound by these Terms of Engagement. If you are using the App on behalf of a business entity (e.g., an Odoo consultancy), you represent that you have the authority to bind that entity to these terms.'
   },
   {
     title: '2. Premium Services and Subscriptions',

@@ -49,7 +49,7 @@ interface Transaction {
   description: string;
   notes?: string;
   toAccountId?: string;
-  type: 'income' | 'expense' | 'transfer';
+  type: 'Inflow' | 'Outflow' | 'Transfer' | 'income' | 'expense' | 'transfer' | string;
   status?: string;
   transferSide?: 'sender' | 'receiver';
   hasMirror?: boolean;
@@ -143,8 +143,8 @@ export const AccountInsightsView: React.FC<AccountInsightsViewProps> = ({ accoun
     // Filter transactions before 30 days ago to get baseline
     const pastTransactions = chronTransactions.filter(tx => new Date(tx.date) < thirtyDaysAgo);
     pastTransactions.forEach(tx => {
-      if (tx.type === 'income') runningBalance += tx.amount;
-      else if (tx.type === 'expense') runningBalance -= tx.amount;
+      if (tx.type === 'income' || tx.type === 'Inflow') runningBalance += tx.amount;
+      else if (tx.type === 'expense' || tx.type === 'Outflow') runningBalance -= tx.amount;
       else if (tx.type === 'transfer') {
         const isReceiver = tx.transferSide === 'receiver' || (tx.toAccountId === account.id && !tx.transferSide);
         const isSender = tx.transferSide === 'sender' || (tx.accountId === account.id && !tx.transferSide);
@@ -166,8 +166,8 @@ export const AccountInsightsView: React.FC<AccountInsightsViewProps> = ({ accoun
       const dayTransactions = chronTransactions.filter(tx => tx.date === dateStr);
       dayTransactions.forEach(tx => {
         const amount = Number(tx.amount || 0);
-        if (tx.type === 'income') runningBalance += amount;
-        else if (tx.type === 'expense') runningBalance -= amount;
+        if (tx.type === 'income' || tx.type === 'Inflow') runningBalance += amount;
+        else if (tx.type === 'expense' || tx.type === 'Outflow') runningBalance -= amount;
         else if (tx.type === 'transfer') {
           const isReceiver = tx.transferSide === 'receiver' || (tx.toAccountId === account.id && !tx.transferSide);
           const isSender = tx.transferSide === 'sender' || (tx.accountId === account.id && !tx.transferSide);
@@ -341,7 +341,7 @@ export const AccountInsightsView: React.FC<AccountInsightsViewProps> = ({ accoun
                 
                 // Unified Expense/Income logic for UI
                 let isOutflow = false;
-                if (tx.type === 'expense') isOutflow = true;
+                if (tx.type === 'expense' || tx.type === 'Outflow') isOutflow = true;
                 else if (tx.type === 'transfer') {
                   const isReceiver = tx.transferSide === 'receiver' || (tx.toAccountId === account.id && !tx.transferSide);
                   const isSender = tx.transferSide === 'sender' || (tx.accountId === account.id && !tx.transferSide);

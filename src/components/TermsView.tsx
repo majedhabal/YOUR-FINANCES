@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { ChevronLeft, Printer, Mail, ShieldCheck } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface TermsViewProps {
   onBack: () => void;
@@ -9,6 +10,7 @@ interface TermsViewProps {
 }
 
 export const TermsView: React.FC<TermsViewProps> = ({ onBack, onAgree, hasAlreadyAccepted = false }) => {
+  const { t } = useTranslation();
   const handlePrint = () => {
     window.print();
   };
@@ -20,73 +22,73 @@ export const TermsView: React.FC<TermsViewProps> = ({ onBack, onAgree, hasAlread
   const termsSections = [
     {
       id: 'term-1',
-      title: '1. Acceptance of Terms',
-      desc: 'By accessing Vantage AI Wallet (the "App"), operated by ME Vantage Analytics and Strategy, you agree to be bound by these Terms of Engagement. If you are using the App on behalf of a business entity (e.g., an Odoo consultancy), you represent that you have the authority to bind that entity to these terms.'
+      title: t('terms_view.sections.t1.title'),
+      desc: t('terms_view.sections.t1.desc')
     },
     {
       id: 'term-2',
-      title: '2. Premium Services & Subscriptions',
+      title: t('terms_view.sections.t2.title'),
       bullets: [
         {
-          head: 'Tiered Access',
-          txt: 'Premium features, including Gemini AI Insights, Google Calendar Sync, and Google Tasks Integration, are reserved for paid subscribers.'
+          head: t('terms_view.sections.t2.b1.head'),
+          txt: t('terms_view.sections.t2.b1.txt')
         },
         {
-          head: 'Billing',
-          txt: 'Subscriptions are managed via the Google Play Store/Apple App Store. Under UAE Consumer Protection Law, all fees are transparent and published before purchase.'
+          head: t('terms_view.sections.t2.b2.head'),
+          txt: t('terms_view.sections.t2.b2.txt')
         },
         {
-          head: 'Cancellation',
-          txt: 'You may cancel at any time; however, access to Premium "Nodes" will terminate at the end of the current billing cycle.'
+          head: t('terms_view.sections.t2.b3.head'),
+          txt: t('terms_view.sections.t2.b3.txt')
         }
       ]
     },
     {
       id: 'term-3',
-      title: '3. AI-Augmented Financial Advice (Disclaimer)',
+      title: t('terms_view.sections.t3.title'),
       bullets: [
         {
-          head: 'Informational Purpose',
-          txt: 'The Gemini AI integrations provide automated financial analysis and "Insights." This content is for informational purposes only and does not constitute professional financial, legal, or investment advice.'
+          head: t('terms_view.sections.t3.b1.head'),
+          txt: t('terms_view.sections.t3.b1.txt')
         },
         {
-          head: 'User Responsibility',
-          txt: 'You are solely responsible for verifying the accuracy of any AI-generated suggestions before taking financial action. ME Vantage is not liable for financial losses resulting from AI-generated content or "Hallucinations".'
+          head: t('terms_view.sections.t3.b2.head'),
+          txt: t('terms_view.sections.t3.b2.txt')
         }
       ]
     },
     {
       id: 'term-4',
-      title: '4. Third-Party Integrations',
+      title: t('terms_view.sections.t4.title'),
       bullets: [
         {
-          head: 'Google Ecosystem',
-          txt: 'The App utilizes Google APIs for authentication, calendar events, and task management. Your use is subject to Google’s Terms of Service in addition to these terms.'
+          head: t('terms_view.sections.t4.b1.head'),
+          txt: t('terms_view.sections.t4.b1.txt')
         },
         {
-          head: 'Currency Exchange',
-          txt: 'Rates provided via ExchangeRate-API are mid-market rates and may differ from the "Buy/Sell" rates offered by your local UAE or Philippine banks.'
+          head: t('terms_view.sections.t4.b2.head'),
+          txt: t('terms_view.sections.t4.b2.txt')
         }
       ]
     },
     {
       id: 'term-5',
-      title: '5. Intellectual Property',
+      title: t('terms_view.sections.t5.title'),
       bullets: [
         {
-          head: 'The "Vantage" Brand',
-          txt: 'All code, custom UI (including the Slim Obsidian and Emerald Green brand elements), and documentation are the exclusive property of ME Vantage Analytics and Strategy.'
+          head: t('terms_view.sections.t5.b1.head'),
+          txt: t('terms_view.sections.t5.b1.txt')
         },
         {
-          head: 'Usage Limits',
-          txt: 'You may not reverse-engineer, scrape, or attempt to replicate the core logic of the Vantage ledger for commercial resale.'
+          head: t('terms_view.sections.t5.b2.head'),
+          txt: t('terms_view.sections.t5.b2.txt')
         }
       ]
     },
     {
       id: 'term-6',
-      title: '6. Limitation of Liability',
-      desc: 'To the maximum extent permitted by UAE Law, ME Vantage shall not be liable for any indirect, incidental, or consequential damages, including loss of data or financial loss, arising from your use of the App or any service interruptions in the Firebase Blaze infrastructure.'
+      title: t('terms_view.sections.t6.title'),
+      desc: t('terms_view.sections.t6.desc')
     }
   ];
 
@@ -108,8 +110,8 @@ export const TermsView: React.FC<TermsViewProps> = ({ onBack, onAgree, hasAlread
         </button>
 
         <div className="text-right">
-          <span className="text-[10px] uppercase tracking-[0.3em] font-black text-neutral-500">Terms of Engagement</span>
-          <p className="text-[11px] uppercase tracking-wider font-extrabold text-neutral-800 font-mono mt-1">EFFECTIVE: 2026.05.23</p>
+          <span className="text-[10px] uppercase tracking-[0.3em] font-black text-neutral-500">{t('terms_view.header')}</span>
+          <p className="text-[11px] uppercase tracking-wider font-extrabold text-neutral-800 font-mono mt-1">{t('terms_view.effective')}</p>
         </div>
       </div>
 
@@ -123,13 +125,13 @@ export const TermsView: React.FC<TermsViewProps> = ({ onBack, onAgree, hasAlread
             className="font-black uppercase tracking-tight leading-none text-black mb-3"
             id="terms-protocol-title"
           >
-            Terms of Engagement
+            {t('terms_view.header')}
           </h1>
           <p 
             style={{ fontSize: 'clamp(11px, 3.2vw, 15px)' }}
             className="text-neutral-500 font-bold uppercase tracking-widest leading-relaxed"
           >
-            ME Vantage Analytics &amp; Strategy
+            {t('terms_view.company')}
           </p>
         </div>
 
@@ -138,7 +140,7 @@ export const TermsView: React.FC<TermsViewProps> = ({ onBack, onAgree, hasAlread
           style={{ fontSize: 'clamp(12px, 3.2vw, 16px)' }}
           className="font-medium text-neutral-800 leading-relaxed max-w-prose"
         >
-          Please review the terms governing our financial ledger operations, generative intelligence advice nodes, and Google Cloud database systems carefully.
+          {t('terms_view.lead')}
         </p>
 
         {/* Sections */}

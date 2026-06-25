@@ -59,6 +59,8 @@ const WORKING_SECRET = SECRET_KEY || "transient-vantage-vault-key-change-me";
 // Initialize Gemini AI (Server-Side Only)
 let defaultGenAI: GoogleGenAI | null = null;
 
+const EXCHANGERATE_API_KEY = process.env.EXCHANGERATE_API_KEY || "0d1b10f0c376bd07427f1b98";
+
 const getAIClient = (apiKeyOverride?: string): GoogleGenAI => {
   const DEFAULT_KEY = process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY || "";
   const keyToUse = apiKeyOverride || DEFAULT_KEY;
@@ -141,7 +143,7 @@ async function startServer() {
 
   // Public Health Check
   app.get("/api/health", (req, res) => {
-    res.json({ status: "ok", message: "Vantage AI Wallet Server is live and protected" });
+    res.json({ status: "ok", message: "YOUR FINANCES by ME Vantage Server is live and protected" });
   });
 
   // Protected Core API
@@ -155,6 +157,20 @@ async function startServer() {
       amount: parseFloat(decryptValue(tx.amount))
     }));
     res.json(data);
+  });
+
+  // Exchange Rates Proxy
+  app.get("/api/exchange-rates", authenticate, async (req, res) => {
+    try {
+      const url = `https://v6.exchangerate-api.com/v6/${EXCHANGERATE_API_KEY}/latest/AED`;
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`API returned ${response.status}`);
+      const data = await response.json();
+      res.json(data);
+    } catch (error: any) {
+      console.error("Exchange Rate Proxy Error:", error);
+      res.status(500).json({ error: "Failed to fetch exchange rates" });
+    }
   });
 
   app.post("/api/self-destruct", authenticate, (req, res) => {

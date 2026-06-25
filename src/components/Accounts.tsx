@@ -149,6 +149,12 @@ export const Accounts: React.FC<AccountsProps> = ({ profile, onNavigateToTransac
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [isManageMode, setIsManageMode] = useState(false);
 
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent('account-detail-modal-toggled', { 
+      detail: { isOpen: selectedAccount !== null } 
+    }));
+  }, [selectedAccount]);
+
   const handleDeleteAccount = async () => {
     if (!selectedAccount || !profile?.uid) return;
     
@@ -623,7 +629,13 @@ export const Accounts: React.FC<AccountsProps> = ({ profile, onNavigateToTransac
                               </span>
                               <div className="flex items-baseline mt-1.5 leading-none">
                                 <span 
-                                  className="text-[25px] font-bold text-[#1C2C40] tracking-tight leading-none font-g-sans"
+                                  className={`text-[25px] font-bold ${
+                                    (account.type === 'bank' || account.type === 'cash') && 
+                                    account.minBalanceFloor !== undefined && 
+                                    currentBalance < account.minBalanceFloor 
+                                      ? 'text-red-500' 
+                                      : 'text-[#1C2C40]'
+                                  } tracking-tight leading-none font-g-sans`}
                                   style={{ fontFamily: "'Google Sans', sans-serif" }}
                                 >
                                   {currentBalance < 0 ? '-' : ''}{(Math.abs(currentBalance)).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}

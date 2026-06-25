@@ -1,6 +1,6 @@
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { db } from './firebase';
-import { VantageDataErrorBoundary } from '../components/VantageDataErrorBoundary';
+import { db, auth } from './firebase';
+import { logWarning } from '../components/VantageDataErrorBoundary';
 
 export interface ExchangeRates {
   [currencyCode: string]: number;
@@ -23,12 +23,19 @@ export const DEFAULT_RATES: ExchangeRates = {
 };
 
 export async function fetchExchangeRates(): Promise<ExchangeRates> {
-  const apiKey = '0d1b10f0c376bd07427f1b98';
-  // AED is base for rates, e.g. 1 AED = X USD, 1 AED = Y PHP
-  const url = `https://v6.exchangerate-api.com/v6/${apiKey}/latest/AED`;
-  
+  const user = auth.currentUser;
+  if (!user) {
+    throw new Error("Authentication required for exchange rates");
+  }
+
   try {
-    const response = await fetch(url);
+    const idToken = await user.getIdToken();
+    const response = await fetch('/api/exchange-rates', {
+      headers: {
+        'Authorization': `Bearer ${idToken}`
+      }
+    });
+
     if (!response.ok) {
       throw new Error(`API returned status ${response.status}`);
     }
@@ -49,7 +56,7 @@ export async function fetchExchangeRates(): Promise<ExchangeRates> {
     }
   } catch (error: any) {
     const msg = error instanceof Error ? error.message : String(error);
-    VantageDataErrorBoundary.logWarning(`ExchangeRate-API fetch failed: ${msg}`);
+    logWarning(`ExchangeRate-API fetch failed: ${msg}`);
     throw error;
   }
 }
@@ -133,7 +140,7 @@ export async function syncExchangeRates(): Promise<ExchangeRates> {
       return DEFAULT_RATES;
     }
   } catch (err: any) {
-    VantageDataErrorBoundary.logWarning(`Firestore sync failed: ${err.message || err}. Resorting to defaults.`);
+    logWarning(`Firestore sync failed: ${err.message || err}. Resorting to defaults.`);
     // If Firestore fetch gets blocked (e.g. quota exceeded or offline), fallback to whatever is in localStorage
     try {
       const cachedRatesStr = localStorage.getItem(LOCAL_CACHE_KEY);

@@ -68,7 +68,7 @@ interface Transaction {
   id: string;
   date: string;
   amount: number;
-  type: 'income' | 'expense' | 'transfer';
+  type: 'Inflow' | 'Outflow' | 'Transfer' | 'income' | 'expense' | 'transfer' | string;
   category: string;
   subcategory?: string;
   subCategory?: string;
@@ -354,10 +354,10 @@ export const Reports: React.FC<ReportsProps> = ({ profile }) => {
       }
 
       const amt = tx.amount || 0;
-      if (tx.type === 'income') {
+      if (tx.type === 'income' || tx.type === 'Inflow') {
         map[key].income += amt;
         map[key].value += amt;
-      } else if (tx.type === 'expense') {
+      } else if (tx.type === 'expense' || tx.type === 'Outflow') {
         map[key].expense += amt;
         map[key].value += amt;
       }
@@ -448,13 +448,13 @@ export const Reports: React.FC<ReportsProps> = ({ profile }) => {
       const key = d.toLocaleString('default', { month: 'short' });
       if (months[key]) {
         const isProjected = d > now;
-        // Realized Revenue: ONLY Category = 'Income/Wage'
-        if (tx.type === 'income' && tx.category === 'Income/Wage') {
+        // Realized Revenue: ONLY Category = 'Income/Wage' OR type = 'Inflow'
+        if ((tx.type === 'income' || tx.type === 'Inflow') && tx.category === 'Income/Wage') {
           if (isProjected) months[key].projectedIncome += tx.amount;
           else months[key].income += tx.amount;
         } 
-        // Realized Outflow: Type = 'expense' AND Category is NOT 'Internal Transfer'
-        else if (tx.type === 'expense' && tx.category !== 'Internal Transfer' && tx.category !== 'Movements') {
+        // Realized Outflow: Type = 'expense'/'Outflow' AND Category is NOT 'Internal Transfer'
+        else if ((tx.type === 'expense' || tx.type === 'Outflow') && tx.category !== 'Internal Transfer' && tx.category !== 'Movements') {
           if (isProjected) months[key].projectedExpense += tx.amount;
           else months[key].expense += tx.amount;
         }
@@ -467,9 +467,9 @@ export const Reports: React.FC<ReportsProps> = ({ profile }) => {
   const incomeByCategory = useMemo(() => {
     const cats: Record<string, number> = {};
     realizedTransactions.forEach(tx => {
-      // Realized Revenue: ONLY sum transactions where Category = 'Income/Wage'
+      // Realized Revenue: ONLY sum transactions where Category = 'Income/Wage' OR type = 'Inflow'
       // Exclude all 'Internal Transfers' or 'Movements'
-      if (tx.type === 'income' && tx.category === 'Income/Wage') {
+      if ((tx.type === 'income' || tx.type === 'Inflow') && tx.category === 'Income/Wage') {
         cats[tx.category] = (cats[tx.category] || 0) + tx.amount;
       }
     });
@@ -480,9 +480,9 @@ export const Reports: React.FC<ReportsProps> = ({ profile }) => {
   const expenseByCategory = useMemo(() => {
     const cats: Record<string, number> = {};
     realizedTransactions.forEach(tx => {
-      // Realized Outflow: ONLY sum transactions where Type = 'Debit' (expense) 
+      // Realized Outflow: ONLY sum transactions where Type = 'Debit' (expense/Outflow) 
       // AND Category is NOT 'Internal Transfer' or 'Movements'
-      if (tx.type === 'expense' && tx.category !== 'Internal Transfer' && tx.category !== 'Movements') {
+      if ((tx.type === 'expense' || tx.type === 'Outflow') && tx.category !== 'Internal Transfer' && tx.category !== 'Movements') {
         cats[tx.category] = (cats[tx.category] || 0) + tx.amount;
       }
     });
@@ -503,7 +503,7 @@ export const Reports: React.FC<ReportsProps> = ({ profile }) => {
       const txDate = new Date(tx.date);
       const key = txDate.toLocaleString('default', { month: 'short' });
       if (months[key]) {
-        if (tx.type === 'expense' && tx.category !== 'Internal Transfer' && tx.category !== 'Movements') {
+        if ((tx.type === 'expense' || tx.type === 'Outflow') && tx.category !== 'Internal Transfer' && tx.category !== 'Movements') {
           months[key].expense += tx.amount;
         }
       }
@@ -515,7 +515,7 @@ export const Reports: React.FC<ReportsProps> = ({ profile }) => {
       if (txDate.getMonth() === now.getMonth() && txDate.getFullYear() === now.getFullYear()) {
         const key = txDate.toLocaleString('default', { month: 'short' });
         if (months[key]) {
-          if (tx.type === 'expense' && tx.category !== 'Internal Transfer' && tx.category !== 'Movements') {
+          if ((tx.type === 'expense' || tx.type === 'Outflow') && tx.category !== 'Internal Transfer' && tx.category !== 'Movements') {
             months[key].expense += tx.amount;
           }
         }
@@ -542,11 +542,11 @@ export const Reports: React.FC<ReportsProps> = ({ profile }) => {
         projectedTransactions.forEach(tx => {
           const txDate = new Date(tx.date);
           if (txDate.getMonth() === d.getMonth() && txDate.getFullYear() === d.getFullYear()) {
-            if (tx.type === 'expense' && tx.category !== 'Internal Transfer' && tx.category !== 'Movements') {
+            if ((tx.type === 'expense' || tx.type === 'Outflow') && tx.category !== 'Internal Transfer' && tx.category !== 'Movements') {
               scheduledSum += tx.amount;
             }
             
-            if (tx.type === 'income' && tx.category === 'Income/Wage') {
+            if ((tx.type === 'income' || tx.type === 'Inflow') && tx.category === 'Income/Wage') {
               scheduledIncome += tx.amount;
             }
           }
@@ -607,7 +607,7 @@ export const Reports: React.FC<ReportsProps> = ({ profile }) => {
 
   const topUpcomingLiabilities = useMemo(() => {
     return projectedTransactions
-      .filter(tx => tx.type === 'expense' || (tx.type === 'transfer' && selectedAccIds.has(tx.accountId)))
+      .filter(tx => tx.type === 'expense' || tx.type === 'Outflow' || (tx.type === 'transfer' && selectedAccIds.has(tx.accountId)))
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
       .slice(0, 3);
   }, [projectedTransactions, selectedAccIds]);
@@ -617,7 +617,7 @@ export const Reports: React.FC<ReportsProps> = ({ profile }) => {
     return projectedTransactions
       .filter(tx => {
         const d = new Date(tx.date);
-        return d > now && d <= endOfMonth && (tx.type === 'expense' || (tx.type === 'transfer' && selectedAccIds.has(tx.accountId)));
+        return d > now && d <= endOfMonth && (tx.type === 'expense' || tx.type === 'Outflow' || (tx.type === 'transfer' && selectedAccIds.has(tx.accountId)));
       })
       .reduce((sum, tx) => sum + tx.amount, 0);
   }, [projectedTransactions, now, selectedAccIds]);

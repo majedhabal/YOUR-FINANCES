@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
+import { formatLabel } from '../lib/stringUtils';
 import { 
   ChevronLeft,
   MoreHorizontal,
@@ -135,7 +136,9 @@ export const BudgetDetailView: React.FC<BudgetDetailViewProps> = ({
 
       {/* Budget Header */}
       <header className="mt-[50px] px-0 py-0 flex items-center justify-center">
-        <h1 className="text-[36px] font-bold text-[#111c2d] mt-[-70px]">{budget.categoryTitle}</h1>
+        <h1 className="text-[36px] font-bold text-[#111c2d] mt-[-70px]">
+          {formatLabel(budget.subcategory || (budget.categoryTitle?.includes(' > ') ? budget.categoryTitle.split(' > ').pop() : budget.categoryTitle))}
+        </h1>
       </header>
 
       {/* Budget Summary Card */}
@@ -143,7 +146,7 @@ export const BudgetDetailView: React.FC<BudgetDetailViewProps> = ({
         <div className="bg-white py-[20px] px-[10px] rounded-[15px] border border-[#F2F4F7] shadow-sm h-[150px] flex flex-col justify-between">
           <div className="flex justify-between items-center mb-xs">
             <span className="font-bold text-[#5f5e5e] text-xs">{t('budget_detail.total_spent')}</span>
-            <div className="bg-[#e6f7ef] text-[#366945] px-sm py-xs rounded-full text-xs font-bold uppercase">
+            <div className="bg-[#e6f7ef] text-[#366945] px-sm py-xs rounded-full text-xs font-bold">
               {Math.min(spentUsage, 100).toFixed(0)}% {t('budget_detail.used')}
             </div>
           </div>
@@ -168,11 +171,11 @@ export const BudgetDetailView: React.FC<BudgetDetailViewProps> = ({
       {/* Auto-Pay & Due Date Cards */}
       <section className="mx-[15px] pb-lg grid grid-cols-2 gap-md pt-[15px]">
         <div className="bg-white p-md rounded-[20px] border border-[#F2F4F7] shadow-sm px-[10px] mr-[10px]">
-          <span className="font-label-md text-on-surface-variant uppercase tracking-widest text-xs mt-[5px]">{t('budget_detail.auto_pay')}</span>
+          <span className="font-label-md text-on-surface-variant text-xs mt-[5px]">{t('budget_detail.auto_pay')}</span>
           <p className="text-lg font-bold text-on-surface mt-[5px]">{t('budget_detail.active')}</p>
         </div>
         <div className="bg-white p-md rounded-[20px] border border-[#F2F4F7] shadow-sm px-[10px] ml-[10px] h-[65px]">
-          <span className="font-label-md text-on-surface-variant uppercase tracking-widest text-xs mt-[5px]">{t('budget_detail.due_date')}</span>
+          <span className="font-label-md text-on-surface-variant text-xs mt-[5px]">{t('budget_detail.due_date')}</span>
           <p className="text-lg font-bold text-on-surface mt-[5px]">Oct 1st</p>
         </div>
       </section>
@@ -190,9 +193,9 @@ export const BudgetDetailView: React.FC<BudgetDetailViewProps> = ({
                 {renderIcon(tx.emoji)}
               </div>
               <div className="flex-1">
-                <p className="text-base font-bold text-on-surface">{tx.notes || tx.category}</p>
+                <p className="text-base font-bold text-on-surface">{tx.notes || formatLabel(tx.category)}</p>
                 <p className="text-xs text-on-surface-variant">
-                  {new Date(tx.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} • {tx.subcategory || tx.category}
+                  {new Date(tx.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} • {formatLabel(tx.subcategory || tx.category)}
                 </p>
               </div>
               <div className="text-right">

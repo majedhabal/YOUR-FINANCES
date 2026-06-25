@@ -199,9 +199,9 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
         } else if (isSender && String(tx.accountId) === account.id) {
            totalOut += amount;
         }
-      } else if (tx.type === 'income') {
+      } else if (tx.type === 'income' || tx.type === 'Inflow') {
         if (tx.accountId === account.id) totalIn += amount;
-      } else if (tx.type === 'expense') {
+      } else if (tx.type === 'expense' || tx.type === 'Outflow') {
         if (tx.accountId === account.id) totalOut += amount;
       }
     });
@@ -253,9 +253,9 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
            // Legacy side handlers
            if (tx.transferSide === 'receiver') return sum + amount;
            if (tx.transferSide === 'sender') return sum - amount;
-        } else if (tx.type === 'income') {
+        } else if (tx.type === 'income' || tx.type === 'Inflow') {
            if (tx.accountId === account.id) return sum + amount;
-        } else if (tx.type === 'expense') {
+        } else if (tx.type === 'expense' || tx.type === 'Outflow') {
            if (tx.accountId === account.id) return sum - amount;
         }
         return sum;
@@ -263,6 +263,20 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
     
     return currentBalance + futureDelta;
   }, [transactions, account, currentBalance]);
+
+  React.useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      window.dispatchEvent(new CustomEvent('account-detail-modal-toggled', { detail: { isOpen: true } }));
+    } else {
+      document.body.style.overflow = 'auto';
+      window.dispatchEvent(new CustomEvent('account-detail-modal-toggled', { detail: { isOpen: false } }));
+    }
+    return () => {
+      document.body.style.overflow = 'auto';
+      window.dispatchEvent(new CustomEvent('account-detail-modal-toggled', { detail: { isOpen: false } }));
+    };
+  }, [isOpen]);
 
   React.useEffect(() => {
     if (account) {
@@ -327,7 +341,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
           amount: amount,
           category: 'Passive Interest',
           date: new Date().toISOString().split('T')[0],
-          type: saTxType === 'income' ? 'income' : 'expense',
+          type: saTxType === 'income' ? 'Inflow' : 'Outflow',
           note: `Asset: ${subAssetTransactionModal.saName}. ${saTxNote}`,
           status: 'confirmed',
           createdAt: serverTimestamp()
@@ -904,7 +918,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                   </div>
                 </div>
               ) : (
-                <div className={isManageMode ? 'p-0 pb-44 flex flex-col gap-[clamp(8px,2.2vw,12px)] w-full' : 'p-3 md:p-5 pb-56 flex flex-col gap-y-2 md:gap-y-3.5 w-full'}>
+                <div className={isManageMode ? 'p-0 pb-4 flex flex-col gap-[clamp(8px,2.2vw,12px)] w-full' : 'p-3 md:p-5 pb-4 flex flex-col gap-y-2 md:gap-y-3.5 w-full'}>
                   <div className="flex justify-between items-center w-full px-1 py-1.5 select-none">
                     <div className="flex items-center gap-4">
                       <div 

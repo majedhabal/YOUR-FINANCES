@@ -13,6 +13,7 @@ import { AddAccountModal } from './components/AddAccountModal';
 import { VantageDataErrorBoundary } from './components/VantageDataErrorBoundary';
 import { RefreshCw } from 'lucide-react';
 import i18n from './lib/i18n';
+import { I18nextProvider, useTranslation } from 'react-i18next';
 import { Essentials } from './components/Essentials';
 import { Accounts } from './components/Accounts';
 import { VantageAI } from './components/VantageAI';
@@ -20,6 +21,7 @@ import { Transactions } from './components/Transactions';
 import { Analytics } from './components/Analytics';
 import { SalaryBreakdownModal } from './components/SalaryBreakdownModal';
 import { DEFAULT_RATES, syncExchangeRates } from './lib/exchangeRates';
+import { calculateAccountBalances } from './lib/trendUtils';
 
 export type Tab = 'essentials' | 'accounts' | 'ai' | 'activity' | 'analytics' | 'settings' | 'salary-breakdown';
 
@@ -31,6 +33,7 @@ const animation = {
 
 // We isolate the internal application content so the parent Error Boundary can monitor its states
 function AppContent() {
+  const { i18n: i18nextInstance } = useTranslation();
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -45,8 +48,17 @@ function AppContent() {
   // Synchronized state pools for analytics routing
   const [accounts, setAccounts] = useState<any[]>([]);
   const [transactions, setTransactions] = useState<any[]>([]);
-  const [accountBalances, setAccountBalances] = useState<Record<string, number>>({});
   const [exchangeRates, setExchangeRates] = useState<any>(DEFAULT_RATES);
+
+  const isRTL = ['ar', 'ur'].includes(i18nextInstance.language);
+
+  useEffect(() => {
+    document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
+  }, [i18nextInstance.language, isRTL]);
+
+  const accountBalances = React.useMemo(() => {
+    return calculateAccountBalances(accounts, transactions);
+  }, [accounts, transactions]);
 
   const getRateToAED = (curr: string) => {
     const c = curr || 'AED';
@@ -123,14 +135,11 @@ function AppContent() {
     const accountsRef = collection(db, 'users', user.uid, 'accounts');
     const unsubAccounts = onSnapshot(accountsRef, (snapshot) => {
       const accList: any[] = [];
-      const balancesMap: Record<string, number> = {};
       snapshot.forEach(doc => {
         const data = doc.data();
         accList.push({ id: doc.id, ...data });
-        balancesMap[doc.id] = (data.startingBalance) || 0;
       });
       setAccounts(accList);
-      setAccountBalances(balancesMap);
     }, (error) => {
       console.warn("Accounts streaming transport errored safely:", error);
     });
@@ -291,13 +300,17 @@ function AppContent() {
   );
 }
 
+
 // 🛡️ MASTER MOUNT: Guarding the full component tree with native fallback triggers
 export const App = () => {
   return (
     <VantageDataErrorBoundary>
-      <AppContent />
+      <I18nextProvider i18n={i18n}>
+        <AppContent />
+      </I18nextProvider>
     </VantageDataErrorBoundary>
   );
 };
+
 
 export default App;

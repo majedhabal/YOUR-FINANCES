@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { X, Send, Sparkles, Bot, RefreshCw } from 'lucide-react';
 import { executeVantageAITask } from '../lib/VantageAIRouter';
 import { PremiumMarketingCard } from './PremiumMarketingCard';
+import { useTranslation } from 'react-i18next';
 
 interface VantageAIProps {
   isOpen: boolean;
@@ -25,6 +26,7 @@ export const VantageAI: React.FC<VantageAIProps> = ({
   accountBalances,
   profile
 }) => {
+  const { t } = useTranslation();
   const [queryInput, setQueryInput] = useState('');
   const [response, setResponse] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -50,10 +52,10 @@ export const VantageAI: React.FC<VantageAIProps> = ({
         recentHistory: transactions.slice(0, 30)
       };
       const result = await executeVantageAITask('clean_text', payload);
-      setResponse(result || "Analysis node completed with an empty response payload matrix.");
+      setResponse(result || t('vantage_ai.empty_response'));
     } catch (err) {
       console.error("Assistant execution failure:", err);
-      setResponse("Secure handshake with the AI model failed. Please verify system connection.");
+      setResponse(t('vantage_ai.error_response'));
     } finally {
       setLoading(false);
     }
@@ -80,7 +82,7 @@ export const VantageAI: React.FC<VantageAIProps> = ({
           <div className="p-5 flex justify-between items-center border-b border-neutral-100 bg-white shrink-0 select-none">
             <div className="flex items-center gap-2.5">
               <Sparkles size={16} className="text-[#366945]" />
-              <h3 className="font-headline-md text-base text-neutral-800 m-0" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Vantage AI</h3>
+              <h3 className="font-headline-md text-base text-neutral-800 m-0" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{t('vantage_ai.title')}</h3>
             </div>
             <button onClick={onClose} className="w-8 h-8 rounded-full bg-neutral-50 flex items-center justify-center border border-neutral-100 text-neutral-500 hover:text-neutral-800 cursor-pointer transition-colors"><X size={16} /></button>
           </div>
@@ -95,7 +97,7 @@ export const VantageAI: React.FC<VantageAIProps> = ({
               <div className="flex flex-col gap-4 w-full">
                 {!activeQuery && (
                   <div className="p-4 rounded-xl bg-neutral-50 border border-neutral-100 text-sm text-neutral-600 leading-relaxed font-body-md select-none">
-                    Private context channel active. Enter calculation paths below to analyze transaction values and budget balances.
+                    {t('vantage_ai.private_context')}
                   </div>
                 )}
                 {activeQuery && (
@@ -106,7 +108,7 @@ export const VantageAI: React.FC<VantageAIProps> = ({
                 {loading && (
                   <div className="flex items-center gap-2 text-sm font-body-md text-neutral-500 py-1 select-none">
                     <RefreshCw size={14} className="animate-spin text-[#366945]" />
-                    <span>Processing wallet matrix insights...</span>
+                    <span>{t('vantage_ai.processing')}</span>
                   </div>
                 )}
                 {response && (
@@ -128,7 +130,7 @@ export const VantageAI: React.FC<VantageAIProps> = ({
                   value={queryInput} 
                   onChange={(e) => setQueryInput(e.target.value)} 
                   onKeyDown={(e) => e.key === 'Enter' && handleExecuteInsightTask()}
-                  placeholder="Ask a question about your finances..." 
+                  placeholder={t('vantage_ai.placeholder')} 
                   className="w-full bg-neutral-50 border border-neutral-200 rounded-full py-3 pl-4 pr-12 text-sm text-neutral-800 focus:border-[#366945] outline-none placeholder:text-neutral-400 font-body-md box-border"
                 />
                 <button onClick={handleExecuteInsightTask} disabled={!queryInput.trim() || loading} className="absolute right-1.5 p-2 bg-[#A6DDB1] text-[#366945] rounded-full hover:opacity-90 active:scale-95 transition-all cursor-pointer border-none flex items-center justify-center disabled:opacity-40"><Send size={16} strokeWidth={2.5} /></button>

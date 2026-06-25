@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'motion/react';
 import { db, auth } from '../lib/firebase';
 import { collection, doc, query, onSnapshot, setDoc, deleteDoc, runTransaction, serverTimestamp } from 'firebase/firestore';
@@ -37,6 +38,7 @@ interface CustomWidget {
 }
 
 export const QuickAddWidget: React.FC<QuickAddWidgetProps> = ({ uid }) => {
+  const { t } = useTranslation();
   // Data subscriptions
   const [budgets, setBudgets] = useState<MiniBudget[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
@@ -258,7 +260,7 @@ export const QuickAddWidget: React.FC<QuickAddWidgetProps> = ({ uid }) => {
       setSelectedAccountId('');
       setWidgetTheme('green');
       setIsAdding(false);
-      showToast("Beautiful new Quick-Add widget placed on your virtual Android homescreen!");
+      showToast(t('quick_add_widgets.toast_msg'));
     } catch (err) {
       console.error("Error creating homescreen widget:", err);
       alert("Could not create widget. Please check parameters.");
@@ -382,10 +384,10 @@ export const QuickAddWidget: React.FC<QuickAddWidgetProps> = ({ uid }) => {
         <div>
           <h2 className="text-lg font-bold text-black flex items-center gap-2">
             <Smartphone className="text-[#A6DDB1]" size={20} strokeWidth={2.5} />
-            Android Homescreen Widgets Configurator
+            {t('quick_add_widgets.title')}
           </h2>
           <p className="text-xs font-normal text-[#57606F] mt-1">
-            Build and linked custom tracking shortcuts. Simulates tactile PWA Android homescreen widgets.
+            {t('quick_add_widgets.header_desc')}
           </p>
         </div>
 
@@ -398,7 +400,7 @@ export const QuickAddWidget: React.FC<QuickAddWidgetProps> = ({ uid }) => {
             className="px-3.5 py-1.5 hover:bg-neutral-50 border border-neutral-200 rounded-xl text-xs font-bold text-[#1E2229] transition-all flex items-center gap-1.5"
           >
             <HelpCircle size={14} className="text-neutral-500" />
-            Android PWA Setup Guide
+            {t('quick_add_widgets.help_guide')}
           </button>
           
           <button
@@ -409,7 +411,7 @@ export const QuickAddWidget: React.FC<QuickAddWidgetProps> = ({ uid }) => {
             className="px-4 py-1.5 bg-[#A6DDB1] hover:bg-[#8ec599] text-white text-xs font-bold rounded-xl transition-all shadow-[0_3px_12px_rgba(166,221,177,0.35)] flex items-center gap-1.5"
           >
             <Plus size={14} strokeWidth={3} />
-            Create Widget
+            {t('quick_add_widgets.create_btn')}
           </button>
         </div>
       </div>
@@ -427,9 +429,9 @@ export const QuickAddWidget: React.FC<QuickAddWidgetProps> = ({ uid }) => {
               <div className="flex gap-2.5 items-start">
                 <Info size={16} className="text-[#2D5A3A] shrink-0 mt-0.5" />
                 <div className="flex-1">
-                  <span className="font-bold block text-sm text-[#1E2229] mb-1">Android Widgets Integration Guide</span>
+                  <span className="font-bold block text-sm text-[#1E2229] mb-1">{t('quick_add_widgets.help_title')}</span>
                   <p className="mb-2">
-                    Our platform utilizes standard Progressive Web App (PWA) configurations. To enable widgets and fast Launchpads on your actual mobile phone:
+                    {t('quick_add_widgets.help_desc')}
                   </p>
                   <ul className="list-decimal pl-4 space-y-1.5 text-[#57606F] font-normal leading-normal">
                     <li>Open this web suite inside <strong>Google Chrome</strong> or similar on your Android device.</li>
@@ -457,28 +459,28 @@ export const QuickAddWidget: React.FC<QuickAddWidgetProps> = ({ uid }) => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Field 1: Widget Name */}
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-bold text-neutral-500">Widget Name / Label</label>
+                  <label className="text-xs font-bold text-neutral-500">{t('quick_add_widgets.field1_label')}</label>
                   <input
                     type="text"
                     required
                     maxLength={24}
                     value={widgetName}
                     onChange={(e) => setWidgetName(e.target.value)}
-                    placeholder="e.g. Daily Espresso, Groceries Tracker"
+                    placeholder={t('quick_add_widgets.field1_placeholder')}
                     className="p-2.5 px-3 bg-white border border-neutral-200 rounded-xl text-xs font-normal outline-none focus:border-[#A6DDB1] transition-all"
                   />
                 </div>
 
                 {/* Field 2: Select Budget */}
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-bold text-neutral-500">Connect with Mini-Budget</label>
+                  <label className="text-xs font-bold text-neutral-500">{t('quick_add_widgets.field2_label')}</label>
                   <select
                     required
                     value={selectedBudgetId}
                     onChange={(e) => setSelectedBudgetId(e.target.value)}
                     className="p-2.5 px-3 bg-white border border-neutral-200 rounded-xl text-xs font-normal outline-none focus:border-[#A6DDB1] transition-all cursor-pointer"
                   >
-                    <option value="">Select an active budget category...</option>
+                    <option value="">{t('quick_add_widgets.field2_option_placeholder')}</option>
                     {budgets.map((b) => (
                       <option key={b.id} value={b.id}>
                         {b.categoryTitle} ({b.currency} {(b.allocatedAmount || 0).toLocaleString()})
@@ -487,21 +489,21 @@ export const QuickAddWidget: React.FC<QuickAddWidgetProps> = ({ uid }) => {
                   </select>
                   {budgets.length === 0 && (
                     <span className="text-[10px] text-amber-500 flex items-center gap-1">
-                      <AlertCircle size={10} /> Note: You must create at least one Mini-Budget under the Budgets tab first.
+                      <AlertCircle size={10} /> {t('quick_add_widgets.field2_note')}
                     </span>
                   )}
                 </div>
 
                 {/* Field 3: Deduct Account */}
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-bold text-neutral-500">Deduct Outflow From Account</label>
+                  <label className="text-xs font-bold text-neutral-500">{t('quick_add_widgets.field3_label')}</label>
                   <select
                     required
                     value={selectedAccountId}
                     onChange={(e) => setSelectedAccountId(e.target.value)}
                     className="p-2.5 px-3 bg-white border border-neutral-200 rounded-xl text-xs font-normal outline-none focus:border-[#A6DDB1] transition-all cursor-pointer"
                   >
-                    <option value="">Choose payment source...</option>
+                    <option value="">{t('quick_add_widgets.field3_placeholder')}</option>
                     {accounts.map((acc) => (
                       <option key={acc.id} value={acc.id}>
                         {acc.name} ({acc.currency} {acc.currentBalance.toLocaleString(undefined, { minimumFractionDigits: 2 })})
@@ -512,7 +514,7 @@ export const QuickAddWidget: React.FC<QuickAddWidgetProps> = ({ uid }) => {
 
                 {/* Field 4: Theme Color Selection */}
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-xs font-bold text-neutral-500">Widget Card Style Theme</label>
+                  <label className="text-xs font-bold text-neutral-500">{t('quick_add_widgets.field4_label')}</label>
                   <div className="flex items-center gap-2 h-10 mt-1">
                     {(['green', 'charcoal', 'gold', 'neon'] as const).map((theme) => (
                       <button
@@ -550,13 +552,13 @@ export const QuickAddWidget: React.FC<QuickAddWidgetProps> = ({ uid }) => {
                   }}
                   className="px-4 py-2 hover:bg-neutral-100 border border-neutral-200 rounded-xl text-xs font-bold text-[#1E2229] transition-all"
                 >
-                  Cancel
+                  {t('quick_add_widgets.cancel_btn')}
                 </button>
                 <button
                   type="submit"
                   className="px-5 py-2 bg-black hover:bg-neutral-800 text-white text-xs font-bold rounded-xl transition-all"
                 >
-                  Place Widget
+                  {t('quick_add_widgets.create_submit_btn')}
                 </button>
               </div>
             </form>
@@ -570,18 +572,18 @@ export const QuickAddWidget: React.FC<QuickAddWidgetProps> = ({ uid }) => {
         {/* Left Column (Persisted Configured Widget Cards) */}
         <div className="lg:col-span-5 flex flex-col gap-4">
           <h3 className="text-xs font-bold text-neutral-400 tracking-wider">
-            YOUR CONFIGURATIONS
+            {t('quick_add_widgets.list_header')}
           </h3>
 
           {loading ? (
             <div className="p-8 border border-neutral-100 rounded-2xl flex flex-col items-center justify-center text-neutral-400 h-40">
               <div className="w-5 h-5 border-2 border-neutral-300 border-t-black rounded-full animate-spin mb-2"></div>
-              <span className="text-xs font-normal">Sourcing widgets...</span>
+              <span className="text-xs font-normal">{t('quick_add_widgets.loading')}</span>
             </div>
           ) : widgets.length === 0 ? (
             <div className="p-6 border border-dashed border-neutral-200 rounded-2xl text-center text-neutral-400">
               <p className="text-xs font-normal leading-relaxed text-[#57606F]/70 mb-4" style={{ fontWeight: 400 }}>
-                You haven't configured any Quick-Add widget buttons yet. Create one to instantly simulate recorded transactions.
+                {t('quick_add_widgets.no_widgets_desc')}
               </p>
               <button
                 onClick={() => {
@@ -591,7 +593,7 @@ export const QuickAddWidget: React.FC<QuickAddWidgetProps> = ({ uid }) => {
                 className="mx-auto py-2 px-4 border border-[#A6DDB1] text-[#2D5A3A] bg-[#F2FAF4] hover:bg-[#e4f5e9] rounded-xl text-xs font-bold transition-all flex items-center gap-1.5"
               >
                 <PlusCircle size={14} className="text-[#2D5A3A]" />
-                Instantiate First Widget
+                {t('quick_add_widgets.instantiate_btn')}
               </button>
             </div>
           ) : (
@@ -618,11 +620,11 @@ export const QuickAddWidget: React.FC<QuickAddWidgetProps> = ({ uid }) => {
                       <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-[#57606F] font-normal leading-none" style={{ fontWeight: 400 }}>
                         <span className="flex items-center gap-1 shrink-0">
                           <Landmark size={12} className="text-neutral-400 shrink-0" />
-                          To: {linkedB?.categoryTitle || 'General'}
+                          {t('quick_add_widgets.widget_to_label')} {linkedB?.categoryTitle || 'General'}
                         </span>
                         <span className="flex items-center gap-1 shrink-0">
                           <Wallet size={12} className="text-neutral-400 shrink-0" />
-                          From: {linkedA?.name || 'Account'}
+                          {t('quick_add_widgets.widget_from_label')} {linkedA?.name || 'Account'}
                         </span>
                       </div>
                     </div>
@@ -630,7 +632,7 @@ export const QuickAddWidget: React.FC<QuickAddWidgetProps> = ({ uid }) => {
                     <button
                       onClick={() => handleDeleteWidget(widget.id)}
                       className="w-8 h-8 rounded-xl hover:bg-red-50 text-neutral-400 hover:text-red-500 flex items-center justify-center transition-all border border-transparent hover:border-red-100 shrink-0"
-                      title="Delete Widget"
+                      title={t('quick_add_widgets.widget_delete_title')}
                     >
                       <Trash2 size={14} />
                     </button>
@@ -644,9 +646,9 @@ export const QuickAddWidget: React.FC<QuickAddWidgetProps> = ({ uid }) => {
         {/* Right Column (Placeholder for actual Android Widget instructions) */}
         <div className="lg:col-span-7 flex flex-col items-center justify-center p-8 border-2 border-dashed border-neutral-200 rounded-3xl text-center">
             <Smartphone size={48} className="text-neutral-300 mb-4" />
-            <h3 className="text-sm font-bold text-neutral-600 mb-2">Configure Your Live Widgets</h3>
+            <h3 className="text-sm font-bold text-neutral-600 mb-2">{t('quick_add_widgets.side_header')}</h3>
             <p className="text-xs font-normal text-neutral-500 max-w-[300px]">
-              Use the controls on the left to configure your quick-add widgets. Once added, install the app on your Android device (Add to Home Screen) to access them natively on your home grid.
+              {t('quick_add_widgets.side_desc')}
             </p>
         </div>
 

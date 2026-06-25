@@ -42,9 +42,9 @@ export const calculateAccountTrend = (
           } else if (isSender && String(tx.accountId) === accountId) {
             return sum - amount;
           }
-        } else if (tx.type === 'income') {
+        } else if (tx.type === 'income' || tx.type === 'Inflow') {
           return sum + amount;
-        } else if (tx.type === 'expense') {
+        } else if (tx.type === 'expense' || tx.type === 'Outflow') {
           return sum - amount;
         }
       }
@@ -113,11 +113,11 @@ export const calculateExpectedBankBalance = (
       } else if (isSender && String(tx.accountId) === accountId) {
         total -= amount;
       }
-    } else if (tx.type === 'income') {
+    } else if (tx.type === 'income' || tx.type === 'Inflow') {
       if (String(tx.accountId) === accountId) {
         total += amount;
       }
-    } else if (tx.type === 'expense') {
+    } else if (tx.type === 'expense' || tx.type === 'Outflow') {
       if (String(tx.accountId) === accountId) {
         total -= amount;
       }
@@ -169,12 +169,12 @@ export const calculateAccountBalances = (
         } else if (isSender && String(tx.accountId) === accountId) {
           total -= amount; // Sending from CC increases debt (moves more negative)
         }
-      } else if (tx.type === 'income') {
+      } else if (tx.type === 'income' || tx.type === 'Inflow') {
         // Income/Payment is a credit to the specified account
         if (String(tx.accountId) === accountId) {
           total += amount;
         }
-      } else if (tx.type === 'expense') {
+      } else if (tx.type === 'expense' || tx.type === 'Outflow') {
         // Expense is a debit from the specified account
         if (String(tx.accountId) === accountId) {
           total -= amount;
@@ -252,11 +252,11 @@ export const calculateAggregateTrend = (
         } else if (isSender && String(tx.accountId) === acc.id) {
           return sum - amount;
         }
-      } else if (tx.type === 'income') {
+      } else if (tx.type === 'income' || tx.type === 'Inflow') {
         if (String(tx.accountId) === acc.id) {
           return sum + amount;
         }
-      } else if (tx.type === 'expense') {
+      } else if (tx.type === 'expense' || tx.type === 'Outflow') {
         if (String(tx.accountId) === acc.id) {
           return sum - amount;
         }
@@ -278,11 +278,11 @@ export const calculateAggregateTrend = (
       new Date(tx.date) <= todayEnd
     ).reduce((sum, tx) => {
       const amount = tx.amount || 0;
-      if (tx.type === 'income') {
+      if (tx.type === 'income' || tx.type === 'Inflow') {
         if (String(tx.accountId) === acc.id) {
            return sum + amount;
         }
-      } else if (tx.type === 'expense') {
+      } else if (tx.type === 'expense' || tx.type === 'Outflow') {
         if (String(tx.accountId) === acc.id) {
            return sum - amount;
         }

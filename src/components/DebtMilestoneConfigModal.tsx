@@ -10,6 +10,7 @@ import {
 import { db } from '../lib/firebase';
 import { handleFirestoreError, OperationType } from '../lib/firebaseUtils';
 import { evaluateMathExpression } from '../lib/constants';
+import { useTranslation } from 'react-i18next';
 
 interface DebtMilestoneConfigModalProps {
   isOpen: boolean;
@@ -28,6 +29,7 @@ export const DebtMilestoneConfigModal: React.FC<DebtMilestoneConfigModalProps> =
   accounts,
   exchangeRates
 }) => {
+  const { t } = useTranslation();
   const [debtType, setDebtType] = useState<'Loan' | 'Mortgage'>('Loan');
   const [loanDirection, setLoanDirection] = useState<'borrowed' | 'lent'>('borrowed');
   const [name, setName] = useState('');
@@ -169,10 +171,10 @@ export const DebtMilestoneConfigModal: React.FC<DebtMilestoneConfigModalProps> =
             {/* Header Area */}
             <div className="flex flex-col items-center gap-0.5 mb-1 text-center">
               <h4 style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-black text-sm md:text-base">
-                {editingMilestone ? 'Refine Long-Term Liability' : 'Configure Long-Term Liability'}
+                {editingMilestone ? t('debt_milestone_modal.refine_title', 'Refine Long-Term Liability') : t('debt_milestone_modal.configure_title', 'Configure Long-Term Liability')}
               </h4>
               <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-neutral-400 text-[10px] mt-0.5">
-                Debt Management Repayment Settings
+                {t('debt_milestone_modal.subtitle', 'Debt Management Repayment Settings')}
               </p>
             </div>
 
@@ -181,7 +183,7 @@ export const DebtMilestoneConfigModal: React.FC<DebtMilestoneConfigModalProps> =
               {/* Liability Type Select: Loan or Mortgage */}
               <div className="space-y-1">
                 <label style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[#57606F] text-[11px] block">
-                  Liability Type
+                  {t('debt_milestone_modal.liability_type', 'Liability Type')}
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
@@ -194,7 +196,7 @@ export const DebtMilestoneConfigModal: React.FC<DebtMilestoneConfigModalProps> =
                         : 'bg-white text-neutral-600 border-[#E1E8ED] font-normal hover:bg-neutral-50'
                     }`}
                   >
-                    Personal Loan
+                    {t('debt_milestone_modal.personal_loan', 'Personal Loan')}
                   </button>
                   <button
                     type="button"
@@ -206,7 +208,7 @@ export const DebtMilestoneConfigModal: React.FC<DebtMilestoneConfigModalProps> =
                         : 'bg-white text-neutral-600 border-[#E1E8ED] font-normal hover:bg-neutral-50'
                     }`}
                   >
-                    Mortgage
+                    {t('debt_milestone_modal.mortgage', 'Mortgage')}
                   </button>
                 </div>
               </div>
@@ -215,7 +217,7 @@ export const DebtMilestoneConfigModal: React.FC<DebtMilestoneConfigModalProps> =
               {debtType === 'Loan' && (
                 <div className="space-y-1">
                   <label style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[#57606F] text-[11px] block">
-                    Loan Option
+                    {t('debt_milestone_modal.loan_option', 'Loan Option')}
                   </label>
                   <div className="grid grid-cols-2 gap-2">
                     <button
@@ -228,7 +230,7 @@ export const DebtMilestoneConfigModal: React.FC<DebtMilestoneConfigModalProps> =
                           : 'bg-white text-neutral-600 border-[#E1E8ED] font-normal hover:bg-neutral-50'
                       }`}
                     >
-                      I borrowed
+                      {t('debt_milestone_modal.i_borrowed', 'I borrowed')}
                     </button>
                     <button
                       type="button"
@@ -240,7 +242,7 @@ export const DebtMilestoneConfigModal: React.FC<DebtMilestoneConfigModalProps> =
                           : 'bg-white text-neutral-600 border-[#E1E8ED] font-normal hover:bg-neutral-50'
                       }`}
                     >
-                      I lent
+                      {t('debt_milestone_modal.i_lent', 'I lent')}
                     </button>
                   </div>
                 </div>
@@ -249,14 +251,14 @@ export const DebtMilestoneConfigModal: React.FC<DebtMilestoneConfigModalProps> =
               {/* Debt Name */}
               <div className="space-y-1">
                 <label style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[#57606F] text-[11px] block">
-                  {debtType === 'Loan' && loanDirection === 'lent' ? 'Asset Account Name / Label' : 'Liability Account Name / Label'}
+                  {debtType === 'Loan' && loanDirection === 'lent' ? t('debt_milestone_modal.asset_name_label', 'Asset Account Name / Label') : t('debt_milestone_modal.liability_name_label', 'Liability Account Name / Label')}
                 </label>
                 <input 
                   type="text"
                   required
                   value={name}
                   onChange={e => setName(e.target.value)}
-                  placeholder={debtType === 'Loan' && loanDirection === 'lent' ? 'e.g., Loan to Mum, Friend Loan' : 'e.g., ADCB Car Loan, HSBC Home Mortgage'}
+                  placeholder={debtType === 'Loan' && loanDirection === 'lent' ? t('debt_milestone_modal.placeholder_asset_name', 'e.g., Loan to Mum, Friend Loan') : t('debt_milestone_modal.placeholder_liability_name', 'e.g., ADCB Car Loan, HSBC Home Mortgage')}
                   style={{ 
                     fontFamily: "'Google Sans', sans-serif", 
                     fontWeight: 400,
@@ -270,7 +272,7 @@ export const DebtMilestoneConfigModal: React.FC<DebtMilestoneConfigModalProps> =
               {/* Principal Liability Amount */}
               <div className="space-y-1">
                 <label style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[#57606F] text-[11px] block">
-                  {debtType === 'Loan' && loanDirection === 'lent' ? 'Principal Amount Lent' : 'Principal Debt Amount'}
+                  {debtType === 'Loan' && loanDirection === 'lent' ? t('debt_milestone_modal.principal_lent_label', 'Principal Amount Lent') : t('debt_milestone_modal.principal_debt_label', 'Principal Debt Amount')}
                 </label>
                 <div className="relative">
                   <input 
@@ -298,7 +300,7 @@ export const DebtMilestoneConfigModal: React.FC<DebtMilestoneConfigModalProps> =
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <label style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[#57606F] text-[11px] block">
-                    Interest Rate % (P.A.)
+                    {t('debt_milestone_modal.interest_rate_label', 'Interest Rate % (P.A.)')}
                   </label>
                   <div className="relative">
                     <input 
@@ -323,7 +325,7 @@ export const DebtMilestoneConfigModal: React.FC<DebtMilestoneConfigModalProps> =
 
                 <div className="space-y-1">
                   <label style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[#57606F] text-[11px] block">
-                    Min Balance Floor
+                    {t('debt_milestone_modal.min_balance_floor', 'Min Balance Floor')}
                   </label>
                   <div className="relative">
                     <input 
@@ -351,7 +353,7 @@ export const DebtMilestoneConfigModal: React.FC<DebtMilestoneConfigModalProps> =
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <label style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[#57606F] text-[11px] block whitespace-nowrap">
-                    Payment Frequency
+                    {t('debt_milestone_modal.payment_frequency', 'Payment Frequency')}
                   </label>
                   <select
                     value={paymentFrequency}
@@ -364,16 +366,16 @@ export const DebtMilestoneConfigModal: React.FC<DebtMilestoneConfigModalProps> =
                     }}
                     className="w-full bg-neutral-50 border border-[#E1E8ED]/80 rounded-lg px-2.5 py-1.5 text-neutral-700 focus:border-black outline-none transition-all"
                   >
-                    <option value="Weekly" style={{ fontFamily: "'Google Sans', sans-serif'", fontWeight: 400 }}>Weekly</option>
-                    <option value="Bi-Weekly" style={{ fontFamily: "'Google Sans', sans-serif'", fontWeight: 400 }}>Bi-Weekly</option>
-                    <option value="Monthly" style={{ fontFamily: "'Google Sans', sans-serif'", fontWeight: 400 }}>Monthly</option>
-                    <option value="Quarterly" style={{ fontFamily: "'Google Sans', sans-serif'", fontWeight: 400 }}>Quarterly</option>
+                    <option value="Weekly" style={{ fontFamily: "'Google Sans', sans-serif'", fontWeight: 400 }}>{t('debt_milestone_modal.option_weekly', 'Weekly')}</option>
+                    <option value="Bi-Weekly" style={{ fontFamily: "'Google Sans', sans-serif'", fontWeight: 400 }}>{t('debt_milestone_modal.option_biweekly', 'Bi-Weekly')}</option>
+                    <option value="Monthly" style={{ fontFamily: "'Google Sans', sans-serif'", fontWeight: 400 }}>{t('debt_milestone_modal.option_monthly', 'Monthly')}</option>
+                    <option value="Quarterly" style={{ fontFamily: "'Google Sans', sans-serif'", fontWeight: 400 }}>{t('debt_milestone_modal.option_quarterly', 'Quarterly')}</option>
                   </select>
                 </div>
 
                 <div className="space-y-1">
                   <label style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[#57606F] text-[11px] block whitespace-nowrap">
-                    {debtType === 'Loan' && loanDirection === 'lent' ? 'Repayment Received' : 'Installment Amount'}
+                    {debtType === 'Loan' && loanDirection === 'lent' ? t('debt_milestone_modal.repayment_received_label', 'Repayment Received') : t('debt_milestone_modal.installment_amount_label', 'Installment Amount')}
                   </label>
                   <div className="relative">
                     <input 
@@ -402,7 +404,7 @@ export const DebtMilestoneConfigModal: React.FC<DebtMilestoneConfigModalProps> =
               <div className="bg-[#E1E8ED]/20 border border-[#E1E8ED]/40 rounded-xl p-2.5 flex items-start gap-1.5 select-none">
                 <Info size={12} className="text-[#57606F] mt-0.5 shrink-0" />
                 <div style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-neutral-500 text-[10px] leading-normal font-normal">
-                  Saving this configuration automatically triggers a background write to establish your corresponding accounts collection ledger records.
+                  {t('debt_milestone_modal.info_note', 'Saving this configuration automatically triggers a background write to establish your corresponding accounts collection ledger records.')}
                 </div>
               </div>
 
@@ -419,7 +421,7 @@ export const DebtMilestoneConfigModal: React.FC<DebtMilestoneConfigModalProps> =
                   }}
                   className="flex-1 border border-[#E1E8ED] rounded-xl text-neutral-600 hover:bg-neutral-50 cursor-pointer text-center bg-white transition-all active:scale-95"
                 >
-                  Cancel
+                  {t('debt_milestone_modal.cancel', 'Cancel')}
                 </button>
                 <button 
                   type="submit" 
@@ -432,7 +434,7 @@ export const DebtMilestoneConfigModal: React.FC<DebtMilestoneConfigModalProps> =
                   }}
                   className="flex-1 bg-black text-white rounded-xl font-bold shadow-sm hover:bg-neutral-800 cursor-pointer text-center transition-all disabled:opacity-50 active:scale-95"
                 >
-                  {isLoading ? 'Saving...' : 'Save Configuration'}
+                  {isLoading ? t('debt_milestone_modal.saving', 'Saving...') : t('debt_milestone_modal.save_configuration', 'Save Configuration')}
                 </button>
               </div>
             </form>

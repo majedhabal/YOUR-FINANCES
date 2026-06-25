@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { useTranslation } from 'react-i18next';
 import { 
   Bell, X, Check, Trash2, Calendar, Landmark, 
   AlertCircle, TrendingUp, Sparkles, AlertTriangle, 
@@ -53,6 +54,7 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
   accountBalances,
   onTransactionApproved
 }) => {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [foregroundQuietIncrement, setForegroundQuietIncrement] = useState(0);
 
@@ -747,7 +749,8 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
 
         // Perform All Balance Updates and Mini-Budget Reads First
         const sourceAccountId = txData.accountId || txData.sourceAccountId;
-        const isTransfer = txData.type?.toLowerCase() === 'transfer' || txData.transferSide === 'sender';
+        const txType = (txData.type || '').toLowerCase();
+        const isTransfer = txType === 'transfer' || txData.transferSide === 'sender';
         const destAccountId = txData.toAccountId || txData.destinationAccountId;
 
         let sourceSnap: any = null;
@@ -780,7 +783,8 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
         if (sourceSnap && sourceSnap.exists()) {
           const sourceRef = doc(db, `users/${uid}/accounts/${sourceAccountId}`);
           const sourceBal = Number(sourceSnap.data()?.currentBalance) || 0;
-          const change = (txData.type?.toLowerCase() === 'income') ? amt : -amt;
+          const txType = (txData.type || '').toLowerCase();
+          const change = (txType === 'income' || txType === 'inflow') ? amt : -amt;
           transaction.update(sourceRef, {
             currentBalance: sourceBal + change,
             updatedAt: serverTimestamp()
@@ -873,7 +877,8 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
 
     return transactions.reduce((total, tx) => {
       if (tx.status === 'draft') return total;
-      if (tx.type !== 'expense') return total;
+      const txType = (tx.type || '').toLowerCase();
+      if (txType !== 'expense' && txType !== 'outflow') return total;
       
       const txDate = new Date(tx.date);
       if (txDate >= start && txDate <= end) {

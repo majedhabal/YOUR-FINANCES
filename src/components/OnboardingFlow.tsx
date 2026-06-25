@@ -36,6 +36,7 @@ import { db, auth, getGoogleProvider } from '../lib/firebase';
 import { seedUserCustomCategories } from '../lib/categoryUtils';
 import { VantageLogo } from './VantageLogo';
 import { LanguageSelector } from './LanguageSelector';
+import { useTranslation } from 'react-i18next';
 import i18n from '../lib/i18n';
 import { evaluateMathExpression, MASTER_CATEGORIES } from '../lib/constants';
 
@@ -211,6 +212,7 @@ const getGoalTitle = (goalKey: string): string => {
 };
 
 export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, onSuccess }) => {
+  const { t } = useTranslation();
   // Pre-onboarding Auth Gateway state for sandbox and guest users
   const [showAuthGateway, setShowAuthGateway] = useState<boolean>(() => {
     return uid === 'dev-sandbox-user';
@@ -1479,10 +1481,10 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
               
               <div className="text-center space-y-1.5 shrink-0 select-none">
                 <h2 className="text-lg font-bold text-neutral-900 leading-tight">
-                  Secure Your Workspace
+                  {t('onboarding_flow.auth_gateway.title', 'Secure Your Workspace')}
                 </h2>
                 <p className="text-xs text-neutral-500 font-normal px-2 leading-relaxed">
-                  Before setting up your profile, please log in or sign up so your finances, checking accounts, and budgets can be saved securely.
+                  {t('onboarding_flow.auth_gateway.subtitle', 'Before setting up your profile, please log in or sign up so your finances, checking accounts, and budgets can be saved securely.')}
                 </p>
               </div>
 
@@ -1494,7 +1496,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                     className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-center text-xs font-bold shadow-sm transition-all flex items-center justify-center gap-2.5 cursor-pointer"
                   >
                     <ShieldCheck size={16} />
-                    Secure Google credential lock
+                    {t('onboarding_flow.auth_gateway.google_login', 'Secure Google credential lock')}
                   </button>
 
                   <div className="flex gap-2">
@@ -1504,24 +1506,24 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                       className="flex-1 py-3 px-4 bg-[#1877F2] hover:bg-[#166FE5] text-white rounded-xl text-center text-xs font-bold shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <Facebook size={16} />
-                      Continue with Facebook
+                      {t('onboarding_flow.auth_gateway.facebook_login', 'Continue with Facebook')}
                     </button>
                   </div>
 
                   <div className="flex items-center select-none py-1">
                     <div className="flex-1 border-t border-neutral-100"></div>
-                    <span className="px-3 text-[10px] text-neutral-300 font-bold">Or Direct Gateway</span>
+                    <span className="px-3 text-[10px] text-neutral-300 font-bold">{t('onboarding_flow.auth_gateway.or_direct_gateway', 'Or Direct Gateway')}</span>
                     <div className="flex-1 border-t border-neutral-100"></div>
                   </div>
 
                   <div className="flex flex-col gap-3 rounded-xl border border-neutral-150 bg-[#F8FAFC] p-4 shadow-sm text-left">
                     <label className="text-[11px] font-bold text-neutral-700" htmlFor="flow-gateway-email">
-                      {authAuthMode === 'email-entry' ? 'Email connection gateway' : 'Enter your password'}
+                      {authAuthMode === 'email-entry' ? t('onboarding_flow.auth_gateway.email_gateway_label', 'Email connection gateway') : t('onboarding_flow.auth_gateway.password_entry_label', 'Enter your password')}
                     </label>
                     <input 
                       id="flow-gateway-email"
                       type={authAuthMode === 'email-entry' ? "email" : "password"}
-                      placeholder={authAuthMode === 'email-entry' ? "name@company.com" : "Password"}
+                      placeholder={authAuthMode === 'email-entry' ? t('onboarding_flow.auth_gateway.email_placeholder', 'name@company.com') : t('onboarding_flow.auth_gateway.password_placeholder', 'Password')}
                       value={authAuthMode === 'email-entry' ? authEmail : authPassword}
                       onChange={(e) => authAuthMode === 'email-entry' ? setAuthEmail(e.target.value) : setAuthPassword(e.target.value)}
                       className="w-full bg-white border border-[#D1D8E0] rounded-lg px-3 py-2 text-xs font-bold text-neutral-800 outline-none focus:border-emerald-600 transition-colors placeholder:text-neutral-400 placeholder:font-normal"
@@ -1532,7 +1534,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                       type="button"
                       className="w-full py-2 bg-emerald-50 hover:bg-emerald-100 disabled:opacity-40 disabled:cursor-not-allowed text-emerald-800 rounded-lg text-xs font-bold border border-emerald-200/60 transition-all cursor-pointer"
                     >
-                      {authAuthMode === 'email-entry' ? 'Continue' : 'Sign In / Sign Up'}
+                      {authAuthMode === 'email-entry' ? t('onboarding_flow.auth_gateway.continue_btn', 'Continue') : t('onboarding_flow.auth_gateway.sign_in_up_btn', 'Sign In / Sign Up')}
                     </button>
                   </div>
                 </div>
@@ -1628,7 +1630,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
 
               <div className="flex items-center gap-2">
                 <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[8.5px] text-black bg-[#E9ECEF] border border-[#D1D8DD] px-2 py-1 rounded-full tracking-wider uppercase">
-                  Step {activeStep <= 7 ? activeStep : (incomeTrackingType === 'lump_sum' ? activeStep - 1 : activeStep)}/{incomeTrackingType === 'lump_sum' ? 11 : 12}
+                  {t("onboarding.step", "Step")} {activeStep <= 7 ? activeStep : (incomeTrackingType === 'lump_sum' ? activeStep - 1 : activeStep)}/{incomeTrackingType === 'lump_sum' ? 11 : 12}
                 </span>
               </div>
         </header>
@@ -1646,7 +1648,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
         {/* Date Stamp Separator */}
         <div className="flex justify-center my-1 select-none">
           <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="px-3 py-1 bg-white/70 border border-[#E1E8ED] rounded-full text-[9px] uppercase tracking-widest text-[#57606F] shadow-sm">
-            Today
+            {t("onboarding.today", "Today")}
           </span>
         </div>
 
@@ -1654,13 +1656,13 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
         <div className="flex flex-col gap-1.5 self-start max-w-[85%]">
           <div className="bg-[#E9ECEF] text-[#000000] rounded-2xl rounded-tl-none p-2.5 shadow-sm border border-[#D1D8DD]/50">
             <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: "clamp(11px, 3.2vw, 13px)" }} className="leading-relaxed">
-              Welcome to <strong className="font-bold">YOUR FINANCES</strong>! 👋 Let's set up your profile so you can start your future financial freedom.
+              {t("onboarding.welcome")}
             </p>
             <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: "clamp(11px, 3.2vw, 13px)" }} className="leading-relaxed mt-1">
-              This one-minute sign-up process configures everything, leaving the app completely ready for your everyday use.
+              {t("onboarding.process_desc")}
             </p>
             <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: "clamp(11px, 3.2vw, 13px)" }} className="leading-relaxed mt-1">
-              Can you please tell me your <strong className="font-bold">name</strong>?
+              {t("onboarding.ask_name")}
             </p>
           </div>
         </div>
@@ -1670,7 +1672,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
           <div className="flex flex-col gap-1.5 self-start w-full max-w-[85%] animate-fadeIn">
             <div className="bg-[#E9ECEF] text-[#000000] rounded-2xl rounded-tl-none p-2.5 shadow-sm border border-[#D1D8DD]/50">
               <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: "clamp(11px, 3.2vw, 13px)" }} className="leading-relaxed">
-                Also, please select your preferred language:
+                {t("onboarding.preferred_lang")}
               </p>
             </div>
             <div className="bg-white border border-[#E1E8ED] rounded-2xl p-4 shadow-sm mt-1">
@@ -1697,7 +1699,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
           <div className="flex flex-col gap-1.5 self-start max-w-[85%] animate-fadeIn">
             <div className="bg-[#E9ECEF] text-[#000000] rounded-2xl rounded-tl-none p-2.5 shadow-sm border border-[#D1D8DD]/50">
               <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: "clamp(11px, 3.2vw, 13px)" }} className="leading-relaxed">
-                Pleasure meeting you, {(fullName.trim() || randomPlaceholder).split(' ')[0]}! 👋 Kindly tell me your date of birth.
+                {t("onboarding.pleasure_meeting", { name: (fullName.trim() || randomPlaceholder).split(' ')[0] })}
               </p>
             </div>
           </div>
@@ -1719,7 +1721,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
           <div className="flex flex-col gap-1.5 self-start w-full max-w-[90%] animate-fadeIn">
             <div className="bg-[#E9ECEF] text-[#000000] rounded-2xl rounded-tl-none p-2.5 shadow-sm border border-[#D1D8DD]/50">
               <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: "clamp(11.5px, 3.3vw, 13.5px)" }} className="leading-relaxed font-normal">
-                What is your relationship status?
+                {t("onboarding.relationship_status", "What is your relationship status?")}
               </p>
             </div>
 
@@ -1750,7 +1752,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                             : 'bg-neutral-50 text-neutral-600 border-neutral-200 hover:border-neutral-400'
                         }`}
                       >
-                        {status}
+                        {t(`onboarding.status_${status.toLowerCase()}`, status)}
                       </button>
                     );
                   })}
@@ -1765,7 +1767,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
           <div className="flex flex-col gap-1 self-end max-w-[85%] animate-fadeIn">
             <div className="bg-black text-white rounded-2xl rounded-tr-none p-2.5 shadow-sm text-right">
               <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: "clamp(11px, 3.2vw, 13px)" }} className="tracking-tight font-normal">
-                {relationshipStatus}
+                {t(`onboarding.status_${relationshipStatus.toLowerCase()}`, relationshipStatus)}
               </p>
             </div>
           </div>
@@ -1776,7 +1778,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
           <div className="flex flex-col gap-1.5 self-start max-w-[85%] animate-fadeIn">
             <div className="bg-[#E9ECEF] text-[#000000] rounded-2xl rounded-tl-none p-2.5 shadow-sm border border-[#D1D8DD]/50">
               <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: "clamp(11px, 3.2vw, 13px)" }} className="leading-relaxed">
-                Tell us about your household and dependents below. You can skip this or add family members directly.
+                {t("onboarding.tell_household", "Tell us about your household and dependents below. You can skip this or add family members directly.")}
               </p>
             </div>
           </div>
@@ -1788,8 +1790,8 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
             <div className="bg-black text-white rounded-2xl rounded-tr-none p-2.5 shadow-sm">
               <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: "clamp(11px, 3.2vw, 13px)" }} className="tracking-tight">
                 {dependents.length === 0 
-                  ? "Independent (No dependents)" 
-                  : `${dependents.length} household dependent(s) added`}
+                  ? t("onboarding.independent", "Independent (No dependents)") 
+                  : t("onboarding.dependents_added", `${dependents.length} household dependent(s) added`, { count: dependents.length })}
               </p>
             </div>
           </div>
@@ -1800,7 +1802,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
           <div className="flex flex-col gap-1.5 self-start w-full max-w-[90%] animate-fadeIn">
             <div className="bg-[#E9ECEF] text-[#000000] rounded-2xl rounded-tl-none p-2.5 shadow-sm border border-[#D1D8DD]/50 animate-fadeIn">
               <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: "clamp(11px, 3.2vw, 13px)" }} className="leading-relaxed">
-                Are you currently working? Please tell us more about your income sources.
+                {t("onboarding.income_sources_query", "Are you currently working? Please tell us more about your income sources.")}
               </p>
             </div>
 
@@ -1824,10 +1826,10 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                   }`}
                 >
                   <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-xs text-black font-bold">
-                    I receive regular income and I want to manage my existing funds.
+                    {t("onboarding.payroll_option_title", "I receive regular income and I want to manage my existing funds.")}
                   </span>
                   <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[10px] text-neutral-500 leading-normal">
-                    Tip: You can set recurring salary transfers, allowances and also recurring expenses.
+                    {t("onboarding.payroll_option_desc", "Tip: You can set recurring salary transfers, allowances and also recurring expenses.")}
                   </p>
                 </button>
 
@@ -1848,10 +1850,10 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                   }`}
                 >
                   <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-xs text-black font-bold">
-                    I don't have a regular income for now, but I want to manage my existing funds.
+                    {t("onboarding.lump_sum_option_title", "I don't have a regular income for now, but I want to manage my existing funds.")}
                   </span>
                   <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[10px] text-neutral-500 leading-normal">
-                    Tip: You will not set up a recurring salary transfer, but you can set up multiple active accounts.
+                    {t("onboarding.lump_sum_option_desc", "Tip: You will not set up a recurring salary transfer, but you can set up multiple active accounts.")}
                   </p>
                 </button>
               </div>
@@ -1864,7 +1866,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
           <div className="flex flex-col gap-1 self-end max-w-[85%] animate-fadeIn">
             <div className="bg-black text-white rounded-2xl rounded-tr-none p-2.5 shadow-sm text-right">
               <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: "clamp(11px, 3.2vw, 13px)" }} className="tracking-tight font-normal">
-                Income Sources Selected: {incomeTrackingType === 'payroll' ? 'Regular Income & Manage Existing Funds' : 'Existing Funds Only'}
+                {t("onboarding.income_sources_selected", "Income Sources Selected:")} {incomeTrackingType === 'payroll' ? t("onboarding.regular_income_title", "Regular Income & Manage Existing Funds") : t("onboarding.existing_funds_title", "Existing Funds Only")}
               </p>
             </div>
           </div>
@@ -1875,7 +1877,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
           <div className="flex flex-col gap-1.5 self-start w-full max-w-full animate-fadeIn select-none">
             <div className="bg-[#E9ECEF] text-[#000000] rounded-2xl rounded-tl-none p-2.5 shadow-sm border border-[#D1D8DD]/50 animate-fadeIn">
               <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: "12px" }} className="leading-relaxed font-normal">
-                Superb! What is your base currency? You can still be able to select multiple currencies later.
+                {t("onboarding.base_currency_query", "Superb! What is your base currency? You can still be able to select multiple currencies later.")}
               </p>
             </div>
 
@@ -1891,7 +1893,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                   }} 
                   className="text-black mb-1.5 block text-center md:text-left"
                 >
-                  Choose base currency
+                  {t("onboarding.choose_base_currency", "Choose base currency")}
                 </label>
 
                 {/* Vertical fluid list or dropdown */}
@@ -2016,7 +2018,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
           <div className="flex flex-col gap-1 self-end max-w-[85%] animate-fadeIn">
             <div className="bg-black text-white rounded-2xl rounded-tr-none p-2.5 shadow-sm text-right">
               <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: "clamp(11px, 3.2vw, 13px)" }} className="tracking-tight font-normal">
-                Base Currency: {currency} ({GLOBAL_CURRENCIES.find(c => c.code === currency)?.name || currency})
+                {t("onboarding.base_currency_chosen", "Base Currency:")} {currency} ({GLOBAL_CURRENCIES.find(c => c.code === currency)?.name || currency})
               </p>
             </div>
           </div>
@@ -2027,7 +2029,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
           <div className="flex flex-col gap-1.5 self-start max-w-[85%] animate-fadeIn">
             <div className="bg-[#E9ECEF] text-[#000000] rounded-2xl rounded-tl-none p-2.5 shadow-sm border border-[#D1D8DD]/50">
               <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: "clamp(11px, 3.2vw, 13px)" }} className="leading-relaxed font-normal">
-                Thank you! Now, please tell me what are your financial priority?
+                {t("onboarding.goals_query", "Thank you! Now, please tell me what are your financial priority?")}
               </p>
             </div>
           </div>
@@ -2038,7 +2040,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
           <div className="flex flex-col gap-1 self-end max-w-[85%]">
             <div className="bg-black text-white rounded-2xl rounded-tr-none p-2.5 shadow-sm flex flex-col gap-1 text-right">
               <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: "clamp(11px, 3.2vw, 13px)" }} className="text-[#A6DDB1] tracking-wider">
-                Goals: {goalListString || 'None'}
+                {t("onboarding.goals_chosen", "Goals:")} {goalListString || t("onboarding.none", "None")}
               </p>
             </div>
           </div>
@@ -2049,7 +2051,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
           <div className="flex flex-col gap-1.5 self-start w-full max-w-[90%] animate-fadeIn">
             <div className="bg-[#E9ECEF] text-[#000000] rounded-2xl rounded-tl-none p-2.5 shadow-sm border border-[#D1D8DD]/50 animate-fadeIn">
               <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: "clamp(11px, 3.2vw, 13px)" }} className="leading-relaxed">
-                That's awesome! Please fill in the information below to automate your income tracking.
+                {t("onboarding.payroll_query", "That's awesome! Please fill in the information below to automate your income tracking.")}
               </p>
             </div>
 
@@ -2062,7 +2064,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                   </div>
                   <div>
                     <h3 style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700, fontSize: "clamp(12px, 3.5vw, 14px)" }} className="text-black leading-none">
-                      Salary Information
+                      {t("onboarding.salary_info_title", "Salary Information")}
                     </h3>
                   </div>
                 </div>
@@ -2071,7 +2073,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                   {/* Salary Amount input */}
                   <div className="flex flex-col gap-0.5 text-left">
                     <label style={{ fontFamily: "'Google Sans', sans-serif", fontSize: "clamp(11px, 3.2vw, 13px)", fontWeight: 400 }} className="text-neutral-500 select-none">
-                      Salary Amount ({currency || 'AED'})
+                      {t("onboarding.salary_amount_label", "Salary Amount ({{currency}})", { currency: currency || 'AED' })}
                     </label>
                     <input
                       type="text"
@@ -2092,7 +2094,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                   {/* Payment day of the month */}
                   <div className="flex flex-col gap-0.5 text-left">
                     <label style={{ fontFamily: "'Google Sans', sans-serif", fontSize: "clamp(11px, 3.2vw, 13px)", fontWeight: 400 }} className="text-neutral-500 select-none">
-                      Pay Date (Day of Month)
+                      {t("onboarding.pay_date_label", "Pay Date (Day of Month)")}
                     </label>
                     <input
                       type="number"
@@ -2120,7 +2122,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                       }}
                       className="w-full text-left text-[11px] text-neutral-600 bg-neutral-50 border border-neutral-200 rounded-xl p-3"
                     >
-                      We will create a dedicated salary account for you.
+                      {t("onboarding.dedicated_salary_note", "We will create a dedicated salary account for you.")}
                     </p>
                   </div>
                 </div>
@@ -2132,7 +2134,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                     onClick={() => {
                       const evalSalary = parseFloat(evaluateMathExpression(salaryAmount)) || 0;
                       if (evalSalary <= 0) {
-                        alert("Please configure a valid payroll starting amount.");
+                        alert(t("onboarding.invalid_payroll_alert", "Please configure a valid payroll starting amount."));
                         return;
                       }
                       
@@ -2165,7 +2167,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                     style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
                     className="px-4 h-[38px] bg-black text-white hover:bg-neutral-800 text-center text-[10px] rounded-xl flex items-center justify-center gap-1 transition-all active:scale-95 cursor-pointer hover:scale-[1.01]"
                   >
-                    Save and Continue
+                    {t("onboarding.save_and_continue", "Save and Continue")}
                     <ChevronRight size={12} />
                   </button>
                 </div>
@@ -2179,7 +2181,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
           <div className="flex flex-col gap-1 self-end max-w-[85%] animate-fadeIn">
             <div className="bg-black text-white rounded-2xl rounded-tr-none p-2.5 shadow-sm text-right">
               <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: "clamp(11px, 3.2vw, 13px)" }} className="tracking-tight font-normal">
-                Salary Details: {parseFloat(evaluateMathExpression(salaryAmount)).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {currency || 'AED'} on day {paymentDay} ({payrollDestination === 'dedicated' ? 'Create Dedicated Salary Account' : 'Link to Existing Account'})
+                {t("onboarding.salary_details_summary", "Salary Details:")} {parseFloat(evaluateMathExpression(salaryAmount)).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {currency || 'AED'} {t("onboarding.on_day", "on day")} {paymentDay} ({payrollDestination === 'dedicated' ? t("onboarding.create_dedicated_salary_option", "Create Dedicated Salary Account") : t("onboarding.link_to_existing_option", "Link to Existing Account")})
               </p>
             </div>
           </div>
@@ -2190,10 +2192,10 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
           <div className="flex flex-col gap-1.5 self-start w-full max-w-[90%] animate-fadeIn">
             <div className="bg-[#E9ECEF] text-[#000000] rounded-2xl rounded-tl-none p-2.5 shadow-sm border border-[#D1D8DD]/50">
               <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: "clamp(11px, 3.2vw, 13px)" }} className="leading-relaxed">
-                Great! We have created your salary account for you, which enables you to create income and expense transactions.
+                {t("onboarding.accounts_message_1", "Great! We have created your salary account for you, which enables you to create income and expense transactions.")}
               </p>
               <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: "clamp(11px, 3.2vw, 13px)" }} className="leading-relaxed mt-1">
-                You can create more accounts below if you want, and you can also skip this step.
+                {t("onboarding.accounts_message_2", "You can create more accounts below if you want, and you can also skip this step.")}
               </p>
             </div>
 
@@ -2201,7 +2203,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
             {accountsList.length > 0 && (
               <div className="w-full flex flex-col gap-1.5 mt-1 px-1">
                 <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 450, fontSize: "clamp(11.5px, 3.2vw, 13.5px)" }} className="text-black mb-0.5 font-medium">
-                  📁 Pending Accounts ({accountsList.length})
+                  {t("onboarding.pending_accounts_title", "📁 Pending Accounts ({{count}})", { count: accountsList.length })}
                 </span>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                   {accountsList.map((acc, index) => (
@@ -2219,7 +2221,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                           style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, color: '#A6DDB1', fontSize: '12px' }} 
                           className="font-normal block"
                         >
-                          Type: {acc.type} {acc.name === 'Salary Account' && '• Automated'}
+                          {t("onboarding.account_type_prefix", "Type:")} {t(`onboarding.type_${acc.type.toLowerCase()}`, acc.type)} {acc.name === 'Salary Account' && `• ${t("onboarding.automated", "Automated")}`}
                         </span>
                         <span 
                           style={{ 
@@ -2256,7 +2258,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                   </div>
                   <div>
                     <h3 style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 600, fontSize: "clamp(12.5px, 3.5vw, 14.5px)" }} className="text-black leading-none font-semibold">
-                      Account Creation
+                      {t("onboarding.account_creation_title", "Account Creation")}
                     </h3>
                   </div>
                 </div>
@@ -2265,7 +2267,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                   {/* Account Name input */}
                   <div className="flex flex-col gap-0.5">
                     <label style={{ fontFamily: "'Google Sans', sans-serif", fontSize: "clamp(11px, 3.2vw, 13px)", fontWeight: 400 }} className="text-neutral-500 select-none">
-                      Account Name
+                      {t("onboarding.account_name_label", "Account Name")}
                     </label>
                     <input
                       type="text"
@@ -2280,7 +2282,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                   {/* Account Type dropdown */}
                   <div className="flex flex-col gap-0.5">
                     <label style={{ fontFamily: "'Google Sans', sans-serif", fontSize: "clamp(11px, 3.2vw, 13px)", fontWeight: 400 }} className="text-neutral-500 select-none">
-                      Account Type
+                      {t("onboarding.account_type_label", "Account Type")}
                     </label>
                     <select
                       value={accountType}
@@ -2288,10 +2290,10 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                       style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
                       className="w-full h-[38px] max-h-[38px] bg-neutral-50 border border-neutral-250 rounded-xl px-3 py-0 text-xs text-black focus:border-[#00FF88] outline-none transition-colors cursor-pointer font-normal"
                     >
-                      <option value="bank" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="font-normal">Checking account</option>
-                      <option value="savings" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="font-normal">Saving account</option>
-                      <option value="credit_card" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="font-normal">Credit card</option>
-                      <option value="cash" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="font-normal">Physical cash</option>
+                      <option value="bank" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="font-normal">{t("onboarding.checking_account_option", "Checking account")}</option>
+                      <option value="savings" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="font-normal">{t("onboarding.saving_account_option", "Saving account")}</option>
+                      <option value="credit_card" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="font-normal">{t("onboarding.credit_card_option", "Credit card")}</option>
+                      <option value="cash" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="font-normal">{t("onboarding.physical_cash_option", "Physical cash")}</option>
                     </select>
                   </div>
 
@@ -2299,7 +2301,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                   {!(accountType === 'credit_card' || accountType === 'credit') && (
                     <div className="flex flex-col gap-0.5">
                       <label style={{ fontFamily: "'Google Sans', sans-serif", fontSize: "clamp(11px, 3.2vw, 13px)", fontWeight: 400 }} className="text-neutral-500 select-none">
-                        Starting Balance
+                        {t("onboarding.starting_balance_label", "Starting Balance")}
                       </label>
                       <input
                         type="text"
@@ -2323,7 +2325,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                   {/* Strict Currency select pickers */}
                   <div className="flex flex-col gap-0.5">
                     <label style={{ fontFamily: "'Google Sans', sans-serif", fontSize: "clamp(11px, 3.2vw, 13px)", fontWeight: 400 }} className="text-neutral-500 select-none">
-                      Account Currency Code
+                      {t("onboarding.account_currency_label", "Account Currency Code")}
                     </label>
                     <select
                       value={currency}
@@ -2350,7 +2352,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                         {/* 1. Outstanding Balance */}
                         <div className="flex flex-col gap-1 w-full text-left">
                           <label style={{ fontFamily: "'Google Sans', sans-serif", fontSize: "clamp(11px, 3.2vw, 13px)", fontWeight: 400 }} className="text-neutral-500 select-none">
-                            What is your current outstanding balance?
+                            {t("onboarding.outstanding_balance_label", "What is your current outstanding balance?")}
                           </label>
                           <input
                             type="text"
@@ -2370,7 +2372,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                         {/* 2. Total Credit Limit */}
                         <div className="flex flex-col gap-1 w-full text-left">
                           <label style={{ fontFamily: "'Google Sans', sans-serif", fontSize: "clamp(11px, 3.2vw, 13px)", fontWeight: 400 }} className="text-neutral-500 select-none">
-                            What is your total credit limit?
+                            {t("onboarding.credit_limit_label", "What is your total credit limit?")}
                           </label>
                           <input
                             type="text"
@@ -2390,7 +2392,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                         {/* 3. Monthly Payment Due Date */}
                         <div className="flex flex-col gap-1 w-full text-left">
                           <label style={{ fontFamily: "'Google Sans', sans-serif", fontSize: "clamp(11px, 3.2vw, 13px)", fontWeight: 400 }} className="text-neutral-500 select-none">
-                            Monthly statement payment due date?
+                            {t("onboarding.statement_due_date_label", "Monthly statement payment due date?")}
                           </label>
                           <select
                             value={statementDueDate}
@@ -2398,10 +2400,10 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                             style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
                             className="w-full h-[38px] max-h-[38px] bg-neutral-50 border border-neutral-250 rounded-xl px-3 py-0 text-xs text-black focus:border-[#00FF88] outline-none cursor-pointer font-normal text-left"
                           >
-                            <option value="" style={{ fontFamily: "'Google Sans', sans-serif" }}>Select Day...</option>
+                            <option value="" style={{ fontFamily: "'Google Sans', sans-serif" }}>{t("onboarding.select_day_placeholder", "Select Day...")}</option>
                             {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
                               <option key={day} value={day.toString()} style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="font-normal">
-                                Day {day}
+                                {t("onboarding.day_label", "Day {{day}}", { day })}
                               </option>
                             ))}
                           </select>
@@ -2424,7 +2426,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                     className="px-3 h-[38px] max-h-[38px] py-0 bg-neutral-100 hover:bg-neutral-200 text-neutral-600 hover:text-black text-[10px] tracking-wide rounded-xl flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer flex-1 font-normal"
                     id="tour-skip-onboarding-accounts"
                   >
-                    Skip For Now
+                    {t("onboarding.skip_for_now", "Skip For Now")}
                   </button>
 
                   <button
@@ -2433,7 +2435,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                     style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
                     className="px-3 h-[38px] max-h-[38px] py-0 bg-white hover:bg-neutral-50 text-neutral-700 hover:text-black border border-neutral-200 text-[10px] tracking-wide rounded-xl flex items-center justify-center gap-1 transition-all active:scale-95 cursor-pointer hover:scale-[1.01] flex-1 font-normal"
                   >
-                    + Add Another
+                    {t("onboarding.add_another", "+ Add Another")}
                   </button>
 
                   <button
@@ -2448,7 +2450,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                       }
 
                       if (!hasCurrentInputs && accountsList.length === 0) {
-                        alert("Complete at least one starting account sequence or tap 'SKIP FOR NOW'.");
+                        alert(t("onboarding.incomplete_account_alert", "Complete at least one starting account sequence or tap 'SKIP FOR NOW'."));
                         return;
                       }
                       
@@ -2487,7 +2489,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                     style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
                     className="px-4 h-[38px] max-h-[38px] py-0 bg-black text-white hover:bg-neutral-800 text-center text-[10px] rounded-xl flex items-center justify-center gap-1 transition-all active:scale-95 cursor-pointer hover:scale-[1.01] flex-1 font-normal"
                   >
-                    Save and Continue
+                    {t("onboarding.save_and_continue", "Save and Continue")}
                     <ChevronRight size={12} />
                   </button>
                 </div>
@@ -2502,8 +2504,8 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
             <div className="bg-black text-white rounded-2xl rounded-tr-none p-2.5 shadow-sm">
               <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: "clamp(11px, 3.2vw, 13px)" }} className="tracking-tight">
                 {hasSkippedAccountSetup 
-                  ? "Accounts setup skipped. (Portfolio empty)" 
-                  : `Accounts setup finished. (${accountsList.length} item(s) cached)`}
+                  ? t("onboarding.accounts_setup_skipped", "Accounts setup skipped. (Portfolio empty)") 
+                  : t("onboarding.accounts_setup_finished", "Accounts setup finished. ({{count}} item(s) cached)", { count: accountsList.length })}
               </p>
             </div>
           </div>
@@ -2520,7 +2522,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                   <div className="flex flex-col gap-1.5 pb-2.5 border-b border-neutral-100">
                     <div className="flex justify-between items-center flex-wrap gap-2">
                       <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700, fontSize: "15px" }} className="text-sm text-black font-bold">
-                        The Ideal Budget
+                        {t("onboarding.ideal_budget_heading", "The Ideal Budget")}
                       </span>
                       
                       {/* Dynamic calculation counter row */}
@@ -2532,7 +2534,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                         }`}
                       >
                         <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[10px] leading-tight">
-                          {isOverAllocated ? '⚠️ Allocations Exceeded:' : 'Allocated:'}
+                          {isOverAllocated ? t("onboarding.allocations_exceeded_warning", "⚠️ Allocations Exceeded:") : t("onboarding.allocated_label", "Allocated:")}
                         </span>
                         <span 
                           style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} 
@@ -2555,7 +2557,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                             }} 
                             className="text-amber-700 leading-snug"
                           >
-                            Budget Notice
+                            {t("onboarding.budget_notice_warning_heading", "Budget Notice")}
                           </span>
                           <p 
                             style={{ 
@@ -2565,7 +2567,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                             }} 
                             className="text-neutral-600 leading-normal"
                           >
-                            Budget Notice: Total budget allocations exceeds your incoming salary. This is perfectly fine if you plan to cover the difference using your linked liquid cash reserves!
+                            {t("onboarding.budget_notice_exceeded_detail", "Budget Notice: Total budget allocations exceeds your incoming salary. This is perfectly fine if you plan to cover the difference using your linked liquid cash reserves!")}
                           </p>
                         </div>
                       </div>
@@ -2575,7 +2577,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                   <div className="flex flex-col gap-3 pb-1 border-b border-neutral-100">
                     <div className="flex justify-between items-center">
                       <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700, fontSize: "15px" }} className="text-sm text-black font-bold">
-                        The Ideal Budget
+                        {t("onboarding.ideal_budget_heading", "The Ideal Budget")}
                       </span>
                     </div>
 
@@ -2593,7 +2595,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                           }} 
                           className="text-neutral-500 font-medium"
                         >
-                          Total Planned Allocations:
+                          {t("onboarding.total_planned_allocations_label", "Total Planned Allocations:")}
                         </span>
                         <span 
                           style={{ 
@@ -2623,7 +2625,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                           }} 
                           className="text-neutral-500 font-medium"
                         >
-                          Total Planned Allocations
+                          {t("onboarding.total_planned_allocations_title", "Total Planned Allocations")}
                         </span>
                         <span 
                           style={{ 
@@ -2639,7 +2641,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                           style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} 
                           className="text-xs text-neutral-400 mt-1 leading-normal"
                         >
-                          These envelopes represent your active tracking segments, funding your upcoming budget allocation plan recursively.
+                          {t("onboarding.ideal_budget_description_detail", "These envelopes represent your active tracking segments, funding your upcoming budget allocation plan recursively.")}
                         </span>
                       </div>
                     </div>
@@ -2651,7 +2653,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                   {blueprintEnvelopes.length === 0 ? (
                     <div className="text-center p-6 bg-neutral-50 rounded-xl border border-dashed border-neutral-200 w-full animate-fadeIn">
                       <span className="text-[11px] text-neutral-500 font-normal" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}>
-                        No active budget envelopes configured.
+                        {t("onboarding.no_active_budget_envelopes", "No active budget envelopes configured.")}
                       </span>
                     </div>
                   ) : (
@@ -2673,7 +2675,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                                   style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700, fontSize: "14px" }} 
                                   className="text-black font-bold truncate"
                                 >
-                                  {bp.categoryGroup === 'needs' ? 'Essential Needs' : bp.categoryGroup === 'wants' ? 'Personal Wants' : getGoalTitle(primaryGoal)}
+                                  {bp.categoryGroup === 'needs' ? t("onboarding.essential_needs", "Essential Needs") : bp.categoryGroup === 'wants' ? t("onboarding.personal_wants", "Personal Wants") : getGoalTitle(primaryGoal)}
                                 </span>
                                 <span 
                                   style={{ 
@@ -2694,7 +2696,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                                 onClick={() => handleDeleteEnvelope(bp.id)}
                                 style={{ backgroundColor: "#ffffff" }}
                                 className="p-1 text-neutral-400 hover:text-red-500 hover:bg-neutral-50 rounded transition-all cursor-pointer shrink-0"
-                                title="Remove Envelope"
+                                title={t("onboarding.remove_envelope", "Remove Envelope")}
                               >
                                 <Trash2 size={13} />
                               </button>
@@ -2706,7 +2708,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                                 style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: "12px" }} 
                                 className="text-neutral-400 font-normal"
                               >
-                                Budget Allocation
+                                {t("onboarding.budget_allocation", "Budget Allocation")}
                               </span>
                               <div 
                                 style={{ 
@@ -2729,12 +2731,12 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
 
                             {/* Editable Amount Input Suffix Sourced Placeholder */}
                             <div className="flex flex-col gap-1 text-left">
-                              <div className="flex justify-between items-center text-neutral-400">
+                              <div className="relative flex justify-between items-center text-neutral-400">
                                 <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: "12px" }} className="font-normal">
-                                  Adjust Amount
+                                  {t("onboarding.adjust_amount", "Adjust Amount")}
                                 </span>
                                 <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: "12px" }} className="font-normal font-sans text-right shrink-0 whitespace-nowrap">
-                                  {pctLabel} Guideline
+                                  {t("onboarding.pct_guideline", "{{pctLabel}} Guideline", { pctLabel })}
                                 </span>
                               </div>
                               <div className="relative flex items-center mt-0.5">
@@ -2763,10 +2765,10 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                                 style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} 
                                 className="text-[11px] text-black font-bold"
                               >
-                                Tracking Categories
+                                {t("onboarding.tracking_categories_label", "Tracking Categories")}
                               </span>
                               <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[9.5px] text-neutral-400 font-normal leading-normal">
-                                Assign transaction categories directly to this envelope:
+                                {t("onboarding.assign_categories_description", "Assign transaction categories directly to this envelope:")}
                               </span>
                               <div className="flex flex-col gap-1.5 mt-1 max-h-[170px] overflow-y-auto scrollbar-thin pr-1">
                                 {MASTER_CATEGORIES.map((cat) => {
@@ -2849,7 +2851,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                                     style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} 
                                     className="text-[9.5px] text-black font-bold"
                                   >
-                                    Sub-Categories
+                                    {t("onboarding.sub_categories_heading", "Sub-Categories")}
                                   </span>
                                   <div className="grid grid-cols-2 gap-1 mt-1 max-h-[100px] overflow-y-auto scrollbar-thin pr-1">
                                     {MASTER_CATEGORIES
@@ -2890,8 +2892,8 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                                 style={{ fontFamily: "'Google Sans', sans-serif" }}
                               >
                                 {expandedEnvelopes[bp.id] 
-                                  ? "Select Tracking Categories ▼" 
-                                  : `${(bp.mappedCategories.length + bp.mappedSubCategories.length)} Selected`}
+                                  ? t("onboarding.select_tracking_categories", "Select Tracking Categories ▼") 
+                                  : t("onboarding.items_selected_count", "{{count}} Selected", { count: bp.mappedCategories.length + bp.mappedSubCategories.length })}
                               </button>
 
                               {/* Smooth absolute-positioned dropdown selection menu overlay */}
@@ -2912,10 +2914,10 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                                         style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} 
                                         className="text-[10px] text-black font-bold"
                                       >
-                                        Categories
+                                        {t("onboarding.categories_heading", "Categories")}
                                       </span>
                                       <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[8px] text-neutral-400 font-normal leading-normal">
-                                        Toggle checklists to assign transaction categories directly to this envelope.
+                                        {t("onboarding.categories_assign_checklist_description", "Toggle checklists to assign transaction categories directly to this envelope.")}
                                       </span>
                                       <div className="flex flex-col gap-2 mt-2">
                                         {MASTER_CATEGORIES.map((cat) => {
@@ -3044,7 +3046,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                           {bp.mappedSubCategories.length > 0 && (
                             <div className="flex flex-col gap-2 border-t border-neutral-100 pt-3 text-left mt-3">
                               <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700, fontSize: "11px" }} className="text-black font-bold text-neutral-900">
-                                Sub-Category Budgets
+                                {t("onboarding.sub_category_budgets", "Sub-Category Budgets")}
                               </span>
                               <div className="flex flex-col gap-1.5 max-h-[140px] overflow-y-auto pr-1">
                                 {bp.mappedSubCategories.map(sub => {
@@ -3093,7 +3095,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                         }} 
                         className="text-amber-700 font-medium leading-snug"
                       >
-                        Budget Notice
+                        {t("onboarding.budget_notice_warning_heading", "Budget Notice")}
                       </span>
                       <p 
                         style={{ 
@@ -3103,7 +3105,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                         }} 
                         className="text-neutral-600 font-normal leading-normal"
                       >
-                        Budget Notice: Total budget allocations exceeds your incoming salary. This is perfectly fine if you plan to cover the difference using your linked liquid cash reserves!
+                        {t("onboarding.budget_notice_exceeded_detail", "Budget Notice: Total budget allocations exceeds your incoming salary. This is perfectly fine if you plan to cover the difference using your linked liquid cash reserves!")}
                       </p>
                     </div>
                   </div>
@@ -3130,7 +3132,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                     className="h-[32px] px-3.5 bg-neutral-100 hover:bg-neutral-200 text-black hover:text-neutral-800 text-[10px] rounded-xl flex items-center justify-center gap-1 transition-all active:scale-95 cursor-pointer font-bold"
                   >
                     <Plus size={11} />
-                    Add manually
+                    {t("onboarding.add_manually_button", "Add manually")}
                   </button>
 
                   <button
@@ -3140,7 +3142,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                     style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
                     className="px-4 h-[36px] bg-black text-white hover:bg-neutral-800 text-center text-[10px] rounded-xl flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer hover:scale-[1.01] font-bold"
                   >
-                    {isSaving ? "Setting Up..." : "Confirm budgets"}
+                    {isSaving ? t("onboarding.setting_up_vault", "Setting Up...") : t("onboarding.confirm_budgets_button", "Confirm budgets")}
                     <ChevronRight size={12} />
                   </button>
                 </div>
@@ -3154,8 +3156,8 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
             <div className="bg-black text-white rounded-2xl rounded-tr-none p-2.5 shadow-sm flex flex-col gap-0.5 text-right animate-fadeIn">
               <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: "clamp(11px, 3.2vw, 13px)", color: "#fff7f7" }} className="font-normal leading-tight">
                 {blueprintsApplied 
-                  ? "Your future financial freedom starts now." 
-                  : `Tracked Priorities: ${selectedTrackingCategories.map(c => TRACKING_OPTIONS.find(o => o.id === c)?.label || c).join(', ')}`}
+                  ? t("onboarding.freedom_starts_now", "Your future financial freedom starts now.") 
+                  : `${t("onboarding.tracked_priorities_prefix", "Tracked Priorities:")} ${selectedTrackingCategories.map(c => TRACKING_OPTIONS.find(o => o.id === c)?.label || c).join(', ')}`}
               </p>
             </div>
           </div>
@@ -3166,7 +3168,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
           <div className="flex flex-col gap-1.5 self-start w-full max-w-[90%] animate-fadeIn">
             <div className="bg-[#E9ECEF] text-[#000000] rounded-2xl rounded-tl-none p-2.5 shadow-sm border border-[#D1D8DD]/50">
               <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: "clamp(11px, 3.2vw, 13px)" }} className="leading-relaxed">
-                Great! We are almost there. Please agree to the terms and conditions below to proceed.
+                {t("onboarding.terms_greeting", "Great! We are almost there. Please agree to the terms and conditions below to proceed.")}
               </p>
             </div>
 
@@ -3191,7 +3193,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                   </div>
                   <div className="text-left flex items-center">
                     <span style={{ fontFamily: "'Google Sans', sans-serif", fontSize: "clamp(11px, 3.2vw, 13px)", fontWeight: 400 }} className="text-black block leading-tight">
-                      Accept Privacy Policy
+                      {t("onboarding.privacy_policy_label", "Accept Privacy Policy")}
                     </span>
                   </div>
                 </div>
@@ -3204,7 +3206,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                   style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
                   className="px-2.5 py-1 text-[10px] text-black bg-[#A6DDB1] rounded-lg font-bold hover:scale-[1.03] transition-all cursor-pointer select-none"
                 >
-                  View
+                  {t("onboarding.view_button", "View")}
                 </button>
               </div>
 
@@ -3226,7 +3228,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                   </div>
                   <div className="text-left flex items-center">
                     <span style={{ fontFamily: "'Google Sans', sans-serif", fontSize: "clamp(11px, 3.2vw, 13px)", fontWeight: 400 }} className="text-black block leading-tight">
-                      Accept Terms and Conditions
+                      {t("onboarding.terms_conditions_label", "Accept Terms and Conditions")}
                     </span>
                   </div>
                 </div>
@@ -3239,7 +3241,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                   style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
                   className="px-2.5 py-1 text-[10px] text-black bg-[#A6DDB1] rounded-lg font-bold hover:scale-[1.03] transition-all cursor-pointer select-none"
                 >
-                  View
+                  {t("onboarding.view_button", "View")}
                 </button>
               </div>
 
@@ -3256,7 +3258,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                 style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, backgroundColor: "#A6DDB1" }}
                 className="w-full mt-1 px-4 h-[38px] max-h-[38px] py-0 hover:scale-[1.01] text-black text-[10.5px] tracking-wide rounded-xl flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-md shadow-[#00FF88]/10 disabled:opacity-30 disabled:scale-100 disabled:shadow-none disabled:cursor-not-allowed select-none"
               >
-                {isSaving ? 'Assembling automated vault...' : "Let's Go!"}
+                {isSaving ? t("onboarding.building_automated_vault", "Assembling automated vault...") : t("onboarding.lets_go_action", "Let's Go!")}
                 <ArrowRight size={12} className="stroke-[3]" />
               </button>
             </div>
@@ -3268,7 +3270,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
           <div className="flex flex-col gap-1 self-end max-w-[85%]">
             <div className="bg-black text-white rounded-2xl rounded-tr-none p-2.5 shadow-sm">
               <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: "clamp(11px, 3.2vw, 13px)" }} className="tracking-tight font-normal">
-                Congratulations! Your account is set up.
+                {t("onboarding.account_setup_congratulations", "Congratulations! Your account is set up.")}
               </p>
             </div>
           </div>
@@ -3279,7 +3281,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
           <div className="flex flex-col gap-1.5 self-start w-full max-w-[90%] animate-fadeIn" id="step8-tour-gateway">
             <div className="bg-[#E9ECEF] text-[#000000] rounded-2xl rounded-tl-none p-2.5 shadow-sm border border-[#D1D8DD]/50">
               <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: "clamp(11px, 3.2vw, 13px)" }} className="leading-relaxed font-normal">
-                We're all set! Would you like a quick 1-minute tour to see how everything works?
+                {t("onboarding.tour_offer_greeting", "We're all set! Would you like a quick 1-minute tour to see how everything works?")}
               </p>
             </div>
 
@@ -3291,7 +3293,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                 style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
                 className="w-full h-[38px] max-h-[38px] py-0 bg-[#A6DDB1] hover:scale-[1.01] text-black text-[10.5px] tracking-wide rounded-xl flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-md shadow-[#A6DDB1]/10 select-none cursor-pointer border border-[#A6DDB1]/80"
               >
-                Yes, show me around!
+                {t("onboarding.tour_offer_accept", "Yes, show me around!")}
               </button>
 
               <button
@@ -3300,7 +3302,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                 style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
                 className="w-full h-[38px] max-h-[38px] py-0 bg-white hover:bg-neutral-50 border border-neutral-300 hover:border-black text-black text-[10.5px] tracking-wide rounded-xl flex items-center justify-center gap-1.5 transition-all active:scale-95 select-none cursor-pointer"
               >
-                No, I'm good
+                {t("onboarding.tour_offer_decline", "No, I'm good")}
               </button>
             </div>
           </div>
@@ -3321,7 +3323,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
         {isOffline && (
           <div className="w-full text-center py-2 px-3 bg-neutral-100 border border-neutral-200 rounded-2xl animate-fadeIn select-none shadow-sm" id="onboarding-offline-warning">
             <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: "clamp(9.5px, 2.8vw, 11px)" }} className="tracking-wider text-[#000000] uppercase">
-              Working offline. Your profile will save to the cloud automatically.
+              {t("onboarding.offline_warning", "Working offline. Your profile will save to the cloud automatically.")}
             </span>
           </div>
         )}

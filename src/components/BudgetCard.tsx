@@ -4,6 +4,8 @@ import { Plus, Trash2, Home, Utensils, Car, Film, ShoppingBag, HelpCircle } from
 import { triggerHaptic, hapticPresets } from '../lib/haptics';
 import { useTranslation } from 'react-i18next';
 
+import { formatLabel } from '../lib/stringUtils';
+
 export interface BudgetCategory {
   id: string;
   budgetId?: string; // exact payload compatibility
@@ -27,10 +29,23 @@ export interface BudgetCategory {
 interface BudgetCardProps {
   budget: BudgetCategory;
   spent?: number;
-  compact?: boolean; // If true, rendering is simpler/more condensed
+  compact?: boolean;
   onCardClick?: () => void;
   onPlusClick?: (e: React.MouseEvent) => void;
   onDeleteClick?: (e: React.MouseEvent) => void;
+  uiOverrides?: {
+    container?: string;
+    headerContainer?: string;
+    iconContainer?: string;
+    title?: string;
+    category?: string;
+    valuesContainer?: string;
+    amount?: string;
+    usage?: string;
+    actionButtons?: string;
+    progressBarContainer?: string;
+    progressBarFill?: string;
+  };
 }
 
 const getCategoryIcon = (category: string) => {
@@ -60,6 +75,7 @@ export const BudgetCard: React.FC<BudgetCardProps> = ({
   onCardClick,
   onPlusClick,
   onDeleteClick,
+  uiOverrides,
 }) => {
   const { t } = useTranslation();
   // Extract fields aligning with exact payload
@@ -69,10 +85,14 @@ export const BudgetCard: React.FC<BudgetCardProps> = ({
   const progress = Math.min(ratio * 100, 100);
   const isOver = spentVal > maxLimit;
   
-  const titleText = budget.categoryTitle || budget.title || budget.category || t('budget_card.allocation');
-  const categoryText = budget.subcategory || budget.category || t('budget_card.rent_and_utilities');
-
-  const IconComponent = getCategoryIcon(titleText);
+  const titleText = budget.subcategory 
+    ? t(`subcategories.${budget.subcategory}`, formatLabel(budget.subcategory))
+    : formatLabel(
+        (budget.categoryTitle?.includes(' > ') ? budget.categoryTitle.split(' > ').pop() : 
+         budget.categoryTitle || budget.title || budget.category || t('budget_card.allocation'))
+      );
+     
+  const IconComponent = getCategoryIcon(String(titleText));
 
   return (
     <motion.div
@@ -80,79 +100,69 @@ export const BudgetCard: React.FC<BudgetCardProps> = ({
       animate={{ opacity: 1, y: 0 }}
       whileTap={{ scale: 0.98 }}
       onClick={onCardClick}
-      className={`w-full relative overflow-hidden group bg-white border border-neutral-150 hover:bg-neutral-50/50 cursor-pointer rounded-2xl p-4 flex flex-col justify-between transition-all duration-300 shadow-[0_1px_3px_0_rgba(0,0,0,0.02)]`}
+      className={uiOverrides?.container || "p-4 bg-white rounded-xl border border-[#E1E8ED] shadow-sm cursor-pointer"}
     >
-      <div className="flex items-start justify-between w-full mb-3 gap-3">
-        {/* Left Side: Icon & Title Information */}
-        <div className="flex items-center gap-3 min-w-0 flex-1">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-neutral-100 text-[#366945] border border-neutral-150/40 shrink-0 group-hover:bg-primary-container/20 transition-all duration-300">
-            <IconComponent size={18} className="text-[#366945]" />
+      <div className={uiOverrides?.headerContainer || "flex items-center justify-between mb-4"}>
+        {/* Icon & Title Information */}
+        <div className="flex items-center gap-3">
+          <div className={uiOverrides?.iconContainer || "w-10 h-10 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-700 shrink-0"}>
+            <IconComponent size={20} />
           </div>
-          <div className="flex flex-col min-w-0 select-none">
-            <span className="text-neutral-900 group-hover:text-emerald-700 transition-colors truncate font-bold text-sm leading-tight"
-                  style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}>
+          <div>
+            <div className={uiOverrides?.title || "text-sm font-bold text-[#111C2D]"} style={{ fontFamily: "'Google Sans', sans-serif" }}>
               {titleText}
-            </span>
-            <span className="text-xs text-neutral-400 mt-1 truncate font-normal"
-                  style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}>
-              {categoryText}
-            </span>
+            </div>
           </div>
         </div>
 
-        {/* Right Side: Numerical ratio values */}
-        <div className="text-right flex flex-col shrink-0 items-end select-all">
-          <span className="text-neutral-900 text-sm font-bold leading-tight"
-                style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}>
-            {budget.currency || 'AED'} {spentVal.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })} / {maxLimit.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-          </span>
-          <span className="text-xs text-neutral-400 mt-1 font-normal leading-none"
-                style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}>
-            {progress.toFixed(0)}% {t('budget_card.used')}
-          </span>
+        {/* Numerical values & Action buttons */}
+        <div className={uiOverrides?.valuesContainer || "text-right flex items-center gap-2"}>
+            <div>
+              <div className={uiOverrides?.amount || "text-sm font-bold text-[#111C2D]"} style={{ fontFamily: "'Google Sans', sans-serif" }}>
+                {budget.currency || 'AED'} {spentVal.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })} / {maxLimit.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+              </div>
+              <div className={uiOverrides?.usage || "text-xs text-neutral-400"} style={{ fontFamily: "'Google Sans', sans-serif" }}>
+                {progress.toFixed(0)}% {t('budget_card.used', 'Used')}
+              </div>
+            </div>
+          
+            {/* Quick operational triggers */}
+            <div className={uiOverrides?.actionButtons || "flex flex-col gap-1"}>
+              {onPlusClick && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    triggerHaptic(hapticPresets.medium);
+                    onPlusClick(e);
+                  }}
+                  className="p-1 hover:bg-emerald-100 rounded text-emerald-700 flex items-center justify-center transition-all"
+                >
+                  <Plus size={14} />
+                </button>
+              )}
+              {onDeleteClick && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDeleteClick(e);
+                  }}
+                  className="p-1 hover:bg-rose-100 rounded text-rose-500 flex items-center justify-center transition-all"
+                >
+                  <Trash2 size={14} />
+                </button>
+              )}
+            </div>
         </div>
       </div>
 
-      {/* Progress slider bar container */}
-      <div className="w-full relative">
-        <div className="w-full bg-neutral-100 rounded-full overflow-hidden"
-             style={{ height: '4px' }}>
-          <div 
-            style={{ width: `${progress}%` }}
-            className={`h-full rounded-full transition-all duration-500 ${isOver ? 'bg-rose-500' : 'bg-[#A6DDB1]'}`}
-          />
-        </div>
+      {/* Progress slider bar at the bottom */}
+      <div className="text-[10px] text-neutral-400 mb-1" style={{ fontFamily: "'Google Sans', sans-serif" }}>{t('budget_card.used', 'Used')}</div>
+      <div className={uiOverrides?.progressBarContainer || "w-full h-1.5 bg-neutral-100 rounded-full overflow-hidden"}>
+        <div 
+          style={{ width: `${progress}%` }}
+          className={uiOverrides?.progressBarFill || `h-full ${isOver ? 'bg-rose-500' : 'bg-[#A6DDB1]'}`}
+        />
       </div>
-
-      {/* Quick operational triggers for deletion or quick allocation */}
-      {(onDeleteClick || onPlusClick) && (
-        <div className="flex items-center justify-end gap-1 mt-2.5 pt-1.5 border-t border-neutral-50">
-          {onPlusClick && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                triggerHaptic(hapticPresets.medium);
-                onPlusClick(e);
-              }}
-              style={{ fontFamily: "'Google Sans', sans-serif" }}
-              className="flex items-center gap-1 px-2 py-1 bg-neutral-50 hover:bg-[#A6DDB1]/10 text-neutral-500 hover:text-emerald-800 text-[10px] rounded-lg transition-all"
-            >
-              <Plus size={10} /> {t('budget_card.add_spend')}
-            </button>
-          )}
-          {onDeleteClick && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onDeleteClick(e);
-              }}
-              className="p-1 text-neutral-300 hover:text-rose-500 transition-all cursor-pointer"
-            >
-              <Trash2 size={12} />
-            </button>
-          )}
-        </div>
-      )}
     </motion.div>
   );
 };

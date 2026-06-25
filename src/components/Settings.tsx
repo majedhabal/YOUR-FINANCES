@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'motion/react';
-import { User, Shield, Bell, CreditCard, LogOut, ChevronRight, Moon, Globe, Sparkles, Zap, PackageOpen, RotateCcw, LayoutGrid, RefreshCw, Calendar, CheckSquare, Brain, Lock, Fingerprint, MessageSquare, Zap as ZapIcon, Type, ZoomIn } from 'lucide-react';
+import { User, Shield, Bell, CreditCard, LogOut, ChevronRight, Moon, Globe, Sparkles, Zap, PackageOpen, RotateCcw, LayoutGrid, RefreshCw, Calendar, CheckSquare, Brain, Lock, Fingerprint, MessageSquare, Zap as ZapIcon, Type, ZoomIn, ArrowLeftRight, Wand2 } from 'lucide-react';
 import { LanguageSelector } from './LanguageSelector';
 
 import { doc, updateDoc, getDoc, setDoc, writeBatch, collection, getDocs } from 'firebase/firestore';
@@ -86,32 +86,6 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
   const [notificationPref, setNotificationPref] = useState(profile?.notificationPref || 'Stealth');
   const [dataRegion, setDataRegion] = useState(profile?.dataRegion || 'Globalized');
 
-  // Gemini API Key Override states
-  const [geminiApiKey, setGeminiApiKey] = useState('');
-  const [isSavingGeminiKey, setIsSavingGeminiKey] = useState(false);
-
-  React.useEffect(() => {
-    if (profile) {
-      setGeminiApiKey(profile.geminiKey || '');
-    }
-  }, [profile]);
-
-  const handleSaveGeminiKey = async () => {
-    if (!profile?.uid) return;
-    setIsSavingGeminiKey(true);
-    try {
-      const userRef = doc(db, 'users', profile.uid);
-      await updateDoc(userRef, { geminiKey: geminiApiKey });
-      onUpdateProfile({ ...profile, geminiKey: geminiApiKey });
-      alert("Gemini Strategic Key updated successfully in your flat config storage.");
-    } catch (err) {
-      console.error("Failed to save custom Gemini key:", err);
-      alert("Failed to save custom key. Check connection.");
-    } finally {
-      setIsSavingGeminiKey(false);
-    }
-  };
-
   const runMigration = async () => {
     if(!profile?.uid) return;
     setIsSaving(true);
@@ -191,7 +165,7 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
             const options: CredentialCreationOptions = {
               publicKey: {
                 challenge: challenge,
-                rp: { name: "Vantage AI Wallet" },
+                rp: { name: "YOUR FINANCES by ME Vantage" },
                 user: {
                   id: new Uint8Array(16),
                   name: profile.email || "vantage.user@private.com",
@@ -392,11 +366,11 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
 
   const sections = [
     {
-      title: 'Vantage Identity',
+      title: t('settings.vantage_identity'),
       items: [
         { 
           icon: LogOut, 
-          label: 'Sign out from Your Finances',
+          label: t('settings.sign_out'),
           action: async () => {
             try {
               const { auth } = await import('../lib/firebase');
@@ -412,7 +386,7 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
         },
         { 
           icon: MessageSquare, 
-          label: 'Previous AI Conversations', 
+          label: t('settings.previous_ai_conversations'), 
           value: 'History logs',
           action: () => {
             if (isPremium) {
@@ -424,41 +398,41 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
         },
         { 
           icon: RotateCcw, 
-          label: 'Restore Purchase History', 
+          label: t('settings.restore_purchase_history'), 
           value: isRestoring ? 'Querying Dashboard...' : 'Restore',
           action: handleRestorePurchases,
         },
       ]
     },
     {
-      title: 'Data Architecture',
+      title: t('settings.data_architecture'),
       items: [
         { 
           icon: LayoutGrid, 
-          label: 'Manage Categories', 
+          label: t('settings.manage_categories'), 
           value: 'Hierarchical Matrix',
           action: () => setActiveView('categories')
         },
         { 
-          icon: RefreshCw, 
-          label: 'Recurring Protocols', 
+          icon: ArrowLeftRight, 
+          label: t('settings.recurring_protocols'), 
           value: 'Automation Rules',
           action: () => setActiveView('recurring')
         },
         { 
-          icon: Sparkles, 
-          label: 'Fix Transaction Types', 
+          icon: Wand2, 
+          label: t('settings.fix_transaction_types'), 
           value: isSaving ? 'Migrating...' : 'Run Migration',
           action: runMigration
         },
       ]
     },
     {
-      title: 'Strategic Profile',
+      title: t('settings.strategic_profile'),
       items: [
         { 
           icon: User, 
-          label: 'Full Name', 
+          label: t('settings.full_name'), 
           value: profile?.fullName || 'Not Set',
           isInput: true,
           type: 'text',
@@ -468,7 +442,7 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
         },
         { 
           icon: Zap, 
-          label: 'Date of Birth', 
+          label: t('settings.date_of_birth'), 
           value: profile?.dob || 'Not Set',
           isInput: true,
           type: 'date',
@@ -477,7 +451,7 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
         },
         { 
           icon: Globe, 
-          label: 'Marital Status', 
+          label: t('settings.marital_status'), 
           value: profile?.maritalStatus || 'Single',
           isInput: true,
           type: 'select',
@@ -487,7 +461,7 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
         },
         { 
           icon: PackageOpen, 
-          label: 'Dependents', 
+          label: t('settings.dependents'), 
           value: hasKids ? 'With Kids' : 'No Kids',
           isInput: true,
           type: 'toggle',
@@ -496,7 +470,7 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
         },
         { 
           icon: Sparkles, 
-          label: 'North Star Goal', 
+          label: t('settings.north_star_goal'), 
           value: profile?.financialGoals ? 'Set' : 'Not Set',
           isInput: true,
           type: 'textarea',
@@ -507,11 +481,11 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
       ]
     },
     {
-      title: 'Aesthetic & System',
+      title: t('settings.aesthetic_system'),
       items: [
         { 
           icon: Bell, 
-          label: 'Notifications', 
+          label: t('settings.notifications'), 
           value: notificationPref,
           isInput: true,
           type: 'select',
@@ -521,7 +495,7 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
         },
         { 
           icon: Globe,
-          label: 'Language',
+          label: t('settings.language'),
           isLanguageSelector: true,
           action: async (newLang: string) => {
             const userRef = doc(db, 'users', profile.uid);
@@ -531,7 +505,7 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
         },
         { 
           icon: Globe, 
-          label: 'Data Region', 
+          label: t('settings.data_region'), 
           value: dataRegion,
           isInput: true,
           type: 'select',
@@ -542,11 +516,11 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
       ]
     },
     {
-      title: 'Graphics',
+      title: t('settings.graphics'),
       items: [
         { 
           icon: Moon, 
-          label: 'Visual Interface', 
+          label: t('settings.visual_interface'), 
           value: theme === 'system' ? 'System Sync' : theme === 'dark' ? 'Midnight Gold' : 'Pristine Arctic',
           isInput: true,
           type: 'select',
@@ -560,7 +534,7 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
         },
         {
           icon: ZoomIn,
-          label: 'App Font Size',
+          label: t('settings.app_font_size'),
           value: fontSize === 'small' ? 'Small' : fontSize === 'normal' ? 'Normal' : fontSize === 'large' ? 'Large' : 'Extra Large',
           isInput: true,
           type: 'select',
@@ -586,7 +560,7 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
         },
         {
           icon: Type,
-          label: 'App Font',
+          label: t('settings.app_font'),
           value: fontFamily,
           isInput: true,
           type: 'select',
@@ -618,12 +592,12 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
       ]
     },
     {
-      title: 'Integrations & AI Sync',
+      title: t('settings.integrations_ai_sync'),
       items: [
-        { icon: CreditCard, label: 'Linked Accounts', value: '3 Sources' },
+        { icon: CreditCard, label: t('settings.linked_accounts'), value: '3 Sources' },
         {
           icon: Calendar,
-          label: 'Google Calendar Sync',
+          label: t('settings.google_calendar_sync'),
           isInlineToggle: true,
           toggleValue: calendarSyncEnabled,
           action: () => handleToggleFeature('calendarSyncEnabled', calendarSyncEnabled),
@@ -631,7 +605,7 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
         },
         {
           icon: CheckSquare,
-          label: 'Google Tasks Sync',
+          label: t('settings.google_tasks_sync'),
           isInlineToggle: true,
           toggleValue: tasksSyncEnabled,
           action: () => handleToggleFeature('tasksSyncEnabled', tasksSyncEnabled),
@@ -639,7 +613,7 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
         },
         {
           icon: Brain,
-          label: 'Gemini AI Insights',
+          label: t('settings.gemini_ai_insights'),
           isInlineToggle: true,
           toggleValue: geminiInsightsEnabled,
           action: () => handleToggleFeature('geminiInsightsEnabled', geminiInsightsEnabled),
@@ -648,28 +622,17 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
       ]
     },
     {
-      title: 'Vantage AI Credentials',
-      items: [
-        {
-          icon: Lock,
-          label: 'Gemini API Key Override',
-          value: geminiApiKey ? 'COPIED' : 'Not Configured',
-          isCustomKeyField: true
-        }
-      ]
-    },
-    {
-      title: 'Legal & Matrix',
+      title: t('settings.legal_matrix'),
       items: [
         { 
           icon: Shield, 
-          label: 'Privacy Policy', 
+          label: t('settings.privacy_policy'), 
           value: 'View Protocol', 
           action: () => window.open('https://www.yourfinances.me/privacy', '_blank')
         },
         { 
           icon: Globe, 
-          label: 'Terms of Engagement', 
+          label: t('settings.terms_of_engagement'), 
           value: profile?.hasAcceptedTerms ? 'Agreed & Signed' : 'Review & Sign', 
           action: () => window.open('https://www.yourfinances.me/terms-of-engagement', '_blank'),
           highlight: !profile?.hasAcceptedTerms
@@ -739,6 +702,11 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
           font-size: 14px !important;
         }
 
+        div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(3) > div:nth-of-type(1) > span:nth-of-type(1),
+        div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(3) > div:nth-of-type(1) > button:nth-of-type(1) {
+          font-size: 14px !important;
+        }
+
         div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1),
         div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1) {
           padding-top: 5px !important;
@@ -746,10 +714,14 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
         
         div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2),
         div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) {
-          height: 39px !important;
+          height: 59.5px !important;
           font-size: 14px !important;
           padding-top: 5px !important;
           padding-bottom: 5px !important;
+        }
+
+        div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(7) {
+          display: none !important;
         }
 
         /* Group 1, Row 3 */
@@ -849,15 +821,15 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
                   <Brain size={16} className="text-vantage-green" />
                 </div>
                 <h3 style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[clamp(13px,3.8vw,15px)] font-bold tracking-wide text-black mt-1 leading-tight">
-                  Consent request
+                  {t('settings.consent_request_title')}
                 </h3>
                 <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[clamp(11px,2.8vw,13px)] text-neutral-600 leading-normal mt-0.5">
-                  Allow Vantage AI to process transaction data for financial analysis?
+                  {t('settings.consent_request_p')}
                 </p>
               </div>
 
               <div style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[clamp(8px,2vw,10px)] text-neutral-500 tracking-wide leading-normal border-t border-neutral-100 pt-3">
-                Your data is parsed privately. We don't share user identity to Gemini model.
+                {t('settings.consent_request_div')}
               </div>
 
               <div className="flex gap-3 w-full">
@@ -930,7 +902,7 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
             <div key={section.title} className="flex flex-col gap-1.5">
               <div className="flex items-center justify-between px-3 mt-1">
                 <span 
-                  style={{ fontSize: 'clamp(11px, 3.2vw, 13px)' }}
+                  style={{ fontSize: '14px' }}
                   className="items-center font-bold text-vantage-muted tracking-wide shrink-0"
                 >
                   {section.title}
@@ -945,7 +917,7 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
                     }}
                     disabled={isSaving}
                     className="font-bold text-[#065F46] dark:text-vantage-green tracking-wide hover:opacity-80 transition-opacity active:scale-95 shrink-0"
-                    style={{ fontSize: 'clamp(9px, 2.6vw, 11px)' }}
+                    style={{ fontSize: '14px' }}
                   >
                     {isSaving ? 'Syncing...' : isEditingProfile ? 'Commit' : 'Edit profile'}
                   </button>
@@ -978,7 +950,7 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
                     }}
                     disabled={isSaving}
                     className="font-bold text-[#065F46] dark:text-vantage-green tracking-wide hover:opacity-80 transition-opacity active:scale-95 shrink-0"
-                    style={{ fontSize: 'clamp(9px, 2.6vw, 11px)' }}
+                    style={{ fontSize: '14px' }}
                   >
                     {isSaving ? 'Syncing...' : isEditingAesthetic ? 'Commit' : 'Edit system'}
                   </button>
@@ -1012,7 +984,7 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
                     }}
                     disabled={isSaving}
                     className="font-bold text-[#065F46] dark:text-vantage-green tracking-wide hover:opacity-80 transition-opacity active:scale-95 shrink-0"
-                    style={{ fontSize: 'clamp(9px, 2.6vw, 11px)' }}
+                    style={{ fontSize: '14px' }}
                   >
                     {isSaving ? 'Syncing...' : isEditingGraphics ? 'Commit' : 'Edit graphics'}
                   </button>
@@ -1026,53 +998,54 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
                     <div 
                       key={itemIdx}
                       onClick={isClickableRow ? item.action : undefined}
-                      className={`w-full flex flex-col p-4 transition-colors ${itemIdx !== section.items.length - 1 ? 'border-b border-neutral-100 dark:border-white/5' : ''} ${isClickableRow ? 'cursor-pointer hover:bg-neutral-50 dark:hover:bg-white/5 active:opacity-90 select-none' : ''}`}
+                      className={`w-full flex flex-col px-5 h-[59.5px] justify-center transition-colors ${itemIdx !== section.items.length - 1 ? 'border-b border-neutral-100 dark:border-white/5' : ''} ${isClickableRow ? 'cursor-pointer hover:bg-neutral-50 dark:hover:bg-white/5 active:opacity-90 select-none' : ''}`}
                     >
-                      <div className="flex items-center justify-between w-full gap-3">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <div className={`shrink-0 ${item.highlight ? 'text-[#065F46] dark:text-vantage-green' : 'text-vantage-muted'}`}>
-                            <item.icon size={15} strokeWidth={2} className={item.label === 'Restore Purchase History' && isRestoring ? 'animate-spin' : ''} />
+                      <div className="flex items-center justify-between w-full gap-4">
+                        <div className="flex items-center gap-5 min-w-0">
+                          <div className={`shrink-0 ${item.highlight ? 'text-[#065F46] dark:text-vantage-green' : 'text-neutral-700 dark:text-neutral-400'}`}>
+                            <item.icon size={18} strokeWidth={1.5} className={item.label === 'Restore Purchase History' && isRestoring ? 'animate-spin' : ''} />
                           </div>
                           <span 
-                            style={{ fontSize: '15px' }}
-                            className={`font-semibold truncate leading-tight ${item.highlight ? 'text-[#065F46] dark:text-vantage-green' : 'text-vantage-text dark:text-neutral-200'}`}
+                            style={{ fontFamily: "'Google Sans', sans-serif", fontSize: '16px', fontWeight: 400 }}
+                            className={`truncate leading-tight ${item.highlight ? 'text-[#065F46] dark:text-vantage-green' : 'text-[#1E293B] dark:text-neutral-100'}`}
                           >
                             {item.label}
                           </span>
                         </div>
 
                         {!isEditing || !item.isInput ? (
-                          item.isInlineToggle ? (
-                            <div className={`flex items-center gap-1.5 shrink-0 ${item.disabled ? 'opacity-40' : ''}`}>
-                               {item.disabled && <Lock size={10} className="text-vantage-muted" />}
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  item.action();
-                                }}
-                                className={`w-8 h-4 rounded-full relative transition-colors duration-200 ${item.toggleValue ? 'bg-vantage-green' : 'bg-vantage-text/20'} ${item.disabled ? 'cursor-not-allowed' : 'active:scale-95'}`}
+                          <div className="flex items-center gap-3 min-w-0 shrink-0">
+                            {item.value && (
+                              <span 
+                                style={{ fontFamily: "'Google Sans', sans-serif", fontSize: '15px', fontWeight: 400 }}
+                                className={`truncate max-w-[140px] text-right ${item.highlight ? 'text-[#065F46] dark:text-vantage-green' : 'text-[#8E9AAF] dark:text-neutral-500'}`}
                               >
-                                <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all ${item.toggleValue ? 'right-0.5 shadow-sm' : 'left-0.5'}`}></div>
-                              </button>
-                            </div>
-                          ) : item.isLanguageSelector ? (
-                            <LanguageSelector onLanguageChange={(lng) => item.action(lng)} />
-                          ) : (
-                            <div className="flex items-center gap-1.5 min-w-0 shrink-0">
-                              {item.value && (
-                                <span 
-                                  style={{ fontSize: '14px' }}
-                                  className={`font-normal tracking-wide truncate max-w-[150px] ${item.highlight ? 'text-[#065F46] dark:text-vantage-green' : 'text-neutral-500 dark:text-neutral-400'}`}
+                                {item.value}
+                              </span>
+                            )}
+                            
+                            {item.isInlineToggle ? (
+                              <div className={`flex items-center gap-1.5 shrink-0 ${item.disabled ? 'opacity-40' : ''}`}>
+                                 {item.disabled && <Lock size={10} className="text-vantage-muted" />}
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    item.action();
+                                  }}
+                                  className={`w-8 h-4 rounded-full relative transition-colors duration-200 ${item.toggleValue ? 'bg-vantage-green' : 'bg-vantage-text/20'} ${item.disabled ? 'cursor-not-allowed' : 'active:scale-95'}`}
                                 >
-                                  {item.value}
-                                </span>
-                              )}
-                              {item.action && (
-                                <ChevronRight size={14} className="text-vantage-muted/50 shrink-0" />
-                              )}
-                            </div>
-                          )
+                                  <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all ${item.toggleValue ? 'right-0.5 shadow-sm' : 'left-0.5'}`}></div>
+                                </button>
+                              </div>
+                            ) : item.isLanguageSelector ? (
+                              <LanguageSelector onLanguageChange={(lng) => item.action(lng)} />
+                            ) : (
+                              (item.action || item.isInput) && (
+                                <ChevronRight size={16} className="text-[#8E9AAF]/40 shrink-0" />
+                              )
+                            )}
+                          </div>
                         ) : null}
                       </div>
 
@@ -1133,56 +1106,6 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
                     </div>
                   )}
 
-                  {item.isCustomKeyField && (
-                    <div className="mt-2.5 flex flex-col gap-2">
-                      <p className="text-vantage-muted font-medium leading-normal" style={{ fontSize: 'clamp(8px, 2vw, 10px)' }}>
-                        If the default global intelligence key is expired or restricted, you can supply your own personal Gemini API key here. It is safely encrypted and saved to your secure cloud config.
-                      </p>
-                      <div className="flex gap-2">
-                        <input
-                          type="password"
-                          value={geminiApiKey}
-                          onChange={(e) => setGeminiApiKey(e.target.value)}
-                          placeholder="AIzaSy..."
-                          className="flex-1 bg-vantage-text/5 border border-vantage-text/10 dark:border-white/10 rounded-xl p-2 text-xs font-mono text-vantage-text outline-none focus:border-vantage-green transition-all"
-                        />
-                        <button
-                          type="button"
-                          onClick={handleSaveGeminiKey}
-                          disabled={isSavingGeminiKey}
-                          className="px-4 bg-vantage-green text-black font-bold tracking-wide rounded-xl hover:scale-105 active:scale-95 transition-all disabled:opacity-50 cursor-pointer"
-                          style={{ fontSize: 'clamp(8px, 1.8vw, 10px)' }}
-                        >
-                          {isSavingGeminiKey ? 'Writing...' : 'Update key'}
-                        </button>
-                      </div>
-                      {geminiApiKey && (
-                        <button
-                          type="button"
-                          onClick={async () => {
-                            if (confirm("Are you sure you want to restore the default server key and clear your override key?")) {
-                              setIsSavingGeminiKey(true);
-                              try {
-                                const userRef = doc(db, 'users', profile.uid);
-                                await updateDoc(userRef, { geminiKey: '' });
-                                onUpdateProfile({ ...profile, geminiKey: '' });
-                                setGeminiApiKey('');
-                                alert("Custom key cleared. Default server credentials will now handle your requests.");
-                              } catch (err) {
-                                console.error(err);
-                              } finally {
-                                setIsSavingGeminiKey(false);
-                              }
-                            }
-                          }}
-                          className="text-red-500 hover:text-red-400 font-bold tracking-wide mt-1 self-start transition-colors cursor-pointer"
-                          style={{ fontSize: 'clamp(8px, 1.8vw, 10px)' }}
-                        >
-                          Restore server default key
-                        </button>
-                      )}
-                    </div>
-                  )}
                 </div>
               );
             })}
@@ -1285,8 +1208,18 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
 
 
       <div className="flex flex-col items-center gap-1 mt-10 pb-16">
-        <div className="text-[10px] font-bold text-vantage-muted tracking-wide">Vantage AI wallet v1.2.0</div>
-        <div className="text-[8px] text-vantage-muted opacity-50 font-bold tracking-wide text-center max-w-[250px]">Designed for high-performance financial management</div>
+        <div 
+          style={{ fontFamily: "'Google Sans', sans-serif", fontSize: '10px', fontWeight: 400 }}
+          className="text-neutral-400 dark:text-neutral-500 tracking-wide"
+        >
+          YOUR FINANCES by ME Vantage v1.0.0
+        </div>
+        <div 
+          style={{ fontFamily: "'Google Sans', sans-serif", fontSize: '9px', fontWeight: 400 }}
+          className="text-neutral-400/50 dark:text-neutral-500/50 tracking-wide text-center max-w-[250px]"
+        >
+          Designed for high-performance financial management
+        </div>
       </div>
 
       <button 

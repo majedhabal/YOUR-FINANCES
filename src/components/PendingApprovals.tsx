@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { useTranslation } from 'react-i18next';
 import { Check, Trash2, Clock, RefreshCw, AlertCircle, ArrowUpRight, ArrowDownLeft, Landmark, Calendar, ShieldCheck } from 'lucide-react';
 import { collection, query, where, onSnapshot, doc, updateDoc, deleteDoc, writeBatch, serverTimestamp, getDocs, increment } from 'firebase/firestore';
 import { db } from '../lib/firebase';
@@ -15,6 +16,7 @@ interface PendingApprovalsProps {
 }
 
 export const PendingApprovals: React.FC<PendingApprovalsProps> = ({ uid, accounts, onTransactionApproved }) => {
+  const { t } = useTranslation();
   const [drafts, setDrafts] = useState<any[]>([]);
   const [recurringTxs, setRecurringTxs] = useState<any[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -28,7 +30,7 @@ export const PendingApprovals: React.FC<PendingApprovalsProps> = ({ uid, account
         token = await connectGoogleWorkspace();
       }
       if (!token) {
-        alert("Google authorization is required to sync to Google Tasks.");
+        alert(t('pending_approvals.google_auth_required', 'Google authorization is required to sync to Google Tasks.'));
         return;
       }
 
@@ -47,11 +49,11 @@ export const PendingApprovals: React.FC<PendingApprovalsProps> = ({ uid, account
           isSyncedToTasks: true,
           googleTaskId: res.id
         });
-        alert(`Successfully synced "${tx.notes}" as a task in Google Tasks!`);
+        alert(t('pending_approvals.sync_success', 'Successfully synced "{{notes}}" as a task in Google Tasks!', { notes: tx.notes }));
       }
     } catch (err: any) {
       console.error(err);
-      alert("Error syncing to Google Tasks: " + err.message);
+      alert(t('pending_approvals.sync_error', 'Error syncing to Google Tasks: {{message}}', { message: err.message }));
     }
   };
 
@@ -154,7 +156,7 @@ export const PendingApprovals: React.FC<PendingApprovalsProps> = ({ uid, account
           category: rec.category,
           subcategory: rec.subcategory || null,
           emoji: rec.emoji || null,
-          notes: rec.notes ? `${rec.notes} (Recurring)` : 'Recurring Transaction',
+          notes: rec.notes ? `${rec.notes} (Recurring)` : t('pending_approvals.recurring_note', 'Recurring Transaction'),
           date: nextDate,
           status: 'draft',
           recurringId: rec.id,
@@ -212,6 +214,15 @@ export const PendingApprovals: React.FC<PendingApprovalsProps> = ({ uid, account
         updatedAt: serverTimestamp()
       });
 
+      // Operation 1.5 (Atomic Balance Update): Sync confirmed amount to target account
+      const accRef = doc(db, `users/${uid}/accounts`, tx.accountId);
+      const isIncome = tx.type === 'income' || tx.type === 'Inflow';
+      const amountChange = isIncome ? Number(tx.amount || 0) : -Number(tx.amount || 0);
+      batch.update(accRef, {
+        currentBalance: increment(amountChange),
+        updatedAt: serverTimestamp()
+      });
+
       // Operation 2 (Atomic Budget Increment): Find matching envelope and increment spentAmount
       const queryBudgets = query(
         collection(db, `users/${uid}/miniBudgets`),
@@ -261,10 +272,10 @@ export const PendingApprovals: React.FC<PendingApprovalsProps> = ({ uid, account
       <div className="flex items-center justify-between px-2">
         <div className="flex items-center gap-2">
             <Clock size={12} className="text-gold animate-pulse" />
-            <span className="text-[10px] font-black text-neutral-500 uppercase tracking-[0.4em]">Pending Approvals</span>
+            <span className="text-[10px] font-black text-neutral-500 uppercase tracking-[0.4em]">{t('pending_approvals.title', 'Pending Approvals')}</span>
         </div>
         <span className="bg-gold text-black text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter">
-            {drafts.length} Action{drafts.length > 1 ? 's' : ''} Required
+            {t('pending_approvals.actions_required', { count: drafts.length })}
         </span>
       </div>
 
@@ -284,8 +295,8 @@ export const PendingApprovals: React.FC<PendingApprovalsProps> = ({ uid, account
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${tx.type === 'income' ? 'bg-[#20C997]/10 text-[#20C997]' : 'bg-[#F43F5E]/10 text-[#F43F5E]'}`}>
-                      {tx.type === 'income' ? <ArrowUpRight size={18} strokeWidth={3} /> : <ArrowDownLeft size={18} strokeWidth={3} />}
+                    <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${(tx.type === 'income' || tx.type === 'Inflow') ? 'bg-[#20C997]/10 text-[#20C997]' : 'bg-[#F43F5E]/10 text-[#F43F5E]'}`}>
+                      {(tx.type === 'income' || tx.type === 'Inflow') ? <ArrowUpRight size={18} strokeWidth={3} /> : <ArrowDownLeft size={18} strokeWidth={3} />}
                     </div>
                     <div className="flex flex-col">
                       <span className="text-[11px] font-black text-white uppercase tracking-wider">{tx.notes}</span>
@@ -296,10 +307,10 @@ export const PendingApprovals: React.FC<PendingApprovalsProps> = ({ uid, account
                     </div>
                   </div>
                   <div className="flex flex-col items-end">
-                    <span className={`text-lg font-mono font-bold ${tx.type === 'income' ? 'text-[#20C997]' : 'text-[#F43F5E]'}`}>
-                      {tx.type === 'income' ? '+' : '-'}{acc?.currency} {tx.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                    <span className={`text-lg font-mono font-bold ${(tx.type === 'income' || tx.type === 'Inflow') ? 'text-[#20C997]' : 'text-[#F43F5E]'}`}>
+                      {(tx.type === 'income' || tx.type === 'Inflow') ? '+' : '-'}{acc?.currency} {tx.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                     </span>
-                    <span className="text-[8px] font-black text-neutral-600 uppercase tracking-widest">Scheduled Date: {new Date(tx.date).toLocaleDateString()}</span>
+                    <span className="text-[8px] font-black text-neutral-600 uppercase tracking-widest">{t('pending_approvals.scheduled_date', 'Scheduled Date: {{date}}', { date: new Date(tx.date).toLocaleDateString() })}</span>
                   </div>
                 </div>
 
@@ -310,7 +321,7 @@ export const PendingApprovals: React.FC<PendingApprovalsProps> = ({ uid, account
                 >
                   <div className="flex items-center gap-2">
                     <Calendar size={12} className={tx.isSyncedToTasks ? 'text-emerald-400 animate-pulse' : 'text-neutral-500'} />
-                    <span className="text-[9px] font-black uppercase tracking-wider text-neutral-400">Sync to Google Tasks</span>
+                    <span className="text-[9px] font-black uppercase tracking-wider text-neutral-400">{t('pending_approvals.sync_to_google', 'Sync to Google Tasks')}</span>
                   </div>
                   <button 
                     onClick={() => handleToggleSyncToTasks(tx, acc)}
@@ -323,10 +334,10 @@ export const PendingApprovals: React.FC<PendingApprovalsProps> = ({ uid, account
                     {tx.isSyncedToTasks ? (
                       <>
                         <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full shrink-0" />
-                        Synced
+                        {t('pending_approvals.synced', 'Synced')}
                       </>
                     ) : (
-                      'Toggle Sync'
+                      t('pending_approvals.toggle_sync', 'Toggle Sync')
                     )}
                   </button>
                 </div>
@@ -337,7 +348,7 @@ export const PendingApprovals: React.FC<PendingApprovalsProps> = ({ uid, account
                     onClick={() => handleApprove(tx)}
                     className="flex-1 py-3 bg-emerald-500 text-black text-[9px] font-black uppercase tracking-widest rounded-xl hover:bg-emerald-400 transition-colors flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50"
                   >
-                    <Check size={14} /> Approve Flow
+                    <Check size={14} /> {t('pending_approvals.approve_flow', 'Approve Flow')}
                   </button>
                   <button 
                     disabled={isProcessing}
@@ -364,9 +375,9 @@ export const PendingApprovals: React.FC<PendingApprovalsProps> = ({ uid, account
         isOpen={txToDelete !== null}
         onClose={() => setTxToDelete(null)}
         onConfirm={handleConfirmDeleteTx}
-        title="Reject Draft"
-        message="Are you sure you want to reject this draft transaction? It will be removed from your pending queue."
-        confirmLabel="Reject Transaction"
+        title={t('pending_approvals.reject_draft', 'Reject Draft')}
+        message={t('pending_approvals.reject_message', 'Are you sure you want to reject this draft transaction? It will be removed from your pending queue.')}
+        confirmLabel={t('pending_approvals.reject_action', 'Reject Transaction')}
         isLoading={isProcessing}
       />
     </div>

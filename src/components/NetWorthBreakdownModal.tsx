@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Landmark, TrendingUp, TrendingDown, ArrowRight, Shield } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface Account {
   id: string;
@@ -10,6 +11,7 @@ interface Account {
   bankAccountType?: string;
   loanDirection?: string;
   isArchived?: boolean;
+  startingBalance?: number;
 }
 
 interface NetWorthBreakdownModalProps {
@@ -20,6 +22,8 @@ interface NetWorthBreakdownModalProps {
   primaryCurrency: string;
   exchangeRates: any;
   defaultRates: { [key: string]: number };
+  transactions?: any[];
+  selectedAccIds?: Set<string>;
 }
 
 export const NetWorthBreakdownModal: React.FC<NetWorthBreakdownModalProps> = ({
@@ -30,7 +34,10 @@ export const NetWorthBreakdownModal: React.FC<NetWorthBreakdownModalProps> = ({
   primaryCurrency,
   exchangeRates,
   defaultRates,
+  transactions = [],
+  selectedAccIds = new Set(accounts.map(a => a.id)),
 }) => {
+  const { t } = useTranslation();
   const getRateToAED = (curr: string) => {
     const c = curr || 'AED';
     if (c === 'AED') return 1;
@@ -74,7 +81,32 @@ export const NetWorthBreakdownModal: React.FC<NetWorthBreakdownModalProps> = ({
 
   const totalAssets = assetsList.reduce((sum, item) => sum + item.balanceInPrimary, 0);
   const totalLiabilities = liabilitiesList.reduce((sum, item) => sum + item.balanceInPrimary, 0);
-  const netWorthValue = totalAssets - totalLiabilities;
+
+  // User requested formula: Net Worth = Confirmed income - Total Debt
+  // Refined to include both 'income' and 'Inflow' types and only asset account starting balances
+  const confirmedIncomeTxSum = transactions
+    .filter(tx => 
+      (tx.type === 'income' || tx.type === 'Inflow') && 
+      tx.status !== 'draft' && 
+      tx.status !== 'pending' && 
+      tx.status !== 'upcoming' &&
+      tx.status !== 'Pending Schedule' &&
+      !tx.isUpcomingSalaryAllocation &&
+      selectedAccIds.has(tx.accountId)
+    )
+    .reduce((sum, tx) => sum + (Number(tx.amount || 0) * getRateToAED(tx.currency || 'AED')), 0);
+
+  const startingBalancesSum = accounts
+    .filter(acc => 
+      !acc.isArchived && 
+      selectedAccIds.has(acc.id) && 
+      !liabilityTypes.includes(acc.type) && 
+      acc.loanDirection !== 'lent'
+    )
+    .reduce((sum, acc) => sum + (Number(acc.startingBalance || 0) * getRateToAED(acc.currency || 'AED')), 0);
+
+  const totalConfirmedIncome = (confirmedIncomeTxSum + startingBalancesSum) / baseRateToAED;
+  const netWorthValue = totalConfirmedIncome - totalLiabilities;
 
   return (
     <AnimatePresence>
@@ -133,13 +165,13 @@ export const NetWorthBreakdownModal: React.FC<NetWorthBreakdownModalProps> = ({
                     }}
                     className="tracking-tight"
                   >
-                    Net Worth Calculations
+                    {t('net_worth_breakdown_modal.title', 'Net Worth Calculations')}
                   </h3>
                   <p 
                     style={{ fontWeight: 400, fontFamily: "'Google Sans', sans-serif" }}
                     className="text-neutral-500 text-[11px]"
                   >
-                    Accounts included under assets and liabilities
+                    {t('net_worth_breakdown_modal.subtitle', 'Accounts included under assets and liabilities')}
                   </p>
                 </div>
                 <button 
@@ -153,15 +185,15 @@ export const NetWorthBreakdownModal: React.FC<NetWorthBreakdownModalProps> = ({
               {/* Calculations Breakdown Summary Card */}
               <div className="p-4 rounded-xl bg-white/40 border border-neutral-100/50 flex flex-col gap-3 shrink-0">
                 <div className="flex justify-between items-center">
-                  <span style={{ fontWeight: 400, fontFamily: "'Google Sans', sans-serif" }} className="text-neutral-500 text-[11px]">Formula</span>
+                  <span style={{ fontWeight: 400, fontFamily: "'Google Sans', sans-serif" }} className="text-neutral-500 text-[11px]">{t('net_worth_breakdown_modal.formula', 'Formula')}</span>
                   <span style={{ fontWeight: 500, fontFamily: "'Google Sans', sans-serif" }} className="text-neutral-600 text-[10px] bg-neutral-200/40 px-2 py-0.5 rounded-full">
-                    Assets - Liabilities
+                    {t('net_worth_breakdown_modal.formula_text', 'Confirmed income - Total Debt')}
                   </span>
                 </div>
                 
                 <div className="grid grid-cols-3 gap-2 items-center text-center">
                   <div className="flex flex-col p-2 bg-white/50 rounded-lg border border-neutral-100/50">
-                    <span style={{ fontWeight: 400, fontFamily: "'Google Sans', sans-serif", color: '#57606F' }} className="text-[10px]">Total assets</span>
+                    <span style={{ fontWeight: 400, fontFamily: "'Google Sans', sans-serif", color: '#57606F' }} className="text-[10px]">{t('net_worth_breakdown_modal.total_assets', 'Confirmed income')}</span>
                     <span 
                       style={{ 
                         fontWeight: 600,
@@ -170,12 +202,12 @@ export const NetWorthBreakdownModal: React.FC<NetWorthBreakdownModalProps> = ({
                       }}
                       className="text-emerald-600 tracking-tight tabular-nums mt-0.5"
                     >
-                      {totalAssets.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      {totalConfirmedIncome.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                   </div>
                   <div className="text-neutral-300 font-g-sans">-</div>
                   <div className="flex flex-col p-2 bg-white/50 rounded-lg border border-neutral-100/50">
-                    <span style={{ fontWeight: 400, fontFamily: "'Google Sans', sans-serif", color: '#57606F' }} className="text-[10px]">Total liabilities</span>
+                    <span style={{ fontWeight: 400, fontFamily: "'Google Sans', sans-serif", color: '#57606F' }} className="text-[10px]">{t('net_worth_breakdown_modal.total_liabilities', 'Total Debt')}</span>
                     <span 
                       style={{ 
                         fontWeight: 600,
@@ -190,7 +222,7 @@ export const NetWorthBreakdownModal: React.FC<NetWorthBreakdownModalProps> = ({
                 </div>
 
                 <div className="border-t border-dashed border-neutral-200/50 pt-2.5 flex items-center justify-between">
-                  <span style={{ fontWeight: 400, fontFamily: "'Google Sans', sans-serif", color: '#1E2229' }} className="text-[11px]">Net Worth ({primaryCurrency})</span>
+                  <span style={{ fontWeight: 400, fontFamily: "'Google Sans', sans-serif", color: '#1E2229' }} className="text-[11px]">{t('net_worth_breakdown_modal.net_worth_label', 'Net Worth ({{currency}})', { currency: primaryCurrency })}</span>
                   <span 
                     style={{ 
                       fontWeight: 600, 
@@ -218,7 +250,7 @@ export const NetWorthBreakdownModal: React.FC<NetWorthBreakdownModalProps> = ({
                         color: '#1E2229'
                       }}
                     >
-                      Asset Accounts
+                      {t('net_worth_breakdown_modal.asset_accounts', 'Asset Accounts')}
                     </span>
                     <span className="text-[10px] text-neutral-400 font-normal">({assetsList.length})</span>
                   </div>
@@ -226,7 +258,7 @@ export const NetWorthBreakdownModal: React.FC<NetWorthBreakdownModalProps> = ({
                   <div className="space-y-1.5">
                     {assetsList.length === 0 ? (
                       <div className="text-neutral-400 text-[11px] font-normal py-4 text-center border border-dashed border-neutral-100/50 rounded-xl">
-                        No active asset accounts found.
+                        {t('net_worth_breakdown_modal.no_assets', 'No active asset accounts found.')}
                       </div>
                     ) : (
                       assetsList.map(acc => (
@@ -276,7 +308,7 @@ export const NetWorthBreakdownModal: React.FC<NetWorthBreakdownModalProps> = ({
                                 }} 
                                 className="truncate leading-none mt-1"
                               >
-                                {acc.loanDirection === 'lent' ? 'Lent Loan' : (acc.bankAccountType || acc.type)} • {acc.currency}
+                                {acc.loanDirection === 'lent' ? t('net_worth_breakdown_modal.lent_loan', 'Lent Loan') : (acc.bankAccountType || acc.type)} • {acc.currency}
                               </span>
                             </div>
                           </div>
@@ -351,7 +383,7 @@ export const NetWorthBreakdownModal: React.FC<NetWorthBreakdownModalProps> = ({
                         color: '#1E2229'
                       }}
                     >
-                      Liability Accounts
+                      {t('net_worth_breakdown_modal.liability_accounts', 'Liability Accounts')}
                     </span>
                     <span className="text-[10px] text-neutral-400 font-normal">({liabilitiesList.length})</span>
                   </div>
@@ -359,7 +391,7 @@ export const NetWorthBreakdownModal: React.FC<NetWorthBreakdownModalProps> = ({
                   <div className="space-y-1.5">
                     {liabilitiesList.length === 0 ? (
                       <div className="text-neutral-400 text-[11px] font-normal py-4 text-center border border-dashed border-neutral-100/50 rounded-xl">
-                        No active liability accounts found.
+                        {t('net_worth_breakdown_modal.no_liabilities', 'No active liability accounts found.')}
                       </div>
                     ) : (
                       liabilitiesList.map(acc => (
@@ -475,7 +507,7 @@ export const NetWorthBreakdownModal: React.FC<NetWorthBreakdownModalProps> = ({
               
               {/* Disclaimer text footer */}
               <div style={{ fontWeight: 400, fontFamily: "'Google Sans', sans-serif" }} className="text-[10px] text-neutral-400 text-center border-t border-neutral-200/55 pt-2 leading-tight shrink-0">
-                Only active non-archived accounts are evaluated under standard Net Worth rules.
+                {t('net_worth_breakdown_modal.footer', 'Only active non-archived accounts are evaluated under standard Net Worth rules.')}
               </div>
             </motion.div>
           </div>

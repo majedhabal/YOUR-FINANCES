@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Landmark, Wallet, TrendingUp, ShieldCheck } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface Account {
   id: string;
@@ -30,6 +31,8 @@ export const CashBreakdownModal: React.FC<CashBreakdownModalProps> = ({
   exchangeRates,
   defaultRates,
 }) => {
+  const { t } = useTranslation();
+
   const getRateToAED = (curr: string) => {
     const c = curr || 'AED';
     if (c === 'AED') return 1;
@@ -119,13 +122,13 @@ export const CashBreakdownModal: React.FC<CashBreakdownModalProps> = ({
                     }}
                     className="tracking-tight"
                   >
-                    Cash Available Breakdown
+                    {t('cash_breakdown.title', 'Cash Available Breakdown')}
                   </h3>
                   <p 
                     style={{ fontWeight: 400, fontFamily: "'Google Sans', sans-serif" }}
                     className="text-neutral-500 text-[11px]"
                   >
-                    Checking, savings, physical cash, and wallet accounts
+                    {t('cash_breakdown.subtitle', 'Checking, savings, physical cash, and wallet accounts')}
                   </p>
                 </div>
                 <button 
@@ -139,9 +142,9 @@ export const CashBreakdownModal: React.FC<CashBreakdownModalProps> = ({
               {/* Calculations Breakdown Summary Card */}
               <div className="p-4 rounded-xl bg-white/40 border border-neutral-100/50 flex flex-col gap-3 shrink-0">
                 <div className="flex justify-between items-center">
-                  <span style={{ fontWeight: 400, fontFamily: "'Google Sans', sans-serif" }} className="text-neutral-500 text-[11px]">Liquidity Summary</span>
+                  <span style={{ fontWeight: 400, fontFamily: "'Google Sans', sans-serif" }} className="text-neutral-500 text-[11px]">{t('cash_breakdown.liquidity_summary', 'Liquidity Summary')}</span>
                   <span style={{ fontWeight: 500, fontFamily: "'Google Sans', sans-serif" }} className="text-emerald-600 text-[10px] bg-emerald-50/50 px-2 py-0.5 rounded-full">
-                    Cash Available
+                    {t('cash_breakdown.cash_available', 'Cash Available')}
                   </span>
                 </div>
                 
@@ -153,7 +156,7 @@ export const CashBreakdownModal: React.FC<CashBreakdownModalProps> = ({
                   flexWrap: 'nowrap',
                   width: '100%'
                 }} className="flex items-center justify-between flex-nowrap w-full">
-                  <span style={{ fontWeight: 400, fontFamily: "'Google Sans', sans-serif", color: '#1E2229' }} className="text-[11px]">Total Cash Available ({primaryCurrency})</span>
+                  <span style={{ fontWeight: 400, fontFamily: "'Google Sans', sans-serif", color: '#1E2229' }} className="text-[11px]">{t('cash_breakdown.total_cash_available', 'Total Cash Available ({{currency}})', { currency: primaryCurrency })}</span>
                   <span 
                     style={{ 
                       fontWeight: 600, 
@@ -181,7 +184,7 @@ export const CashBreakdownModal: React.FC<CashBreakdownModalProps> = ({
                         color: '#1E2229'
                       }}
                     >
-                      Liquidity Accounts
+                      {t('cash_breakdown.liquidity_accounts', 'Liquidity Accounts')}
                     </span>
                     <span className="text-[10px] text-neutral-400 font-normal">({cashList.length})</span>
                   </div>
@@ -189,7 +192,7 @@ export const CashBreakdownModal: React.FC<CashBreakdownModalProps> = ({
                   <div className="space-y-1.5">
                     {cashList.length === 0 ? (
                       <div className="text-neutral-400 text-[11px] font-normal py-4 text-center border border-dashed border-neutral-100/50 rounded-xl">
-                        No active liquidity accounts found.
+                        {t('cash_breakdown.no_accounts', 'No active liquidity accounts found.')}
                       </div>
                     ) : (
                       cashList.map(acc => {
@@ -308,7 +311,7 @@ export const CashBreakdownModal: React.FC<CashBreakdownModalProps> = ({
               
               {/* Disclaimer text footer */}
               <div style={{ fontWeight: 400, fontFamily: "'Google Sans', sans-serif" }} className="text-[10px] text-neutral-400 text-center border-t border-neutral-200/55 pt-2 leading-tight shrink-0">
-                Reflects all checking, savings, cash, and digital liquidity wallets.
+                {t('cash_breakdown.footer', 'Reflects all checking, savings, cash, and digital liquidity wallets.')}
               </div>
             </motion.div>
           </div>

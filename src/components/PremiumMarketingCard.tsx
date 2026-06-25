@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
+import { useTranslation } from 'react-i18next';
 import { Crown, Sparkles, Zap, ShieldCheck } from 'lucide-react';
 
 interface PremiumMarketingCardProps {
@@ -8,6 +9,7 @@ interface PremiumMarketingCardProps {
 }
 
 export const PremiumMarketingCard: React.FC<PremiumMarketingCardProps> = ({ featureName, description }) => {
+  const { t } = useTranslation();
   return (
     <motion.div 
       initial={{ opacity: 0, scale: 0.95 }}
@@ -31,10 +33,10 @@ export const PremiumMarketingCard: React.FC<PremiumMarketingCardProps> = ({ feat
 
       <div className="flex flex-col gap-1.5 relative z-10 w-full">
         <h3 style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[clamp(14px,4.5vw,18px)] text-[#00FF88] tracking-wide leading-none">
-          Vantage insights
+          {t('premium_marketing_card.title', 'Vantage insights')}
         </h3>
         <h4 style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[clamp(11px,3vw,13px)] text-white tracking-wide leading-snug mt-1 opacity-90">
-          Unlock {featureName}
+          {t('premium_marketing_card.unlock', 'Unlock {{featureName}}', { featureName })}
         </h4>
         <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[clamp(10px,2.5vw,12px)] text-slate-300 max-w-[280px] leading-relaxed mx-auto tracking-wide mt-1.5">
           {description}
@@ -43,8 +45,8 @@ export const PremiumMarketingCard: React.FC<PremiumMarketingCardProps> = ({ feat
 
       <div className="grid grid-cols-2 gap-3 w-full">
         {[
-          { icon: Zap, label: 'Instant AI' },
-          { icon: ShieldCheck, label: 'Dashboard security' }
+          { icon: Zap, label: t('premium_marketing_card.instant_ai', 'Instant AI') },
+          { icon: ShieldCheck, label: t('premium_marketing_card.dashboard_security', 'Dashboard security') }
         ].map((item, i) => (
           <div key={i} className="flex flex-col items-center gap-1.5 p-2.5 rounded-xl bg-white/5 border border-white/10 shadow-sm">
             <item.icon size={14} className="text-vantage-green shrink-0" />
@@ -63,11 +65,11 @@ export const PremiumMarketingCard: React.FC<PremiumMarketingCardProps> = ({ feat
         }}
         className="w-full h-[40px] md:h-[44px] rounded-xl text-[clamp(11px,2.8vw,13px)] tracking-wide shadow-sm hover:brightness-95 active:scale-95 transition-all relative z-10 flex items-center justify-center cursor-pointer border border-transparent outline-none select-none"
       >
-        Initialize premium sequence
+        {t('premium_marketing_card.initialize', 'Initialize premium sequence')}
       </button>
 
       <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[clamp(8px,2vw,10px)] text-neutral-400 tracking-wide leading-none mt-1">
-        Powered by Google Gemini // Access restricted to premium level nodes
+        {t('premium_marketing_card.footer', 'Powered by Google Gemini // Access restricted to premium level nodes')}
       </p>
     </motion.div>
   );

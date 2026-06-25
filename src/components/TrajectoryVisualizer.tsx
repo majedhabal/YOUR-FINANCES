@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { motion } from 'motion/react';
 import { TrendingUp, Sparkles, Sliders, Calendar, Check, Shield } from 'lucide-react';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid, Legend } from 'recharts';
+import { useTranslation } from 'react-i18next';
 
 interface TrajectoryVisualizerProps {
   startingNetWorth: number;
@@ -14,6 +15,7 @@ export const TrajectoryVisualizer: React.FC<TrajectoryVisualizerProps> = ({
   baseCurrency,
   monthlySalary
 }) => {
+  const { t } = useTranslation();
   const [yearsHorizon, setYearsHorizon] = useState<5 | 10 | 20>(10);
   const [annualGrowthRate, setAnnualGrowthRate] = useState<number>(7);
 
@@ -53,8 +55,8 @@ export const TrajectoryVisualizer: React.FC<TrajectoryVisualizerProps> = ({
             <TrendingUp size={16} />
           </div>
           <div className="flex flex-col">
-            <h4 className="text-sm font-bold text-white m-0 tracking-tight lowercase">runway trajectory</h4>
-            <span className="text-[10px] text-neutral-400 font-medium mt-0.5">Predictive net worth compounding engine</span>
+            <h4 className="text-sm font-bold text-white m-0 tracking-tight lowercase">{t('trajectory_visualizer.title')}</h4>
+            <span className="text-[10px] text-neutral-400 font-medium mt-0.5">{t('trajectory_visualizer.subtitle')}</span>
           </div>
         </div>
 
@@ -70,7 +72,7 @@ export const TrajectoryVisualizer: React.FC<TrajectoryVisualizerProps> = ({
                   : 'bg-transparent border-transparent text-neutral-400 hover:text-white'
               }`}
             >
-              {horizon} years
+              {t('trajectory_visualizer.years', { count: horizon })}
             </button>
           ))}
         </div>
@@ -99,7 +101,7 @@ export const TrajectoryVisualizer: React.FC<TrajectoryVisualizerProps> = ({
               }}
               labelStyle={{ fontSize: 10, fontWeight: 600, color: '#94A3B8', marginBottom: '4px' }}
               itemStyle={{ fontSize: 11, fontWeight: 700, color: '#A6DDB1' }}
-              formatter={(value) => [`${Number(value).toLocaleString()} ${baseCurrency}`, 'Net worth asset value']}
+              formatter={(value) => [`${Number(value).toLocaleString()} ${baseCurrency}`, t('trajectory_visualizer.tooltip_label')]}
             />
             <Area type="monotone" dataKey="wealth" stroke="#A6DDB1" strokeWidth={2.5} fill="url(#vantageGrowthGradient)" dot={false} />
           </AreaChart>
@@ -109,7 +111,7 @@ export const TrajectoryVisualizer: React.FC<TrajectoryVisualizerProps> = ({
       {/* PARAMETER TUNING FOOTER ROW GRID */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-white/5 pt-3 select-none">
         <div className="flex flex-col gap-1.5">
-          <span className="text-[10px] font-bold tracking-wider text-neutral-400 pl-0.5">Compounding rate matrix ({annualGrowthRate}%)</span>
+          <span className="text-[10px] font-bold tracking-wider text-neutral-400 pl-0.5">{t('trajectory_visualizer.compounding_rate', { rate: annualGrowthRate })}</span>
           <input 
             type="range" 
             min="1" 
@@ -122,7 +124,7 @@ export const TrajectoryVisualizer: React.FC<TrajectoryVisualizerProps> = ({
         <div className="p-3 rounded-xl bg-white/5 border border-white/5 flex items-start gap-2.5">
           <Shield size={14} className="text-[#A6DDB1] shrink-0 mt-0.5" />
           <p className="text-[11px] leading-relaxed text-neutral-400 m-0">
-            Calculations compound your net worth assuming an optimized baseline rate vector with a consistent monthly savings allocation rate.
+            {t('trajectory_visualizer.disclaimer')}
           </p>
         </div>
       </div>

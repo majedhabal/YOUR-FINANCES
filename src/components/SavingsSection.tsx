@@ -1,5 +1,6 @@
 import React from 'react';
 import { Target, Trash2, TrendingUp, Plus } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export const SavingsSection: React.FC<{ 
   milestones: any[], 
@@ -11,6 +12,8 @@ export const SavingsSection: React.FC<{
   onAddGoal: () => void,
   currency: string
 }> = ({ milestones, accounts, accountBalances, transactions, onDeleteMilestone, onAddTransaction, onAddGoal, currency }) => {
+  const { t } = useTranslation();
+
   // Use optional chaining and default to empty array to prevent crashes
   const activeMilestones = Array.isArray(milestones) 
     ? milestones.filter(m => !m.isArchived) 
@@ -26,27 +29,31 @@ export const SavingsSection: React.FC<{
 
   return (
     <section>
-      <h2 className="text-xl font-bold text-[#111C2D] mb-6" style={{ fontFamily: "'Google Sans', sans-serif" }}>Savings Goals</h2>
+      <h2 className="text-xl font-bold text-[#111C2D] mb-6" style={{ fontFamily: "'Google Sans', sans-serif" }}>
+        {t('essentials.savings_goals', 'Savings Goals')}
+      </h2>
       
       {/* Total Saved Card */}
       <div className="bg-white rounded-2xl border border-[#E1E8ED] p-5 mb-6 shadow-sm">
-        <div className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1" style={{ fontFamily: "'Google Sans', sans-serif" }}>TOTAL SAVED</div>
+        <div className="text-[10px] font-bold text-gray-500 mb-1" style={{ fontFamily: "'Google Sans', sans-serif" }}>
+          {t('savings_section.total_saved')}
+        </div>
         <div className="text-3xl font-bold text-[#111C2D] mb-2" style={{ fontFamily: "'Google Sans', sans-serif" }}>
           {currency} {totalSaved.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </div>
         <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#E8F8EE] text-[#366945] text-xs font-bold">
           <TrendingUp size={12} />
-          +4.2% from last month
+          {t('savings_section.comparison_gain')}
         </div>
       </div>
 
       {/* Header */}
       <div className="flex justify-between items-center mb-4">
-        <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest" style={{ fontFamily: "'Google Sans', sans-serif" }}>
-            ACTIVE GOALS
+        <h3 className="text-xs font-bold text-gray-500" style={{ fontFamily: "'Google Sans', sans-serif" }}>
+            {t('savings_section.active_goals')}
         </h3>
-        <button onClick={onAddGoal} className="text-xs text-[#366945] font-bold flex items-center gap-1">
-          <Plus size={14} /> Add Goal
+        <button onClick={onAddGoal} className="text-xs text-[#366945] font-bold flex items-center gap-1 cursor-pointer bg-transparent border-none">
+          <Plus size={14} /> {t('savings_section.add_goal')}
         </button>
       </div>
 
@@ -90,22 +97,22 @@ export const SavingsSection: React.FC<{
                       <Target size={20} className="text-[#366945]" />
                     </div>
                     <div>
-                      <div className="text-sm font-bold text-[#111C2D]">{m.name || 'Unnamed Goal'}</div>
+                      <div className="text-sm font-bold text-[#111C2D]">{t(`subcategories.${m.name}`, m.name) || t('savings_section.unnamed_goal')}</div>
                       <div className="text-[10px] text-gray-500">
-                        Est. completion: <span className="font-bold text-gray-900">{estCompletionDate ? estCompletionDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'N/A'}</span>
+                        {t('savings_section.est_completion')} <span className="font-bold text-gray-900">{estCompletionDate ? estCompletionDate.toLocaleDateString(undefined, { month: 'short', year: 'numeric' }) : t('common.na', 'N/A')}</span>
                       </div>
                     </div>
                   </div>
                   <div className="text-right flex items-center gap-2">
                     <div className="text-right">
                       <div className="text-sm font-bold text-[#111C2D]">{currency} {effectiveCurrentValue.toLocaleString()}</div>
-                      <div className="text-[10px] text-gray-400">of {currency} {tar.toLocaleString()}</div>
+                      <div className="text-[10px] text-gray-400">{t('savings_section.of_target')} {currency} {tar.toLocaleString()}</div>
                     </div>
                     <div className="flex flex-col gap-1 -mt-2">
-                      <button onClick={() => onAddTransaction(m)} className="text-gray-400 hover:text-[#111C2D] transition-colors">
+                      <button onClick={() => onAddTransaction(m)} className="text-gray-400 hover:text-[#111C2D] transition-colors cursor-pointer bg-transparent border-none">
                         <Plus size={16} />
                       </button>
-                      <button onClick={() => onDeleteMilestone(m)} className="text-rose-400 hover:text-rose-600 transition-colors">
+                      <button onClick={() => onDeleteMilestone(m)} className="text-rose-400 hover:text-rose-600 transition-colors cursor-pointer bg-transparent border-none">
                         <Trash2 size={16} />
                       </button>
                     </div>
@@ -121,13 +128,15 @@ export const SavingsSection: React.FC<{
                 </div>
                 
                 <div className="text-[10px] font-bold text-[#366945]">
-                  {progress.toFixed(0)}% reached
+                  {progress.toFixed(0)}% {t('savings_section.reached')}
                 </div>
               </div>
             );
           })
         ) : (
-          <div className="text-center py-6 text-sm text-neutral-400">No active savings goals.</div>
+          <div className="text-center py-6 text-sm text-neutral-400">
+            {t('savings_section.no_active_goals')}
+          </div>
         )}
       </div>
     </section>

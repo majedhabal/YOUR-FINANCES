@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'motion/react';
-import { RefreshCw, Trash2, Calendar, Clock, ChevronLeft, Landmark, AlertCircle, ToggleLeft as Toggle, ToggleRight, Edit2, X, Check, ChevronDown, Filter, Tag, ShieldCheck } from 'lucide-react';
+import { RefreshCw, Trash2, Calendar, Clock, ChevronLeft, Landmark, AlertCircle, ToggleLeft as Toggle, ToggleRight, Edit2, X, Check, ChevronDown, Filter, Tag, ShieldCheck, ArrowUpRight, ArrowDownLeft, ArrowRightLeft } from 'lucide-react';
 import { collection, query, onSnapshot, doc, deleteDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { handleFirestoreError, OperationType } from '../lib/firebaseUtils';
@@ -17,8 +18,8 @@ import {
 
 interface RecurringTransaction {
   id: string;
-  type: 'income' | 'expense' | 'transfer';
-  transactionType?: 'income' | 'expense' | 'transfer';
+  type: 'income' | 'expense' | 'transfer' | 'Inflow' | 'Outflow' | 'Transfer' | string;
+  transactionType?: 'income' | 'expense' | 'transfer' | 'inflow' | 'outflow' | string;
   amount: number;
   accountId: string;
   sourceAccountId?: string;
@@ -52,8 +53,10 @@ interface RecurringTransactionsViewProps {
 }
 
 export const RecurringTransactionsView: React.FC<RecurringTransactionsViewProps> = ({ uid, accounts, onBack }) => {
+  const { t } = useTranslation();
   const [recurring, setRecurring] = useState<RecurringTransaction[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<'income' | 'expense' | 'transfer'>('expense');
   const [isDeleting, setIsDeleting] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<string | null>(null);
   const [editingItem, setEditingItem] = useState<RecurringTransaction | null>(null);
@@ -309,8 +312,8 @@ export const RecurringTransactionsView: React.FC<RecurringTransactionsViewProps>
           <ChevronLeft size={20} />
         </button>
         <div className="flex flex-col">
-          <h2 className="text-xl font-bold text-neutral-900 tracking-tight">Recurring Schedules</h2>
-          <p className="text-xs text-neutral-500 font-normal mt-0.5">Manage and automate your periodic payouts</p>
+          <h2 className="text-xl font-bold text-neutral-900 tracking-tight">{t('recurring_transactions_view.header_title')}</h2>
+          <p className="text-xs text-neutral-500 font-normal mt-0.5">{t('recurring_transactions_view.header_desc')}</p>
         </div>
       </header>
 
@@ -321,11 +324,11 @@ export const RecurringTransactionsView: React.FC<RecurringTransactionsViewProps>
             <ShieldCheck size={20} />
           </div>
           <div className="flex flex-col">
-            <span className="text-xs font-bold text-neutral-800">Google Workspace sync</span>
+            <span className="text-xs font-bold text-neutral-800">{t('recurring_transactions_view.google_sync')}</span>
             <div className="flex items-center gap-1.5 mt-1">
               <span className={`w-1.5 h-1.5 rounded-full ${googleToken ? 'bg-emerald-500 animate-pulse' : 'bg-neutral-400'}`} />
               <span className="text-[10px] font-normal text-neutral-500">
-                {googleToken ? 'Calendar automated synchronization active' : 'Google calendar disconnected'}
+                {googleToken ? t('recurring_transactions_view.sync_active') : t('recurring_transactions_view.sync_disconnected')}
               </span>
             </div>
           </div>
@@ -338,23 +341,61 @@ export const RecurringTransactionsView: React.FC<RecurringTransactionsViewProps>
               : 'bg-neutral-900 hover:bg-neutral-800 text-white shadow-sm'
           }`}
         >
-          {googleToken ? 'Reconnect account' : 'Connect calendar'}
+          {googleToken ? t('recurring_transactions_view.sync_reconnect') : t('recurring_transactions_view.sync_connect')}
         </button>
       </div>
 
       {/* Dual Pane Layout: Responsive Flex Grid */}
       <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
         {/* Left Side: Schedules List */}
-        <div className="flex-1 w-full flex flex-col gap-4 bg-red-50" style={{ minHeight: '100px' }}>
-          <div className="flex items-center justify-between px-1">
-            <span className="text-xs font-bold text-neutral-500">Active schedules ({recurring.filter(r => ['income', 'inflow'].includes(r.transactionType?.toLowerCase())).length} In / {recurring.filter(r => ['outflow', 'expense'].includes(r.transactionType?.toLowerCase())).length} Out)</span>
-            <span className="text-xs font-bold text-neutral-700">{recurring.length} total</span>
+        <div className="flex-1 w-full flex flex-col gap-4" style={{ minHeight: '100px' }}>
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-between px-1">
+              <span className="text-xs font-bold text-neutral-500">{t('recurring_transactions_view.active_schedules')}</span>
+              <span className="text-xs font-bold text-neutral-700">{recurring.length} {t('recurring_transactions_view.schedules_total')}</span>
+            </div>
+
+            <div className="flex p-1 bg-neutral-100 rounded-xl">
+              <button 
+                onClick={() => setActiveTab('income')} 
+                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-2 ${activeTab === 'income' ? 'bg-white text-emerald-600 shadow-sm' : 'text-neutral-500 hover:text-neutral-700'}`}
+              >
+                <ArrowUpRight size={14} />
+                Income ({recurring.filter(r => {
+                  const tLow = r.type?.toLowerCase();
+                  const ttLow = r.transactionType?.toLowerCase();
+                  return tLow === 'income' || tLow === 'inflow' || ttLow === 'income' || ttLow === 'inflow';
+                }).length})
+              </button>
+              <button 
+                onClick={() => setActiveTab('expense')} 
+                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-2 ${activeTab === 'expense' ? 'bg-white text-neutral-900 shadow-sm' : 'text-neutral-500 hover:text-neutral-700'}`}
+              >
+                <ArrowDownLeft size={14} />
+                Expense ({recurring.filter(r => {
+                  const tLow = r.type?.toLowerCase();
+                  const ttLow = r.transactionType?.toLowerCase();
+                  return tLow === 'expense' || tLow === 'outflow' || ttLow === 'expense' || ttLow === 'outflow' || tLow === 'outflow';
+                }).length})
+              </button>
+              <button 
+                onClick={() => setActiveTab('transfer')} 
+                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-2 ${activeTab === 'transfer' ? 'bg-white text-blue-600 shadow-sm' : 'text-neutral-500 hover:text-neutral-700'}`}
+              >
+                <ArrowRightLeft size={14} />
+                Transfer ({recurring.filter(r => {
+                  const tLow = r.type?.toLowerCase();
+                  const ttLow = r.transactionType?.toLowerCase();
+                  return tLow === 'transfer' || ttLow === 'transfer';
+                }).length})
+              </button>
+            </div>
           </div>
 
           {loading ? (
             <div className="py-20 flex flex-col items-center gap-3 bg-white border border-neutral-200 rounded-2xl">
               <RefreshCw className="text-neutral-400 animate-spin" size={24} />
-              <span className="text-xs text-neutral-500 font-normal">Loading transaction blueprints...</span>
+              <span className="text-xs text-neutral-500 font-normal">{t('recurring_transactions_view.loading')}</span>
             </div>
           ) : recurring.length === 0 ? (
             <div className="py-16 border border-dashed border-neutral-200 rounded-2xl flex flex-col items-center text-center gap-4 bg-white px-8">
@@ -362,13 +403,25 @@ export const RecurringTransactionsView: React.FC<RecurringTransactionsViewProps>
                 <RefreshCw size={24} />
               </div>
               <div className="flex flex-col gap-1 max-w-sm">
-                <span className="text-sm font-bold text-neutral-700">No active routines configured</span>
-                <p className="text-xs text-neutral-500 leading-relaxed font-normal">Enable the recurring setting inside your ledger transaction sheet to spawn schedules automatically.</p>
+                <span className="text-sm font-bold text-neutral-700">{t('recurring_transactions_view.no_routines')}</span>
+                <p className="text-xs text-neutral-500 leading-relaxed font-normal">{t('recurring_transactions_view.no_routines_desc')}</p>
               </div>
             </div>
           ) : (
             <div className="flex flex-col gap-4">
-              {recurring.map((rec, idx) => {
+              {recurring
+                .filter(rec => {
+                  const tLow = rec.type?.toLowerCase();
+                  const ttLow = rec.transactionType?.toLowerCase();
+                  const isIncome = tLow === 'income' || tLow === 'inflow' || ttLow === 'income' || ttLow === 'inflow';
+                  const isTransfer = tLow === 'transfer' || ttLow === 'transfer';
+                  const isExpense = tLow === 'expense' || tLow === 'outflow' || ttLow === 'expense' || ttLow === 'outflow' || tLow === 'outflow';
+
+                  if (activeTab === 'income') return isIncome;
+                  if (activeTab === 'transfer') return isTransfer;
+                  return isExpense;
+                })
+                .map((rec, idx) => {
                 const accId = rec.sourceAccountId || rec.accountId;
                 const acc = accounts?.find(a => a.id === accId);
                 const titleStr = rec.title || rec.notes || rec.category;

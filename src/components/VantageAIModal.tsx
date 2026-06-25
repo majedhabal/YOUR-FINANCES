@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { X, Send, Sparkles, MessageSquare, Crown } from 'lucide-react';
 import { executeVantageAITask } from '../lib/VantageAIRouter';
 import { PremiumMarketingCard } from './PremiumMarketingCard';
+import { useTranslation } from 'react-i18next';
 
 interface VantageAIModalProps {
   isOpen: boolean;
@@ -15,6 +16,7 @@ interface VantageAIModalProps {
 }
 
 export const VantageAIModal: React.FC<VantageAIModalProps> = ({ isOpen, onClose, uid, accounts, transactions, accountBalances, profile }) => {
+  const { t } = useTranslation();
   const [queryInput, setQueryInput] = useState('');
   const [activeQuery, setActiveQuery] = useState('');
   const [response, setResponse] = useState<string | null>(null);
@@ -22,9 +24,9 @@ export const VantageAIModal: React.FC<VantageAIModalProps> = ({ isOpen, onClose,
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const suggestions = [
-    'Can I afford a 200 unit dinner?',
-    'Analyze my weekly burn rate.',
-    'Compare my account liquidity.'
+    t('vantage_ai_modal.q1'),
+    t('vantage_ai_modal.q2'),
+    t('vantage_ai_modal.q3')
   ];
 
   const handleQuery = async (text: string) => {
@@ -77,10 +79,10 @@ export const VantageAIModal: React.FC<VantageAIModalProps> = ({ isOpen, onClose,
       const textResponse = await executeVantageAITask('portfolio_optimization', {
         prompt: `${context}\n\nUser Query: ${text}`
       });
-      setResponse(textResponse || "I encountered a neural link failure. Re-initializing...");
+      setResponse(textResponse || t('vantage_ai_modal.neural_fail'));
     } catch (error: any) {
       console.error("Vantage AI Error:", error);
-      setResponse(error.message || "My neural link is currently unstable. Protocol failure. Retry sequence initiated.");
+      setResponse(error.message || t('vantage_ai_modal.unstable_fail'));
     } finally {
       setLoading(false);
     }
@@ -112,8 +114,12 @@ export const VantageAIModal: React.FC<VantageAIModalProps> = ({ isOpen, onClose,
                     <Sparkles size={18} className="text-vantage-green" />
                  </div>
                  <div className="flex flex-col">
-                    <h2 className="text-[3vw] font-black text-vantage-green uppercase tracking-[0.4em] leading-none">Advisor AI</h2>
-                    <span className="text-[2vw] text-vantage-muted uppercase tracking-[0.2em] font-black mt-1">Premium Assistant Interface</span>
+                    <h2 className="text-[3vw] font-bold text-vantage-green leading-none" style={{ fontFamily: "'Google Sans', sans-serif" }}>
+                      {t('vantage_ai_modal.advisor_ai', 'Advisor AI')}
+                    </h2>
+                    <span className="text-[2vw] text-vantage-muted font-normal mt-1" style={{ fontFamily: "'Google Sans', sans-serif" }}>
+                      {t('vantage_ai_modal.premium_interface', 'Premium Assistant Interface')}
+                    </span>
                  </div>
               </div>
               <button 
@@ -128,26 +134,33 @@ export const VantageAIModal: React.FC<VantageAIModalProps> = ({ isOpen, onClose,
             <div className="flex-1 overflow-y-auto p-6 space-y-10 scrollbar-hide" ref={scrollRef}>
               {profile.subscriptionTier !== 'premium' ? (
                 <div className="flex flex-col gap-4 py-4">
-                  <PremiumMarketingCard 
-                    featureName="Advisor AI" 
-                    description="Access high-end financial strategies and predictive capital optimization synced with your accounts." 
-                  />
+                   <PremiumMarketingCard 
+                     featureName={t('vantage_ai_modal.advisor_ai')} 
+                     description={t('vantage_ai_modal.premium_description')} 
+                   />
                 </div>
               ) : !response && !loading ? (
                 <div className="flex flex-col gap-10 py-4">
                   <div className="space-y-4">
-                    <h3 className="text-[8vw] font-black text-vantage-text leading-[1.1] uppercase tracking-tighter">Optimize Capital.<br/><span className="text-vantage-green">Query YOUR FINANCES.</span></h3>
-                    <p className="text-[2.5vw] text-vantage-muted uppercase tracking-[0.4em] font-black">Secure Link: Synchronized with Account Records.</p>
+                    <h3 className="text-[8vw] font-bold text-vantage-text leading-[1.1] tracking-tighter" style={{ fontFamily: "'Google Sans', sans-serif" }}>
+                      {t('vantage_ai_modal.optimize_capital', 'Optimize Capital. Query YOUR FINANCES.')}
+                    </h3>
+                    <p className="text-[2.5vw] text-vantage-muted font-normal" style={{ fontFamily: "'Google Sans', sans-serif" }}>
+                      {t('vantage_ai_modal.secure_link', 'Secure Link: Synchronized with Account Records.')}
+                    </p>
                   </div>
 
                   <div className="flex flex-col gap-4">
-                     <span className="text-[2.5vw] font-bold text-vantage-muted uppercase tracking-[0.2em] pl-1">Quick Questions</span>
+                     <span className="text-[2.5vw] font-bold text-vantage-muted pl-1" style={{ fontFamily: "'Google Sans', sans-serif" }}>
+                       {t('vantage_ai_modal.quick_questions', 'Quick Questions')}
+                     </span>
                      <div className="flex flex-col gap-3">
                         {suggestions.map((s, i) => (
                            <button 
                              key={`action-item-${i}`}
                              onClick={() => handleQuery(s)}
-                             className="p-6 bg-vantage-text/5 border border-vantage-text/10 rounded-[1.5rem] text-[3vw] text-vantage-muted font-bold hover:border-vantage-green hover:bg-vantage-green/5 transition-all text-left group flex items-center justify-between uppercase tracking-widest shadow-sm"
+                             className="p-6 bg-vantage-text/5 border border-vantage-text/10 rounded-[1.5rem] text-[3vw] text-vantage-muted font-bold hover:border-vantage-green hover:bg-vantage-green/5 transition-all text-left group flex items-center justify-between shadow-sm"
+                             style={{ fontFamily: "'Google Sans', sans-serif" }}
                            >
                               {s}
                               <Send size={16} className="opacity-0 group-hover:opacity-100 transition-all text-vantage-green" />
@@ -161,9 +174,11 @@ export const VantageAIModal: React.FC<VantageAIModalProps> = ({ isOpen, onClose,
                    {/* User Message */}
                    <div className="flex flex-col items-end gap-3">
                       <div className="bg-vantage-text/5 rounded-3xl rounded-tr-none p-6 max-w-[85%] border border-vantage-text/10 shadow-sm">
-                         <p className="text-[3.5vw] text-vantage-text font-bold uppercase tracking-tight leading-relaxed">{activeQuery}</p>
+                         <p className="text-[3.5vw] text-vantage-text font-bold tracking-tight leading-relaxed" style={{ fontFamily: "'Google Sans', sans-serif" }}>{activeQuery}</p>
                       </div>
-                      <span className="text-[2vw] text-vantage-muted uppercase font-black tracking-[0.4em] pr-2">Request Processed</span>
+                      <span className="text-[2vw] text-vantage-muted font-normal pr-2" style={{ fontFamily: "'Google Sans', sans-serif" }}>
+                        {t('vantage_ai_modal.request_processed', 'Request Processed')}
+                      </span>
                    </div>
 
                    {/* AI Agent Response */}
@@ -172,14 +187,16 @@ export const VantageAIModal: React.FC<VantageAIModalProps> = ({ isOpen, onClose,
                          <div className="w-8 h-8 rounded-xl bg-vantage-green/10 flex items-center justify-center">
                             <Sparkles size={14} className="text-vantage-green" />
                          </div>
-                         <span className="text-[2.5vw] font-black text-vantage-green uppercase tracking-[0.4em]">Advisor AI Response</span>
+                         <span className="text-[2.5vw] font-bold text-vantage-green" style={{ fontFamily: "'Google Sans', sans-serif" }}>
+                           {t('vantage_ai_modal.advisor_response', 'Advisor AI Response')}
+                         </span>
                       </div>
                       
                       {loading ? (
                         <div className="p-12 border border-[#E1E8ED] rounded-[1.5rem] flex flex-col items-center gap-6 shadow-sm" style={{ backgroundColor: '#FFFFFF' }}>
                            <div className="w-10 h-10 border-[3px] border-vantage-green/20 border-t-vantage-green rounded-full animate-spin"></div>
                            <span className="text-[3vw] text-neutral-800 tracking-wide text-center" style={{ fontFamily: '"Google Sans", system-ui, sans-serif', fontWeight: 400 }}>
-                              Analyzing capital matrices via YOUR FINANCES Advisor AI...
+                              {t('vantage_ai_modal.analyzing', 'Analyzing capital matrices via YOUR FINANCES Advisor AI...')}
                            </span>
                         </div>
                       ) : (
@@ -188,15 +205,16 @@ export const VantageAIModal: React.FC<VantageAIModalProps> = ({ isOpen, onClose,
                           animate={{ opacity: 1, y: 0 }}
                           className="p-8 bg-vantage-text/5 border border-vantage-text/10 rounded-[1.5rem] relative shadow-sm overflow-hidden"
                         >
-                           <div className="text-[3.5vw] text-vantage-text leading-relaxed font-medium whitespace-pre-wrap selection:bg-vantage-green/20 relative z-10 tracking-tight">
+                           <div className="text-[3.5vw] text-vantage-text leading-relaxed font-medium whitespace-pre-wrap selection:bg-vantage-green/20 relative z-10 tracking-tight" style={{ fontFamily: "'Google Sans', sans-serif" }}>
                               {response}
                            </div>
                            <div className="mt-10 pt-8 border-t border-vantage-text/10 flex justify-center relative z-10">
                               <button 
                                 onClick={onClose}
-                                className="px-10 py-4 bg-white border border-vantage-text/10 rounded-xl text-[2.5vw] font-black uppercase tracking-[0.4em] text-vantage-muted hover:text-vantage-green hover:border-vantage-green transition-all shadow-sm active:scale-95"
+                                className="px-10 py-4 bg-white border border-vantage-text/10 rounded-xl text-[2.5vw] font-bold text-vantage-muted hover:text-vantage-green hover:border-vantage-green transition-all shadow-sm active:scale-95"
+                                style={{ fontFamily: "'Google Sans', sans-serif" }}
                               >
-                                Close Assistant
+                                {t('vantage_ai_modal.close', 'Close Assistant')}
                               </button>
                            </div>
                         </motion.div>
@@ -216,8 +234,9 @@ export const VantageAIModal: React.FC<VantageAIModalProps> = ({ isOpen, onClose,
                       value={queryInput}
                       onChange={(e) => setQueryInput(e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && handleQuery(queryInput)}
-                      placeholder="Ask a question..."
-                      className="w-full bg-white border border-vantage-text/10 rounded-[1.5rem] py-5 pl-7 pr-16 text-[3.5vw] text-vantage-text focus:border-vantage-green outline-none transition-all placeholder:text-vantage-muted font-bold uppercase tracking-[0.1em] shadow-sm"
+                      placeholder={t('vantage_ai_modal.placeholder', 'Ask a question...')}
+                      className="w-full bg-white border border-vantage-text/10 rounded-[1.5rem] py-5 pl-7 pr-16 text-[3.5vw] text-vantage-text focus:border-vantage-green outline-none transition-all placeholder:text-vantage-muted font-bold shadow-sm"
+                      style={{ fontFamily: "'Google Sans', sans-serif" }}
                     />
                     <button 
                       onClick={() => handleQuery(queryInput)}

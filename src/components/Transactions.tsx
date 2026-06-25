@@ -1,11 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search, Filter, ArrowUpRight, ArrowDownLeft, FileDown, RefreshCw, ChevronRight, Plus, Mic, GitBranch, CalendarClock } from 'lucide-react';
-import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { Search, Filter, ArrowUpRight, ArrowDownLeft, FileDown, RefreshCw, ChevronRight, Plus, Mic, GitBranch, CalendarClock, ShoppingCart, Car, Activity, Tag } from 'lucide-react';
+import { collection, query, orderBy, onSnapshot, getDocs } from 'firebase/firestore';
 import { db } from '../lib/firebase';
+import i18nextInstance from '../lib/i18n';
 import { TransactionDetailModal } from './TransactionDetailModal';
 import { AddTransactionModal } from './AddTransactionModal';
+import { MASTER_CATEGORIES } from '../lib/constants';
+import { getAuth } from 'firebase/auth';
+import { formatLabel } from '../lib/stringUtils';
 
 export interface Transaction {
   id: string;
@@ -27,6 +31,8 @@ export interface Transaction {
   transferSide?: string;
   isUpcomingSalaryAllocation?: boolean;
   hasMirror?: boolean;
+  time?: string;
+  confirmationDate?: string;
 }
 
 interface TransactionsProps {
@@ -42,6 +48,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
 }) => {
   const { t } = useTranslation();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [recurringTransactions, setRecurringTransactions] = useState<Transaction[]>([]);
   const [viewMode, setViewMode] = useState<'current' | 'future'>('current');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState<'All' | 'Inflow' | 'Outflow'>('All');
@@ -54,20 +61,51 @@ export const Transactions: React.FC<TransactionsProps> = ({
     if (!uid) return;
     setLoading(true);
     const txQuery = query(collection(db, 'users', uid, 'transactions'), orderBy('date', 'desc'));
-    const unsubscribe = onSnapshot(txQuery, (snapshot) => {
+    const recQuery = query(collection(db, 'users', uid, 'recurringTransactions'));
+    
+    const unsubscribeTx = onSnapshot(txQuery, (snapshot) => {
       const items: Transaction[] = [];
       snapshot.forEach((doc) => { items.push({ id: doc.id, ...doc.data() } as Transaction); });
       setTransactions(items);
       setLoading(false);
-    }, (err) => { 
-      console.error("Database tracking link block error:", err); 
-      setLoading(false); 
     });
-    return () => unsubscribe();
+
+    const unsubscribeRec = onSnapshot(recQuery, (snapshot) => {
+      const items: Transaction[] = [];
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        const nextDateValue = data.nextExecutionDate || data.nextGenerationDate;
+        let dateStr = nextDateValue;
+        if (nextDateValue && typeof nextDateValue.toDate === 'function') {
+          dateStr = nextDateValue.toDate().toISOString().split('T')[0];
+        } else if (nextDateValue instanceof Date) {
+            dateStr = nextDateValue.toISOString().split('T')[0];
+        }
+
+        console.log("Recurring TX found:", doc.id, dateStr);
+        if (dateStr) {
+          items.push({
+            id: doc.id,
+            date: dateStr,
+            amount: data.amount,
+            notes: data.title || data.notes || 'Recurring Transaction',
+            category: data.category,
+            type: data.transactionType || data.type || 'expense',
+            accountId: data.sourceAccountId || data.accountId,
+            isUpcoming: true
+          } as Transaction);
+        }
+      });
+      setRecurringTransactions(items);
+    });
+    return () => { unsubscribeTx(); unsubscribeRec(); };
   }, [uid]);
 
   const todayStr = new Date().toISOString().split('T')[0];
-  const upcomingTransactions = transactions.filter(t => t.date > todayStr);
+  const upcomingTransactions = [
+    ...transactions.filter(t => t.date > todayStr).map(t => ({ ...t, isUpcoming: true })), 
+    ...recurringTransactions.filter(r => r.date > todayStr).map(t => ({ ...t, isUpcoming: true }))
+  ];
   const historicalTransactions = transactions.filter(t => t.date <= todayStr);
 
   const filterAndSearchList = (list: Transaction[]) => {
@@ -79,15 +117,43 @@ export const Transactions: React.FC<TransactionsProps> = ({
     });
   };
 
+  const groupTransactionsByDate = (list: Transaction[]) => {
+    const groups: { [key: string]: Transaction[] } = {};
+    const sorted = [...list].sort((a, b) => b.date.localeCompare(a.date));
+    sorted.forEach(tx => {
+      if (!groups[tx.date]) groups[tx.date] = [];
+      groups[tx.date].push(tx);
+    });
+    return groups;
+  };
+
+  const formatDateHeader = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const today = new Date();
+    const yesterday = new Date();
+    yesterday.setDate(today.getDate() - 1);
+
+    const isToday = date.toDateString() === today.toDateString();
+    const isYesterday = date.toDateString() === yesterday.toDateString();
+
+    const formattedDate = date.toLocaleDateString(i18nextInstance.language, { month: 'short', day: 'numeric' });
+    
+    if (isToday) return `${t('activity.today')}, ${formattedDate}`;
+    if (isYesterday) return `${t('activity.yesterday')}, ${formattedDate}`;
+    return date.toLocaleDateString(i18nextInstance.language, { weekday: 'long', month: 'short', day: 'numeric' });
+  };
+
   const filteredUpcoming = filterAndSearchList(upcomingTransactions);
   const filteredHistorical = filterAndSearchList(historicalTransactions);
+  const groupedHistorical = groupTransactionsByDate(filteredHistorical);
+  const groupedUpcoming = groupTransactionsByDate(filteredUpcoming);
 
   return (
     <div className="w-full max-w-[1200px] mx-auto px-[clamp(1rem,3vw,2rem)] py-6 box-border flex flex-col gap-6">
       
       {/* UNIFIED CONTROLLER HEADER BAR */}
       <div className="w-full flex flex-col gap-4">
-        <div className="w-full p-4 flex flex-col sm:flex-row justify-between items-center gap-4 bg-white border border-[#F2F4F7] rounded-[24px] shadow-sm">
+        <div className="w-full p-4 flex flex-col sm:flex-row justify-between items-center gap-4 bg-[#FFFFFF] border border-[#F2F4F7] rounded-[24px]">
           <div className="relative w-full sm:max-w-[380px] flex items-center">
             <Search size={18} className="absolute left-4 text-neutral-400 pointer-events-none" />
             <input
@@ -95,7 +161,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={t('activity.search_transactions')}
-              className="w-full bg-[#F9FAFB] border border-[#E5E7EB] rounded-full py-2.5 pl-11 pr-12 text-sm text-[#111C2D] focus:border-[#A6DDB1] outline-none transition-all placeholder:text-neutral-400 font-medium font-sans"
+              className="w-full bg-[#FFFFFF] border border-[#E5E7EB] rounded-full py-2.5 pl-11 pr-12 text-sm text-[#111C2D] focus:border-[#A6DDB1] outline-none transition-all placeholder:text-neutral-400 font-medium font-sans"
             />
             <Filter 
               size={18} 
@@ -110,21 +176,27 @@ export const Transactions: React.FC<TransactionsProps> = ({
           </div>
         </div>
 
-        <div className="w-full p-2 flex justify-between items-center bg-[#F2F4F7] border border-[#E1E8ED] rounded-[24px]">
-          <div className="flex bg-white rounded-full p-1 shadow-sm">
+        <div className="w-full flex justify-between items-center bg-white rounded-[24px]">
+          <div className="flex gap-2">
             <button 
               onClick={() => setViewMode('future')}
-              className={`px-6 py-2.5 rounded-full text-sm transition-all ${viewMode === 'future' ? 'font-bold text-[#111C2D] bg-[#A6DDB1] shadow-sm' : 'font-normal text-[#57606F]'}`}>{t('activity.future_transactions')}</button>
+              className={`p-[6px] rounded-[20px] h-[40px] text-[14px] w-[150px] transition-all font-bold flex items-center justify-center ${viewMode === 'future' ? 'text-[#111C2D] bg-[#A6DDB1]' : 'text-[#57606F]'}`}
+            >
+              {t('activity.future_transactions')}
+            </button>
             <button 
               onClick={() => setViewMode('current')}
-              className={`px-6 py-2.5 rounded-full text-sm transition-all ${viewMode === 'current' ? 'font-bold text-[#111C2D] bg-[#A6DDB1] shadow-sm' : 'font-normal text-[#57606F]'}`}>{t('activity.current_transactions')}</button>
+              className={`p-[6px] rounded-[20px] h-[40px] text-[14px] w-[150px] transition-all font-bold flex items-center justify-center ${viewMode === 'current' ? 'text-[#111C2D] bg-[#A6DDB1]' : 'text-[#57606F]'}`}
+            >
+              {t('activity.current_transactions')}
+            </button>
           </div>
         </div>
       </div>
 
       <AnimatePresence>
         {isFilterDrawerOpen && (
-          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="w-full flex gap-2 p-3 bg-[#F9FAFB] border border-[#E5E7EB] rounded-2xl overflow-hidden shrink-0">
+          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="w-full flex gap-2 p-3 bg-white border border-[#E5E7EB] rounded-2xl overflow-hidden shrink-0">
             {(['All', 'Inflow', 'Outflow'] as const).map((type) => (
               <button
                 key={type}
@@ -145,30 +217,54 @@ export const Transactions: React.FC<TransactionsProps> = ({
       </AnimatePresence>
 
       {/* HISTORICAL LOG CARDS GRID CONTAINER */}
-      <div className="w-full flex flex-col gap-6">
+      <div className="w-full flex flex-col gap-10">
         {viewMode === 'future' ? (
-           <div className="p-5 flex flex-col gap-3 bg-white border border-[#F2F4F7] rounded-[24px] shadow-sm">
-             <h3 className="text-[clamp(1.05rem,2.4vw,1.25rem)] font-semibold text-[#111C2D] m-0 flex items-center gap-2 select-none"><CalendarClock size={18} className="text-[#366945]" /><span>{t('activity.upcoming_transactions')}</span></h3>
-             <div className="flex flex-col w-full divide-y divide-gray-100">
-               {filteredUpcoming.length > 0 ? (
-                 filteredUpcoming.map((tx) => (<TransactionRow key={tx.id} tx={tx} accounts={accounts} onClick={() => setSelectedTx(tx)} />))
-               ) : (
-                 <div className="py-8 text-center text-gray-400 text-sm">{t('activity.no_future_found')}</div>
-               )}
-             </div>
+           <div className="flex flex-col gap-8">
+             {filteredUpcoming.length > 0 ? (
+                Object.entries(groupedUpcoming).map(([date, items]) => (
+                  <div key={date} className="flex flex-col gap-4">
+                    <h3 className="text-xl font-bold text-[#111c2d] pl-1 font-sans">{formatDateHeader(date)}</h3>
+                    <div className="bg-[#FFFFFF] border border-[#F2F4F7] rounded-[24px] overflow-hidden">
+                      {items.map((tx, idx) => (
+                        <React.Fragment key={tx.id}>
+                          <TransactionRow tx={tx} accounts={accounts} onClick={() => setSelectedTx(tx)} />
+                          {idx < items.length - 1 && <div className="mx-6 border-b border-neutral-100" />}
+                        </React.Fragment>
+                      ))}
+                    </div>
+                  </div>
+                ))
+             ) : (
+                <div className="p-10 text-center bg-[#FFFFFF] border border-[#F2F4F7] rounded-[24px] text-neutral-400 font-bold text-sm">
+                  {t('activity.no_future_found')}
+                </div>
+             )}
            </div>
         ) : (
-          <div className="p-5 flex flex-col gap-3 min-h-[250px] bg-white border border-[#F2F4F7] rounded-[24px] shadow-sm">
-            <h3 className="text-[clamp(1.05rem,2.4vw,1.25rem)] font-semibold text-[#111C2D] m-0 flex items-center gap-2 select-none"><RefreshCw size={18} className="text-[#366945]" /><span>{t('activity.title')}</span></h3>
-
+          <div className="flex flex-col gap-8">
             {loading ? (
-              <div className="flex-1 flex justify-center items-center py-12 text-neutral-400 font-medium text-sm gap-2 select-none"><RefreshCw size={16} className="animate-spin text-[#A6DDB1]" /><span>{t('activity.syncing_db')}</span></div>
-            ) : filteredHistorical.length === 0 ? (
-              <div className="flex-1 flex flex-col justify-center items-center py-16 text-center select-none"><span className="text-neutral-400 font-semibold text-sm">{t('activity.no_recorded_logs')}</span></div>
-            ) : (
-              <div className="flex flex-col w-full divide-y divide-white/5">
-                {filteredHistorical.map((tx) => (<TransactionRow key={tx.id} tx={tx} accounts={accounts} onClick={() => setSelectedTx(tx)} />))}
+              <div className="w-full p-12 flex justify-center items-center bg-white border border-[#F2F4F7] rounded-[24px] text-neutral-400 font-bold text-sm gap-3">
+                <RefreshCw size={20} className="animate-spin text-[#366945]" />
+                <span>{t('activity.syncing_db')}</span>
               </div>
+            ) : filteredHistorical.length === 0 ? (
+              <div className="w-full p-16 flex flex-col justify-center items-center bg-[#FFFFFF] border border-[#F2F4F7] rounded-[24px] text-center">
+                <span className="text-neutral-400 font-bold text-base">{t('activity.no_recorded_logs')}</span>
+              </div>
+            ) : (
+              Object.entries(groupedHistorical).map(([date, items]) => (
+                <div key={date} className="flex flex-col gap-4">
+                  <h3 className="text-xl font-bold text-[#111c2d] pl-1 font-sans">{formatDateHeader(date)}</h3>
+                  <div className="bg-[#FFFFFF] border border-[#F2F4F7] rounded-[24px] overflow-hidden">
+                    {items.map((tx, idx) => (
+                      <React.Fragment key={tx.id}>
+                        <TransactionRow tx={tx} accounts={accounts} onClick={() => setSelectedTx(tx)} />
+                        {idx < items.length - 1 && <div className="mx-6 border-b border-[#F9FAFB]" />}
+                      </React.Fragment>
+                    ))}
+                  </div>
+                </div>
+              ))
             )}
           </div>
         )}
@@ -190,34 +286,61 @@ export const Transactions: React.FC<TransactionsProps> = ({
    TRANSACTION ROW CHILD CONTAINER SUB-ELEMENT
    ========================================================================== */
 const TransactionRow: React.FC<{ tx: Transaction; accounts: any[]; onClick: () => void }> = ({ accounts, tx, onClick }) => {
-  const isInflow = tx.type === 'Inflow';
-  const targetAccount = accounts.find(a => a.id === tx.accountId);
-  const displayCategory = (tx.category || 'Discretionary').replace(/__/g, ' — ').replace(/_/g, ' ').toLowerCase();
+  const { t } = useTranslation();
+  const isInflow = ['Inflow', 'income'].includes(tx.type);
+  const isOutflow = ['Outflow', 'expense'].includes(tx.type);
+  const targetAccount = accounts.find(a => (a.accountId || a.id) === tx.accountId);
+  const rawCat = tx.subCategory || tx.subcategory || tx.category || t('common.general');
+  const displayCategory = formatLabel(rawCat.includes(' > ') ? rawCat.split(' > ').pop()! : rawCat);
+
+  const translatedCategory = t(`categories.${displayCategory}`, t(`subcategories.${displayCategory}`, displayCategory));
+  const getCatIcon = () => {
+    const name = displayCategory.toLowerCase();
+    if (name.includes('grocer')) return <ShoppingCart size={20} />;
+    if (name.includes('transp')) return <Car size={20} />;
+    if (name.includes('health')) return <Activity size={20} />;
+    if (name.includes('shop')) return <Tag size={20} />;
+    if (name.includes('income') || name.includes('wage')) return <ArrowDownLeft size={20} />;
+    return <ShoppingCart size={20} />;
+  };
+
+  const getCatStyles = () => {
+    const name = displayCategory.toLowerCase();
+    if (name.includes('grocer')) return { bg: 'bg-[#e8f5e9]', text: 'text-[#366945]' };
+    if (name.includes('transp')) return { bg: 'bg-[#f0f4ff]', text: 'text-[#3f51b5]' };
+    if (name.includes('health')) return { bg: 'bg-[#fff0f0]', text: 'text-[#d32f2f]' };
+    if (name.includes('shop')) return { bg: 'bg-[#ffedfa]', text: 'text-[#c2185b]' };
+    if (name.includes('income') || name.includes('wage')) return { bg: 'bg-[#e8f5e9]', text: 'text-[#366945]' };
+    return { bg: 'bg-[#FFFFFF] border border-[#E5E7EB]', text: 'text-neutral-500' };
+  };
+
+  const styles = getCatStyles();
 
   return (
-    <div onClick={onClick} className="w-full flex items-center justify-between py-3.5 bg-white border-0 border-b border-gray-100 last:border-0 cursor-pointer group transition-all">
-      <div className="flex items-center gap-4 min-w-0 flex-1">
-        <div className={`w-10 h-10 rounded-xl shrink-0 flex items-center justify-center transition-colors ${isInflow ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
-          {isInflow ? <ArrowDownLeft size={18} /> : <ArrowUpRight size={18} />}
+    <div 
+      onClick={onClick} 
+      className="w-full flex items-center justify-between p-6 bg-white cursor-pointer hover:bg-[#F9FAFB] transition-colors active:scale-[0.99] select-none"
+    >
+      <div className="flex items-center gap-5 min-w-0 flex-1">
+        <div className={`w-12 h-12 rounded-full shrink-0 flex items-center justify-center ${styles.bg} ${styles.text}`}>
+          {getCatIcon()}
         </div>
-        <div className="flex flex-col min-w-0 flex-1 select-none">
-          <span className="text-[clamp(0.95rem,2.2vw,1.1rem)] font-semibold text-[#111C2D] group-hover:text-[#366945] transition-colors truncate text-human-sentence">{tx.notes || 'Unrecorded financial transaction line log'}</span>
-          <div className="flex items-center gap-2 text-xs text-[#8c8c99] font-medium mt-0.5 capitalize truncate">
-            <span className="truncate text-human-sentence">{displayCategory}</span>
-            <span className="w-1 h-1 rounded-full bg-gray-300 shrink-0" />
-            <span className="truncate">{targetAccount?.name || 'Vantage Wallet'}</span>
+        <div className="flex flex-col min-w-0 flex-1">
+          <span className="text-[14px] font-normal text-[#111C2D] truncate font-sans">
+            {tx.isUpcoming ? `${translatedCategory} — ${new Date(tx.date).toLocaleDateString(i18nextInstance.language, { month: 'short', day: 'numeric', year: 'numeric' })}` : translatedCategory}
+          </span>
+          <div className="flex items-center gap-1.5 text-[14px] text-neutral-400 font-bold mt-0.5 font-sans">
+            <span className="truncate">{targetAccount?.name || t('common.checking_account')}</span>
           </div>
         </div>
       </div>
-      <div className="flex items-center gap-3 shrink-0 pl-4 text-right">
-        {tx.isSplit && <div className="p-1.5 rounded-lg bg-[#366945]/10 border border-[#366945]/20 text-[#366945] shrink-0"><GitBranch size={13} /></div>}
-        <div className="flex flex-col items-end select-none">
-          <span className={`text-[clamp(1.05rem,2.5vw,1.25rem)] font-bold tracking-tight whitespace-nowrap ${isInflow ? 'text-emerald-600' : 'text-[#111C2D]'}`}>
-            {isInflow ? '+' : '-'}{tx.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-          </span>
-          <span className="text-[10px] text-gray-400 font-mono tracking-wider mt-0.5 shrink-0">{tx.date}</span>
-        </div>
-        <ChevronRight size={16} className="text-gray-300 group-hover:text-[#111C2D] group-hover:translate-x-0.5 transition-all hidden sm:block" />
+      <div className="shrink-0 pl-4 text-right flex flex-col items-end">
+        <span className={`text-[14px] font-bold font-sans ${isInflow ? 'text-[#366945]' : 'text-[#111C2D]'}`}>
+          {isInflow ? '+' : '-'}{targetAccount?.currency || 'AED'} {tx.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+        </span>
+        <span className="text-[11px] text-neutral-400 font-bold font-sans mt-0.5">
+          {tx.time || '10:42 AM'}
+        </span>
       </div>
     </div>
   );

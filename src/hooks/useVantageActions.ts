@@ -24,13 +24,41 @@ export function useVantageActions(uid?: string) {
     }
 
     const accColRef = collection(db, 'users', userId, 'accounts');
-    const newDocRef = doc(accColRef);
-    await addDoc(accColRef, {
+    
+    // Rule 17: Zero-Sum Initialization
+    const accountDoc = {
       ...accountData,
-      startingBalance: initialFunds,
+      startingBalance: 0,
+      currentBalance: 0,
       createdAt: new Date().toISOString()
-    });
-    return { id: newDocRef.id, ...accountData };
+    };
+    
+    const newDocRef = await addDoc(accColRef, accountDoc);
+    
+    // Rule 17: Generate starting balance transaction
+    if (initialFunds !== 0) {
+      const txColRef = collection(db, 'users', userId, 'transactions');
+      await addDoc(txColRef, {
+        userId,
+        accountId: newDocRef.id,
+        amount: Math.abs(initialFunds),
+        type: initialFunds > 0 ? 'income' : 'expense',
+        category: 'Income',
+        subcategory: 'starting_balance',
+        notes: 'Initial Balance Setup',
+        date: new Date().toISOString().split('T')[0],
+        status: 'confirmed',
+        createdAt: new Date().toISOString()
+      });
+      
+      // Sync balance to account document
+      const accountRef = doc(db, 'users', userId, 'accounts', newDocRef.id);
+      await updateDoc(accountRef, {
+        currentBalance: initialFunds
+      });
+    }
+
+    return { id: newDocRef.id, ...accountDoc, currentBalance: initialFunds };
   };
 
   const updateTransaction = async (transactionId: string, updates: any) => {
