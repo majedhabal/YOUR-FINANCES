@@ -27,11 +27,13 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({ onLanguageCh
     }
   };
 
+  const currentLang = (i18n.language || 'en').split('-')[0];
+
   return (
     <div className={`relative flex items-center gap-2 ${className}`}>
       <Globe className="w-5 h-5 text-neutral-500" />
       <select
-        value={i18n.language}
+        value={currentLang}
         onChange={(e) => changeLanguage(e.target.value)}
         className="bg-transparent border-none outline-none font-sans text-neutral-800 cursor-pointer"
       >

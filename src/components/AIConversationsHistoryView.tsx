@@ -32,7 +32,31 @@ export const AIConversationsHistoryView: React.FC<AIConversationsHistoryViewProp
     try {
       const stored = localStorage.getItem(historyKey);
       if (stored) {
-        setConversations(JSON.parse(stored));
+        let list = JSON.parse(stored);
+        
+        // Migrate multiple separate conversation entries into a single continuous Vantage AI chat
+        if (Array.isArray(list) && list.length > 1) {
+          const sortedConvos = [...list].sort((a, b) => a.timestamp - b.timestamp);
+          const allMessages: Message[] = [];
+          
+          sortedConvos.forEach(c => {
+            if (Array.isArray(c.messages)) {
+              allMessages.push(...c.messages);
+            }
+          });
+          
+          const combinedConvo: Conversation = {
+            id: 'vantage_ai_global_chat',
+            title: 'Vantage AI Assistant Chat',
+            timestamp: list[0]?.timestamp || Date.now(),
+            messages: allMessages
+          };
+          
+          list = [combinedConvo];
+          localStorage.setItem(historyKey, JSON.stringify(list));
+        }
+        
+        setConversations(list);
       } else {
         setConversations([]);
       }
@@ -66,6 +90,7 @@ export const AIConversationsHistoryView: React.FC<AIConversationsHistoryViewProp
   };
 
   const handleOpenConversation = (convo: Conversation) => {
+    (window as any).__vantage_active_chat = convo;
     // Fire event to open in the active chat overlay drawer modal
     window.dispatchEvent(new CustomEvent('open-vantage-ai-chat', { detail: convo }));
   };
@@ -85,14 +110,14 @@ export const AIConversationsHistoryView: React.FC<AIConversationsHistoryViewProp
         >
           <ChevronLeft size={20} />
         </button>
-        <span className="text-[10px] sm:text-xs font-black uppercase text-vantage-muted tracking-[0.2em]">{t('ai_history.archived_dialogues')}</span>
+        <span className="text-[10px] sm:text-xs font-normal text-vantage-muted">{t('ai_history.archived_dialogues')}</span>
       </div>
 
       <div className="w-full max-w-2xl mx-auto px-6 flex-1 flex flex-col gap-6">
         {/* Section Headline */}
         <div className="flex flex-col gap-1.5 border-b border-neutral-100 dark:border-white/5 pb-4">
-          <h1 className="text-2xl sm:text-3xl font-black uppercase text-vantage-text dark:text-white tracking-tight">{t('ai_history.previous_ai_conversations')}</h1>
-          <p className="text-xs text-vantage-muted tracking-wide font-semibold">
+          <h1 className="text-2xl sm:text-3xl font-bold text-vantage-text dark:text-white tracking-tight">{t('ai_history.previous_ai_conversations')}</h1>
+          <p className="text-xs text-vantage-muted font-normal">
             {t('ai_history.history_description')}
           </p>
         </div>
@@ -103,8 +128,8 @@ export const AIConversationsHistoryView: React.FC<AIConversationsHistoryViewProp
               <MessageSquare size={22} />
             </div>
             <div className="flex flex-col gap-1">
-              <h3 className="text-sm font-extrabold uppercase text-vantage-text dark:text-neutral-200 tracking-wider">{t('ai_history.no_conversations_found')}</h3>
-              <p className="text-[11px] text-vantage-muted max-w-xs font-semibold leading-relaxed">
+              <h3 className="text-sm font-bold text-vantage-text dark:text-neutral-200">{t('ai_history.no_conversations_found')}</h3>
+              <p className="text-[11px] text-vantage-muted max-w-xs font-normal leading-relaxed">
                 {t('ai_history.no_conversations_desc')}
               </p>
             </div>
@@ -134,10 +159,10 @@ export const AIConversationsHistoryView: React.FC<AIConversationsHistoryViewProp
                         <MessageSquare size={18} />
                       </div>
                       <div className="flex flex-col min-w-0 gap-1 select-none">
-                        <span className="font-extrabold text-vantage-text dark:text-neutral-150 text-xs sm:text-sm truncate pr-2 group-hover:text-emerald-600 dark:group-hover:text-vantage-green transition-colors">
+                        <span className="font-bold text-vantage-text dark:text-neutral-150 text-xs sm:text-sm truncate pr-2 group-hover:text-emerald-600 dark:group-hover:text-vantage-green transition-colors">
                           {convo.title}
                         </span>
-                        <div className="flex items-center gap-1.5 text-neutral-400 dark:text-neutral-500 font-mono text-[9px]">
+                        <div className="flex items-center gap-1.5 text-neutral-400 dark:text-neutral-500 font-normal text-[9px]">
                           <Calendar size={10} />
                           <span>{dateStr}</span>
                           <span className="w-1 h-1 rounded-full bg-neutral-300 dark:bg-neutral-700"></span>

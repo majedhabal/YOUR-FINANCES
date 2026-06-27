@@ -34,11 +34,12 @@ export const DebtTransactionModal: React.FC<{
     };
   }, [isOpen]);
 
+  const activeAccounts = accounts.filter(acc => !acc.isArchived);
   useEffect(() => {
-    if (accounts.length > 0 && !sourceAccountId) {
-      setSourceAccountId(accounts[0].id);
+    if (activeAccounts.length > 0 && !sourceAccountId) {
+      setSourceAccountId(activeAccounts[0].id);
     }
-  }, [accounts]);
+  }, [activeAccounts]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -95,7 +96,7 @@ export const DebtTransactionModal: React.FC<{
               <div className="space-y-1">
                 <label className="text-xs font-bold text-[#8c8c99] px-1">{t('debt_transaction_modal.source_account', 'Source Account')}</label>
                 <select value={sourceAccountId} onChange={e => setSourceAccountId(e.target.value)} className="w-full bg-[#f4f4f8] border border-[#d8d8e5] rounded-xl px-4 py-3 text-sm focus:border-[#a6ddb1] outline-none">
-                  {accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name}</option>)}
+                  {activeAccounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name}</option>)}
                 </select>
               </div>
 
@@ -104,7 +105,7 @@ export const DebtTransactionModal: React.FC<{
                   <label className="text-xs font-bold text-[#8c8c99] px-1">{t('debt_transaction_modal.destination_account', 'Destination Account')}</label>
                   <select value={destinationAccountId} onChange={e => setDestinationAccountId(e.target.value)} className="w-full bg-[#f4f4f8] border border-[#d8d8e5] rounded-xl px-4 py-3 text-sm focus:border-[#a6ddb1] outline-none">
                     <option value="">{t('debt_transaction_modal.select_account', 'Select Account')}</option>
-                    {accounts.filter(acc => acc.id !== sourceAccountId).map(acc => <option key={acc.id} value={acc.id}>{acc.name}</option>)}
+                    {activeAccounts.filter(acc => acc.id !== sourceAccountId).map(acc => <option key={acc.id} value={acc.id}>{acc.name}</option>)}
                   </select>
                 </div>
               )}

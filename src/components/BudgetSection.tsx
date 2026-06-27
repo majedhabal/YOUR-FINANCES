@@ -36,7 +36,7 @@ const isTxMatchingBudget = (tx: any, budget: any) => {
   return false;
 };
 
-const getGraphData = (budget: any, transactions: any[]) => {
+const getGraphData = (budget: any, transactions: any[], locale: string) => {
   const data = [];
   const now = new Date();
   for (let i = 13; i >= 0; i--) {
@@ -49,7 +49,7 @@ const getGraphData = (budget: any, transactions: any[]) => {
       .reduce((sum, tx) => sum + (tx.amount || 0), 0);
       
     data.push({
-      name: d.toLocaleDateString(undefined, { day: 'numeric', month: 'short' }),
+      name: d.toLocaleDateString(locale, { day: 'numeric', month: 'short' }),
       amount: daySpent
     });
   }
@@ -156,7 +156,7 @@ export const BudgetSection: React.FC<{
 
   const renderBudgetCard = (b: any, bIdx?: number) => {
     const isExpanded = expandedBudgetId === b.id;
-    const graphData = isExpanded ? getGraphData(b, transactions) : [];
+    const graphData = isExpanded ? getGraphData(b, transactions, i18n.language) : [];
 
     return (
       <div key={`${b.id || 'b'}-${bIdx || 0}`} className="flex flex-col gap-2">
@@ -190,7 +190,7 @@ export const BudgetSection: React.FC<{
               className="overflow-hidden bg-neutral-50 rounded-xl border border-neutral-100 p-4"
             >
                <div className="mb-3 flex items-center justify-between">
-                  <span className="text-[10px] font-bold text-neutral-400 tracking-wider" style={{ fontFamily: "'Google Sans', sans-serif" }}>Spending Trend (Last 14 Days)</span>
+                  <span className="text-[10px] font-bold text-neutral-400 tracking-wider" style={{ fontFamily: "'Google Sans', sans-serif" }}>{t('budget_section.spending_trend_14_days', 'Spending Trend (Last 14 Days)')}</span>
                   <span className="text-[10px] font-bold text-[#366945]" style={{ fontFamily: "'Google Sans', sans-serif" }}>{b.currency || 'AED'}</span>
                </div>
                <div className="h-32 w-full">

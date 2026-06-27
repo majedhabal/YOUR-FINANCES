@@ -84,6 +84,7 @@ export const NetWorthBreakdownModal: React.FC<NetWorthBreakdownModalProps> = ({
 
   // User requested formula: Net Worth = Confirmed income - Total Debt
   // Refined to include both 'income' and 'Inflow' types and only asset account starting balances
+  // We must avoid double-counting if a starting balance is already ledgered as a transaction.
   const confirmedIncomeTxSum = transactions
     .filter(tx => 
       (tx.type === 'income' || tx.type === 'Inflow') && 
@@ -103,7 +104,16 @@ export const NetWorthBreakdownModal: React.FC<NetWorthBreakdownModalProps> = ({
       !liabilityTypes.includes(acc.type) && 
       acc.loanDirection !== 'lent'
     )
-    .reduce((sum, acc) => sum + (Number(acc.startingBalance || 0) * getRateToAED(acc.currency || 'AED')), 0);
+    .reduce((sum, acc) => {
+      const accountId = String(acc.id);
+      const hasLedgeredStartingBalance = transactions.some(tx => 
+        (tx.accountId === accountId || tx.toAccountId === accountId) && 
+        (tx.subcategory === 'starting_balance' || tx.notes === 'Initial Balance Setup' || tx.notes === 'Starting Balance' || tx.subcategory === 'Starting Balance')
+      );
+      // If it's already in the ledger, don't add it from the account field
+      if (hasLedgeredStartingBalance) return sum;
+      return sum + (Number(acc.startingBalance || 0) * getRateToAED(acc.currency || 'AED'));
+    }, 0);
 
   const totalConfirmedIncome = (confirmedIncomeTxSum + startingBalancesSum) / baseRateToAED;
   const netWorthValue = totalConfirmedIncome - totalLiabilities;
@@ -338,7 +348,7 @@ export const NetWorthBreakdownModal: React.FC<NetWorthBreakdownModalProps> = ({
                               }} 
                               className="tabular-nums leading-none"
                             >
-                              {acc.originalBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              {acc.originalBalance < 0 ? '-' : ''}{Math.abs(acc.originalBalance).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                               <span 
                                 style={{ 
                                   fontFamily: "'Google Sans', sans-serif", 
@@ -361,7 +371,7 @@ export const NetWorthBreakdownModal: React.FC<NetWorthBreakdownModalProps> = ({
                                 }} 
                                 className="tabular-nums mt-1 leading-none"
                               >
-                                ≈ {acc.balanceInPrimary.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {primaryCurrency}
+                                ≈ {acc.balanceInPrimary < 0 ? '-' : ''}{Math.abs(acc.balanceInPrimary).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {primaryCurrency}
                               </span>
                             )}
                           </div>
@@ -471,7 +481,7 @@ export const NetWorthBreakdownModal: React.FC<NetWorthBreakdownModalProps> = ({
                               }} 
                               className="tabular-nums leading-none"
                             >
-                              {acc.originalBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              {acc.originalBalance < 0 ? '-' : ''}{Math.abs(acc.originalBalance).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                               <span 
                                 style={{ 
                                   fontFamily: "'Google Sans', sans-serif", 
@@ -494,7 +504,7 @@ export const NetWorthBreakdownModal: React.FC<NetWorthBreakdownModalProps> = ({
                                 }} 
                                 className="tabular-nums mt-1 leading-none"
                               >
-                                ≈ {acc.balanceInPrimary.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {primaryCurrency}
+                                ≈ {acc.balanceInPrimary < 0 ? '-' : ''}{Math.abs(acc.balanceInPrimary).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {primaryCurrency}
                               </span>
                             )}
                           </div>

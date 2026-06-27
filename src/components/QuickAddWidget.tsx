@@ -5,6 +5,7 @@ import { db, auth } from '../lib/firebase';
 import { collection, doc, query, onSnapshot, setDoc, deleteDoc, runTransaction, serverTimestamp } from 'firebase/firestore';
 import { Plus, Trash2, Smartphone, HelpCircle, Check, Sparkles, Sliders, ChevronDown, ChevronUp, AlertCircle, Info, Landmark, Wallet, PlusCircle } from 'lucide-react';
 import { triggerHaptic, hapticPresets } from '../lib/haptics';
+import { HybridWidgetSimulator } from './HybridWidgetSimulator';
 
 interface QuickAddWidgetProps {
   uid: string;
@@ -643,13 +644,20 @@ export const QuickAddWidget: React.FC<QuickAddWidgetProps> = ({ uid }) => {
           )}
         </div>
 
-        {/* Right Column (Placeholder for actual Android Widget instructions) */}
-        <div className="lg:col-span-7 flex flex-col items-center justify-center p-8 border-2 border-dashed border-neutral-200 rounded-3xl text-center">
-            <Smartphone size={48} className="text-neutral-300 mb-4" />
-            <h3 className="text-sm font-bold text-neutral-600 mb-2">{t('quick_add_widgets.side_header')}</h3>
-            <p className="text-xs font-normal text-neutral-500 max-w-[300px]">
-              {t('quick_add_widgets.side_desc')}
-            </p>
+        {/* Right Column (Hybrid Widget Simulator) */}
+        <div className="lg:col-span-7 flex flex-col items-center">
+            <div className="text-center mb-6 max-w-sm">
+                <h3 className="text-sm font-bold text-[#A6DDB1] mb-2">{t('quick_add_widgets.side_header')}</h3>
+                <p className="text-xs font-normal text-black">
+                    {t('quick_add_widgets.side_desc')}
+                </p>
+            </div>
+            
+            <HybridWidgetSimulator 
+                uid={uid}
+                budgets={budgets}
+                accounts={accounts}
+            />
         </div>
 
       </div>

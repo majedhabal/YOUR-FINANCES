@@ -14,7 +14,8 @@ import { VantageDataErrorBoundary } from './components/VantageDataErrorBoundary'
 import { RefreshCw } from 'lucide-react';
 import i18n from './lib/i18n';
 import { I18nextProvider, useTranslation } from 'react-i18next';
-import { Essentials } from './components/Essentials';
+import { Essentials, MilestoneConfigModal } from './components/Essentials';
+import { DebtMilestoneConfigModal } from './components/DebtMilestoneConfigModal';
 import { Accounts } from './components/Accounts';
 import { VantageAI } from './components/VantageAI';
 import { Transactions } from './components/Transactions';
@@ -42,7 +43,10 @@ function AppContent() {
   // Feature Modal Interface Toggles
   const [isAIModalOpen, setIsAIModalOpen] = useState(false);
   const [isTxModalOpen, setIsTxModalOpen] = useState(false);
+  const [txMode, setTxMode] = useState<'expense' | 'income' | 'transfer'>('expense');
   const [isAccountModalOpen, setIsAddAccountOpen] = useState(false);
+  const [isMilestoneModalOpen, setIsMilestoneModalOpen] = useState(false);
+  const [isDebtMilestoneModalOpen, setIsDebtMilestoneModalOpen] = useState(false);
   const [currentTourStep, setCurrentTourStep] = useState<number | null>(null);
 
   // Synchronized state pools for analytics routing
@@ -82,9 +86,40 @@ function AppContent() {
     const handleSwitchTab = (e: any) => {
       if (e.detail?.tab) setActiveTab(e.detail.tab);
     };
+    const handleOpenAIChat = () => {
+      setIsAIModalOpen(true);
+    };
     window.addEventListener('switch-tab', handleSwitchTab);
-    return () => window.removeEventListener('switch-tab', handleSwitchTab);
+    window.addEventListener('open-vantage-ai-chat', handleOpenAIChat);
+    return () => {
+      window.removeEventListener('switch-tab', handleSwitchTab);
+      window.removeEventListener('open-vantage-ai-chat', handleOpenAIChat);
+    };
   }, []);
+
+  useEffect(() => {
+    const handleForwardSavings = () => {
+      setIsMilestoneModalOpen(true);
+    };
+    const handleForwardDebt = () => {
+      setIsDebtMilestoneModalOpen(true);
+    };
+
+    window.addEventListener('trigger-savings-goal-config', handleForwardSavings);
+    window.addEventListener('trigger-debt-config', handleForwardDebt);
+    return () => {
+      window.removeEventListener('trigger-savings-goal-config', handleForwardSavings);
+      window.removeEventListener('trigger-debt-config', handleForwardDebt);
+    };
+  }, []);
+
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent('milestone-modal-toggled', { detail: { isOpen: isMilestoneModalOpen } }));
+  }, [isMilestoneModalOpen]);
+
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent('debt-milestone-modal-toggled', { detail: { isOpen: isDebtMilestoneModalOpen } }));
+  }, [isDebtMilestoneModalOpen]);
 
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
@@ -170,7 +205,7 @@ function AppContent() {
 
   // GATE A: Enforce password authentication wall
   if (!user) {
-    return <BiometricLogin onSuccess={(profileData) => setProfile(profileData)} />;
+    return <BiometricLogin onSuccess={(profileData) => { setUser({ uid: profileData.uid, email: profileData.email }); setProfile(profileData); }} />;
   }
 
   // GATE B: Defer advanced features until onboarding registration checks clear
@@ -182,11 +217,13 @@ function AppContent() {
     <Layout
       activeTab={activeTab}
       setActiveTab={setActiveTab}
-      isPremium={profile.subscriptionTier === 'premium'}
+      isPremium={!!(profile.isPremium || (profile.subscriptionTier && profile.subscriptionTier.toLowerCase() !== 'free'))}
       isAIModalOpen={isAIModalOpen}
       setIsAIModalOpen={setIsAIModalOpen}
       isTxModalOpen={isTxModalOpen}
       setIsTxModalOpen={setIsTxModalOpen}
+      txMode={txMode}
+      setTxMode={setTxMode}
       profile={profile}
       accounts={accounts}
       transactions={transactions}
@@ -271,6 +308,8 @@ function AppContent() {
         onSuccess={() => {}} 
         accounts={accounts}
         profile={profile}
+        mode={txMode}
+        setMode={setTxMode}
       />
 
       <AddAccountModal 
@@ -279,6 +318,25 @@ function AppContent() {
         uid={user.uid} 
         onAccountAdded={() => {}} 
         profile={profile}
+      />
+
+      <MilestoneConfigModal 
+        isOpen={isMilestoneModalOpen}
+        onClose={() => setIsMilestoneModalOpen(false)}
+        profile={profile}
+        editingMilestone={null}
+        accounts={accounts}
+        allTransactions={transactions}
+        exchangeRates={exchangeRates}
+      />
+
+      <DebtMilestoneConfigModal
+        isOpen={isDebtMilestoneModalOpen}
+        onClose={() => setIsDebtMilestoneModalOpen(false)}
+        profile={profile}
+        editingMilestone={null}
+        accounts={accounts}
+        exchangeRates={exchangeRates}
       />
 
       {/* PRODUCT TOUR OVERLAY LAYER */}

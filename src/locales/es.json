@@ -28,7 +28,15 @@
     "strategic_profile": "Perfil estratégico",
     "full_name": "Nombre completo",
     "date_of_birth": "Fecha de nacimiento",
-    "marital_status": "Estado civil",
+    "marital_status": "Estado civil"
+  },
+  "marital_status_options": {
+    "single": "Soltero/a",
+    "married": "Casado/a",
+    "widowed": "Viudo/a",
+    "others": "Otro/a"
+  },
+  "settings": {
     "dependents": "Dependientes",
     "north_star_goal": "Objetivo principal",
     "aesthetic_system": "Estética y sistema",
@@ -111,6 +119,15 @@
     "active_viewing_period": "Periodo de visualización activo",
     "breakdown": "Desglose"
   },
+  "salary_overview": {
+    "title": "Salario mensual",
+    "subtitle": "Haga clic para administrar su asignación",
+    "view_breakdown": "Ver desglose",
+    "browse_all_categories": "Examinar todas las categorías y subcategorías",
+    "no_income_sources_linked": "No hay fuentes de ingresos vinculadas",
+    "link_recurring_stream": "Vincule un flujo recurrente para comenzar la asignación",
+    "link_first_income_source": "Vincular primera fuente de ingresos"
+  },
   "activity": {
     "title": "Actividad",
     "search_transactions": "Buscar transacciones...",
@@ -160,7 +177,7 @@
   },
   "analytics": {
     "title": "Análisis",
-    "analysis_overview": "Resumen de análisis",
+    "analysis_overview": "Visión general del análisis",
     "add_transaction": "Añadir transacción",
     "add_account": "Añadir cuenta",
     "timeline_now": "Ahora",
@@ -192,7 +209,6 @@
     "last_30_days_comparison": "Comparación últimos 30 días",
     "total_inflow": "Entradas totales",
     "burn_rate": "Tasa de consumo",
-    "net_worth": "Patrimonio neto",
     "cash_available": "Efectivo disponible",
     "vantage_insight": "Vantage Insight",
     "total_debts": "Deuda total",
@@ -212,8 +228,6 @@
     "apply_to_budget": "Aplicar al presupuesto",
     "future_cash_flow": "Futuro flujo de caja",
     "projected_6_months": "Proyectado para los próximos 6 meses",
-    "income": "Ingresos",
-    "expenses": "Gastos",
     "avg_net_surplus": "Promedio de superávit neto",
     "liquidity_score": "Puntuación de liquidez",
     "vantage_ai_prediction": "Predicción de IA Vantage",
@@ -231,7 +245,6 @@
     "current_situation": "Situación actual",
     "historical_analysis": "Análisis histórico",
     "forecast": "Pronóstico",
-    "analysis_overview": "Visión general del análisis",
     "complete_history": "Historial completo",
     "last": "Último"
   },
@@ -250,14 +263,12 @@
     "unrecorded_transaction": "Registro de transacción financiera no grabado"
   },
   "budgets": {
-    "title": "Presupuestos",
-    "essential_needs": "Necesidades esenciales",
-    "personal_wants": "Deseos personales",
-    "savings": "Ahorros",
-    "remaining": "Restante",
-    "add_spend": "Añadir gasto",
-    "recent_transactions": "Transacciones recientes",
-    "view_all": "Ver todo",
+    "envelope_budget_pools": "grupos de presupuesto de sobres",
+    "automated_salary_breakdowns": "Desgloses salariales automatizados y límites de gasto",
+    "configure_target_envelope": "Configurar sobre objetivo",
+    "syncing_active_constraints": "Sincronizando restricciones activas...",
+    "no_active_tracking_envelopes": "No se iniciaron sobres de seguimiento activos",
+    "initialize_envelope_desc": "Inicialice un bloque de destino de parámetros de asignación de sobre desde sus paneles de ventana de creación de transacciones para automatizar las asignaciones.",
     "envelope_limit": "Límite del sobre"
   },
   "debt_management": {
@@ -573,15 +584,6 @@
     "used": "Usado",
     "add_spend": "Añadir gasto"
   },
-  "budgets": {
-    "envelope_budget_pools": "grupos de presupuesto de sobres",
-    "automated_salary_breakdowns": "Desgloses salariales automatizados y límites de gasto",
-    "configure_target_envelope": "Configurar sobre objetivo",
-    "syncing_active_constraints": "Sincronizando restricciones activas...",
-    "no_active_tracking_envelopes": "No se iniciaron sobres de seguimiento activos",
-    "initialize_envelope_desc": "Inicialice un bloque de destino de parámetros de asignación de sobre desde sus paneles de ventana de creación de transacciones para automatizar las asignaciones.",
-    "envelope_limit": "Límite del sobre"
-  },
   "budget_section": {
     "rent_and_utilities": "Alquiler y utilidades",
     "food_and_dining": "Comida y restaurantes",
@@ -600,11 +602,14 @@
     "spent_percent": "{{percent}}% gastado",
     "essential_needs_header": "Necesidades Esenciales",
     "personal_wants_header": "Deseos Personales",
-    "emergency_funds_header": "Fondos de Emergencia"
+    "emergency_funds_header": "Fondos de Emergencia",
+    "spending_trend_14_days": "Tendencia de gastos (Últimos 14 días)"
   },
   "footer": {
     "tagline": "Tu Futura Libertad Financiera comienza con YOUR FINANCES",
+    "tagline_description": "Un diseño de centro de comando hermoso, ligero y con prioridad en la seguridad que mantiene las cuentas corrientes, los presupuestos manuales, los sobres de efectivo físico y los pasivos en una alineación relacional absoluta dentro de bases de datos seguras del enclave de los EAU.",
     "branding": "YOUR FINANCES por ME Vantage",
+    "branding_description": "Todas sus finanzas consolidadas bajo una vista prístina.",
     "framework": "Marco de Seguridad Financiera de los EAU",
     "agree_to_privacy": "Estoy de acuerdo con ",
     "privacy_policy": "Política de Privacidad",
@@ -666,7 +671,7 @@
     "nature_want": "Deseo",
     "nature_must": "Obligatorio",
     "nature_income": "Ingreso",
-    "unarchive_subcategory_title": "Desarchivar Subcategoría",
+    "unarchive_subcategory_title": "DESARCHIVAR SUBCATEGORÍA",
     "append_placeholder": "Añadir...",
     "add_button": "AÑADIR",
     "modify_node": "Modificar Nodo",
@@ -686,7 +691,6 @@
     "archive_category_title": "ARCHIVAR CATEGORÍA",
     "unarchive_category_title": "DESARCHIVAR CATEGORÍA",
     "archive_subcategory_title": "ARCHIVAR SUBCATEGORÍA",
-    "unarchive_subcategory_title": "DESARCHIVAR SUBCATEGORÍA",
     "delete_category_body": "¿Está seguro de que desea eliminar esta categoría?",
     "delete_subcategory_body": "¿Está seguro de que desea eliminar esta subcategoría?",
     "archive_category_body": "¿Está seguro de que desea archivar esta categoría?",
@@ -790,7 +794,8 @@
     "create_new_debt": "Crear nueva deuda",
     "create_new_income": "Crear nuevo ingreso",
     "create_new_expense": "Crear nuevo gasto",
-    "create_new_saving_goal": "Crear nueva meta de ahorro"
+    "create_new_saving_goal": "Crear nueva meta de ahorro",
+    "scan_receipt": "Escanear recibo con IA"
   },
   "net_worth_breakdown_modal": {
     "title": "Cálculo del patrimonio neto",
@@ -809,12 +814,68 @@
   },
   "notification_dispatch_hub": {
     "title": "Notificaciones",
-    "active_drafts": "Borradores activos",
-    "checklist_title": "Lista de verificación financiera",
-    "checklist_add_placeholder": "Agregar nueva tarea...",
+    "active_drafts": "Borradores Activos",
+    "checklist_title": "Lista de Verificación Financiera",
+    "checklist_add_placeholder": "Añadir una nueva tarea...",
     "confirm_btn": "Confirmar",
     "dismiss_btn": "Descartar",
-    "approval_required": "Aprobación requerida"
+    "approval_required": "Aprobación Requerida",
+    "hub_title": "Vantage Dispatch Hub",
+    "hub_subtitle": "Flujos agregados y tareas pendientes",
+    "upcoming_payday": "Alerta de próximo día de pago",
+    "payday_alert_desc": "Su ingreso base mensual se depositará pronto el Día {{day}}. Configure su matriz de desglose para asegurar la asignación de su presupuesto.",
+    "configure_breakdown": "Configurar desglose",
+    "upcoming_allocations": "Próximas asignaciones",
+    "pending_count": "{{count}} pendiente",
+    "salary_distribution": "Distribución salarial de {{month}} {{year}}",
+    "allocations_mature_desc": "Su asignación planificada está madura. Confirmar distribuirá los fondos a sus presupuestos de sobres designados y ejecutará transferencias internas.",
+    "verify_salary_receipt": "Verificar recibo de salario",
+    "allocation_checklist": "Lista de asignación",
+    "allocations_done": "{{count}} / {{total}} Hecho",
+    "transfer_to": "Transferir a {{name}}",
+    "confirmed": "Confirmado",
+    "pending_approvals": "Aprobaciones pendientes",
+    "actions_count": "{{count}} acción requerida |||| {{count}} acciones requeridas",
+    "approval_queue_empty": "La cola de aprobación está vacía",
+    "scheduled_tx": "Transacción programada",
+    "vantage_account": "Cuenta Vantage",
+    "sched_label": "Prog: {{date}}",
+    "processing": "Procesando...",
+    "approve": "Aprobar",
+    "dismiss": "Descartar",
+    "dispatch_push_logs": "Registros de alertas de envío",
+    "active_alerts_count": "{{count}} alerta activa |||| {{count}} alertas activas",
+    "daily_spends_overview": "Resumen de gastos diarios",
+    "daily_warning_desc": "Advertencia de consumo cercano para el presupuesto de gastos diarios al 80%. Gastado: ",
+    "warning_desc": "Advertencia de consumo cercano para el presupuesto de la categoría. Gastado: ",
+    "critical_desc": "Límite de asignación excedido para el presupuesto de la categoría. Gastado: ",
+    "of_total_budget": "del presupuesto total",
+    "fired_label": "Disparado: {{date}} • {{time}}",
+    "clear": "Limpiar",
+    "reminders_milestones": "Recordatorios e hitos cronológicos",
+    "no_active_milestones": "Sin hitos activos",
+    "personal_checklist": "Lista de verificación financiera personal",
+    "seed_verify_daily": "Verificar presupuestos de gastos diarios",
+    "seed_audit_sub": "Auditar programaciones de suscripciones",
+    "seed_optimize_invest": "Optimizar niveles de inversión activos",
+    "checklist_pending": "{{count}} Pendiente",
+    "scheduled_at": "⏲️ Programado: {{date}} a las {{time}}",
+    "completed_reminders": "Recordatorios completados",
+    "completed_count": "{{count}} Archivado",
+    "was_scheduled": "Estaba programado: {{date}} a las {{time}}",
+    "restore": "Restaurar",
+    "restore_tooltip": "Restaurar a la cola activa",
+    "remove_tooltip": "Eliminar permanentemente",
+    "append_quick_action": "Añadir acción rápida...",
+    "schedule_alarm": "Programar alarma dinámica",
+    "automated_dispatch_time": "⏲️ Hora de envío automático",
+    "date": "Fecha",
+    "time": "Hora",
+    "confirm_proceeding": "Confirmar Continuación",
+    "delete_chk_confirm": "¿Está seguro de que desea proceder con la eliminación de este elemento de la lista?",
+    "reject_tx_confirm": "¿Está seguro de que desea proceder con el rechazo y la eliminación de este borrador de transacción pendiente?",
+    "proceed": "Proceder",
+    "cancel": "Cancelar"
   },
   "onboarding_flow": {
     "auth_gateway": {
@@ -826,9 +887,14 @@
       "email_gateway_label": "Pasarela de conexión por correo electrónico",
       "password_entry_label": "Ingrese su contraseña",
       "email_placeholder": "name@company.com",
+      "back": "Volver",
       "password_placeholder": "Contraseña",
       "continue_btn": "Continuar",
-      "sign_in_up_btn": "Iniciar sesión / Registrarse"
+      "sign_in_up_btn": "Iniciar sesión / Registrarse",
+      "connecting": "Conectando de forma segura",
+      "authenticating": "Autenticando sesión de conexión del portal",
+      "authorized": "Sesión activa autorizada",
+      "retry": "Reintentar conexión"
     }
   },
   "premium_marketing_card": {
@@ -843,9 +909,18 @@
     "sparkles_title": "YOUR FINANCES Premium",
     "strategic_edge": "La ventaja estratégica",
     "benefits": {
-      "ad_free": { "title": "Experiencia sin anuncios", "desc": "Concéntrese en su riqueza sin distracciones. Sin interrupciones de terceros." },
-      "receipt": { "title": "Escaneo de recibos con visión", "desc": "Extracción automática de gastos. Deje de ingresar manualmente, empiece a vivir." },
-      "ai": { "title": "Asesor de riqueza por IA", "desc": "Predicciones profundas, cambios proactivos de cartera y chat estratégico 24/7." }
+      "ad_free": {
+        "title": "Experiencia sin anuncios",
+        "desc": "Concéntrese en su riqueza sin distracciones. Sin interrupciones de terceros."
+      },
+      "receipt": {
+        "title": "Escaneo de recibos con visión",
+        "desc": "Extracción automática de gastos. Deje de ingresar manualmente, empiece a vivir."
+      },
+      "ai": {
+        "title": "Asesor de riqueza por IA",
+        "desc": "Predicciones profundas, cambios proactivos de cartera y chat estratégico 24/7."
+      }
     },
     "plan_title": "Plan Signature",
     "price_label": "$19.99 / mes",
@@ -1045,24 +1120,51 @@
       },
       "t2": {
         "title": "2. Servicios premium y suscripciones",
-        "b1": { "head": "Acceso escalonado", "txt": "Las funciones premium, incluidas Gemini AI Insights, Google Calendar Sync y Google Tasks Integration, están reservadas para los suscriptores de pago." },
-        "b2": { "head": "Facturación", "txt": "Las suscripciones se gestionan a través de Google Play Store/Apple App Store. Según la Ley de Protección al Consumidor de los EAU, todas las tarifas son transparentes y se publican antes de la compra." },
-        "b3": { "head": "Cancelación", "txt": "Puede cancelar en cualquier momento; sin embargo, el acceso a los \"Nodos\" premium finalizará al final del ciclo de facturación actual." }
+        "b1": {
+          "head": "Acceso escalonado",
+          "txt": "Las funciones premium, incluidas Gemini AI Insights, Google Calendar Sync y Google Tasks Integration, están reservadas para los suscriptores de pago."
+        },
+        "b2": {
+          "head": "Facturación",
+          "txt": "Las suscripciones se gestionan a través de Google Play Store/Apple App Store. Según la Ley de Protección al Consumidor de los EAU, todas las tarifas son transparentes y se publican antes de la compra."
+        },
+        "b3": {
+          "head": "Cancelación",
+          "txt": "Puede cancelar en cualquier momento; sin embargo, el acceso a los \"Nodos\" premium finalizará al final del ciclo de facturación actual."
+        }
       },
       "t3": {
         "title": "3. Asesoramiento financiero aumentado por IA (Descargo de responsabilidad)",
-        "b1": { "head": "Propósito informativo", "txt": "Las integraciones de Gemini AI brindan análisis financiero automatizado y \"Perspectivas\". Este contenido es solo para fines informativos y no constituye asesoramiento financiero, legal o de inversión profesional." },
-        "b2": { "head": "Responsabilidad del usuario", "txt": "Usted es el único responsable de verificar la precisión de cualquier sugerencia generada por IA antes de realizar una acción financiera. ME Vantage no es responsable de las pérdidas financieras resultantes del contenido generado por IA o de las \"Alucinaciones\"." }
+        "b1": {
+          "head": "Propósito informativo",
+          "txt": "Las integraciones de Gemini AI brindan análisis financiero automatizado y \"Perspectivas\". Este contenido es solo para fines informativos y no constituye asesoramiento financiero, legal o de inversión profesional."
+        },
+        "b2": {
+          "head": "Responsabilidad del usuario",
+          "txt": "Usted es el único responsable de verificar la precisión de cualquier sugerencia generada por IA antes de realizar una acción financiera. ME Vantage no es responsable de las pérdidas financieras resultantes del contenido generado por IA o de las \"Alucinaciones\"."
+        }
       },
       "t4": {
         "title": "4. Integraciones de terceros",
-        "b1": { "head": "Ecosistema de Google", "txt": "La Aplicación utiliza las API de Google para la autenticación, los eventos del calendario y la gestión de tareas. Su uso está sujeto a los Términos de servicio de Google además de estos términos." },
-        "b2": { "head": "Cambio de moneda", "txt": "Las tarifas proporcionadas a través de ExchangeRate-API son tarifas de mercado medio y pueden diferir de las tarifas de \"Compra/Venta\" que ofrecen sus bancos locales en los EAU o Filipinas." }
+        "b1": {
+          "head": "Ecosistema de Google",
+          "txt": "La Aplicación utiliza las API de Google para la autenticación, los eventos del calendario y la gestión de tareas. Su uso está sujeto a los Términos de servicio de Google además de estos términos."
+        },
+        "b2": {
+          "head": "Cambio de moneda",
+          "txt": "Las tarifas proporcionadas a través de ExchangeRate-API son tarifas de mercado medio y pueden diferir de las tarifas de \"Compra/Venta\" que ofrecen sus bancos locales en los EAU o Filipinas."
+        }
       },
       "t5": {
         "title": "5. Propiedad intelectual",
-        "b1": { "head": "La marca \"Vantage\"", "txt": "Todos los códigos, la interfaz de usuario personalizada (incluidos los elementos de la marca Slim Obsidian y Emerald Green) y la documentación son propiedad exclusiva de ME Vantage Analytics and Strategy." },
-        "b2": { "head": "Límites de uso", "txt": "No puede realizar ingeniería inversa, extraer ni intentar replicar la lógica central del registro Vantage para la reventa comercial." }
+        "b1": {
+          "head": "La marca \"Vantage\"",
+          "txt": "Todos los códigos, la interfaz de usuario personalizada (incluidos los elementos de la marca Slim Obsidian y Emerald Green) y la documentación son propiedad exclusiva de ME Vantage Analytics and Strategy."
+        },
+        "b2": {
+          "head": "Límites de uso",
+          "txt": "No puede realizar ingeniería inversa, extraer ni intentar replicar la lógica central del registro Vantage para la reventa comercial."
+        }
       },
       "t6": {
         "title": "6. Limitación de responsabilidad",
@@ -1092,16 +1194,46 @@
   },
   "product_tour": {
     "steps": {
-      "s1": { "title": "Introducción a la aplicación", "text": "Su futura libertad financiera comienza con YOUR FINANCES. Hagamos un breve recorrido para mostrarle cómo administrar sin esfuerzo su patrimonio neto, monitorear presupuestos y alcanzar sus objetivos financieros con total claridad." },
-      "s2": { "title": "Resumen financiero", "text": "Este es su informe financiero. Obtenga una visión general en tiempo real de su patrimonio neto combinado, efectivo disponible y activos totales rastreados de forma segura en una capa de tablero." },
-      "s3": { "title": "Centro de cuentas", "text": "Aquí es donde vive su infraestructura financiera. Toque aquí para administrar sus cuentas bancarias líquidas, revisar el efectivo físico y realizar un seguimiento de los pasivos pendientes de tarjetas de crédito." },
-      "s4": { "title": "Detalles de transacciones", "text": "Su historial de transacciones, simplificado. Mantenga un registro de los gastos diarios de efectivo estándar y revise los grupos de transacciones para ver exactamente a dónde se mueve su dinero." },
-      "s5": { "title": "Ingresos y sobres", "text": "Realice un seguimiento de los límites de su presupuesto sin estrés. Esta área muestra su asignación automática de ingresos y mini presupuestos de marco de trabajo personalizados, viviendo de forma segura aquí mismo bajo su pestaña activa 'Essentials'." },
-      "s6": { "title": "Objetivos de ahorro", "text": "Esté atento a sus objetivos a largo plazo. Observe cómo crecen sus objetivos de hitos y realice un seguimiento de la asignación hacia sus objetivos." },
-      "s7": { "title": "Gestión de deudas", "text": "Elimine sus deudas. Monitoree las declaraciones de tarjetas y los límites de deuda pendientes sin problemas en un espacio agregado y libre de presión." },
-      "s8": { "title": "Acción rápida", "text": "¿Listo para agregar una nueva transacción, transferir fondos entre cuentas o actualizar un objetivo de sobre? Toque este botón central para iniciar una nueva acción instantáneamente desde cualquier pantalla." },
-      "s9": { "title": "Alertas inteligentes", "text": "Nunca se pierda una notificación financiera crítica. Toque aquí para ver alertas, avisos de fecha de vencimiento de pago, establecer sus propios recordatorios y estrategias de seguimiento." },
-      "s10": { "title": "Perfil y configuración", "text": "Personalice su perfil y aplicación. Toque aquí para modificar su elección de moneda base, actualizar sus objetivos personales, configurar notificaciones o revisar nuestras políticas legales de forma segura." }
+      "s1": {
+        "title": "Introducción a la aplicación",
+        "text": "Su futura libertad financiera comienza con YOUR FINANCES. Hagamos un breve recorrido para mostrarle cómo administrar sin esfuerzo su patrimonio neto, monitorear presupuestos y alcanzar sus objetivos financieros con total claridad."
+      },
+      "s2": {
+        "title": "Resumen financiero",
+        "text": "Este es su informe financiero. Obtenga una visión general en tiempo real de su patrimonio neto combinado, efectivo disponible y activos totales rastreados de forma segura en una capa de tablero."
+      },
+      "s3": {
+        "title": "Centro de cuentas",
+        "text": "Aquí es donde vive su infraestructura financiera. Toque aquí para administrar sus cuentas bancarias líquidas, revisar el efectivo físico y realizar un seguimiento de los pasivos pendientes de tarjetas de crédito."
+      },
+      "s4": {
+        "title": "Detalles de transacciones",
+        "text": "Su historial de transacciones, simplificado. Mantenga un registro de los gastos diarios de efectivo estándar y revise los grupos de transacciones para ver exactamente a dónde se mueve su dinero."
+      },
+      "s5": {
+        "title": "Ingresos y sobres",
+        "text": "Realice un seguimiento de los límites de su presupuesto sin estrés. Esta área muestra su asignación automática de ingresos y mini presupuestos de marco de trabajo personalizados, viviendo de forma segura aquí mismo bajo su pestaña activa 'Essentials'."
+      },
+      "s6": {
+        "title": "Objetivos de ahorro",
+        "text": "Esté atento a sus objetivos a largo plazo. Observe cómo crecen sus objetivos de hitos y realice un seguimiento de la asignación hacia sus objetivos."
+      },
+      "s7": {
+        "title": "Gestión de deudas",
+        "text": "Elimine sus deudas. Monitoree las declaraciones de tarjetas y los límites de deuda pendientes sin problemas en un espacio agregado y libre de presión."
+      },
+      "s8": {
+        "title": "Acción rápida",
+        "text": "¿Listo para agregar una nueva transacción, transferir fondos entre cuentas o actualizar un objetivo de sobre? Toque este botón central para iniciar una nueva acción instantáneamente desde cualquier pantalla."
+      },
+      "s9": {
+        "title": "Alertas inteligentes",
+        "text": "Nunca se pierda una notificación financiera crítica. Toque aquí para ver alertas, avisos de fecha de vencimiento de pago, establecer sus propios recordatorios y estrategias de seguimiento."
+      },
+      "s10": {
+        "title": "Perfil y configuración",
+        "text": "Personalice su perfil y aplicación. Toque aquí para modificar su elección de moneda base, actualizar sus objetivos personales, configurar notificaciones o revisar nuestras políticas legales de forma segura."
+      }
     },
     "controls": {
       "step_counter": "Paso {{step}} de 10",

@@ -4,7 +4,7 @@ import { Plus, Trash2, Home, Utensils, Car, Film, ShoppingBag, HelpCircle } from
 import { triggerHaptic, hapticPresets } from '../lib/haptics';
 import { useTranslation } from 'react-i18next';
 
-import { formatLabel } from '../lib/stringUtils';
+import { formatLabel, translateCategoryOrSubcategory } from '../lib/stringUtils';
 
 export interface BudgetCategory {
   id: string;
@@ -85,14 +85,17 @@ export const BudgetCard: React.FC<BudgetCardProps> = ({
   const progress = Math.min(ratio * 100, 100);
   const isOver = spentVal > maxLimit;
   
-  const titleText = budget.subcategory 
-    ? t(`subcategories.${budget.subcategory}`, formatLabel(budget.subcategory))
-    : formatLabel(
-        (budget.categoryTitle?.includes(' > ') ? budget.categoryTitle.split(' > ').pop() : 
-         budget.categoryTitle || budget.title || budget.category || t('budget_card.allocation'))
-      );
+  const rawTitle = budget.subcategory 
+    ? budget.subcategory 
+    : (budget.categoryTitle?.includes(' > ') 
+        ? budget.categoryTitle.split(' > ').pop()?.trim() 
+        : (budget.categoryTitle || budget.title || budget.category));
+
+  const titleText = rawTitle 
+    ? translateCategoryOrSubcategory(rawTitle, t) 
+    : t('budget_card.allocation', 'Allocation');
      
-  const IconComponent = getCategoryIcon(String(titleText));
+  const IconComponent = getCategoryIcon(String(rawTitle || titleText));
 
   return (
     <motion.div

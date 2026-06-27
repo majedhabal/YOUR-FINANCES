@@ -1071,18 +1071,18 @@ export const Reports: React.FC<ReportsProps> = ({ profile }) => {
       <div className="w-[95%] md:w-full mx-auto grid grid-cols-2 gap-2 px-1">
          <div className="p-2.5 md:p-3.5 bg-vantage-card border border-neutral-200 rounded-xl flex flex-col shadow-sm">
             <span style={{ fontSize: 'clamp(10px, 3vw, 11px)' }} className="font-extrabold text-[#57606F] uppercase tracking-wider leading-none mb-1">Realized Flow (In)</span>
-            <span style={{ fontSize: 'clamp(12px, 3.5vw, 15px)' }} className="font-normal text-emerald-700">{(totalIncome || 0).toLocaleString(undefined, { minimumFractionDigits: 0 })}</span>
+            <span style={{ fontSize: 'clamp(12px, 3.5vw, 15px)' }} className="font-normal text-emerald-700">{(totalIncome < 0 ? '-' : '')}{Math.abs(totalIncome || 0).toLocaleString(undefined, { minimumFractionDigits: 0 })}</span>
          </div>
          <div className="p-2.5 md:p-3.5 bg-vantage-card border border-neutral-200 rounded-xl flex flex-col shadow-sm">
             <span style={{ fontSize: 'clamp(10px, 3vw, 11px)' }} className="font-extrabold text-[#57606F] uppercase tracking-wider leading-none mb-1">Realized Flow (Out)</span>
-            <span style={{ fontSize: 'clamp(12px, 3.5vw, 15px)' }} className="font-normal text-rose-600">{(totalExpense || 0).toLocaleString(undefined, { minimumFractionDigits: 0 })}</span>
+            <span style={{ fontSize: 'clamp(12px, 3.5vw, 15px)' }} className="font-normal text-rose-600">{(totalExpense < 0 ? '-' : '')}{Math.abs(totalExpense || 0).toLocaleString(undefined, { minimumFractionDigits: 0 })}</span>
          </div>
          <div className="p-2.5 md:p-3.5 bg-vantage-card border border-[#10B981]/25 rounded-xl flex flex-col shadow-sm col-span-2">
             <div className="flex items-center justify-between">
               <span style={{ fontSize: 'clamp(10px, 3vw, 12px)' }} className="font-extrabold text-emerald-700 uppercase tracking-wider leading-none">Net Operating Balance</span>
               <span style={{ fontSize: 'clamp(9px, 2.5vw, 11px)' }} className="font-extrabold text-neutral-400">{(savingsRate || 0).toFixed(1)}% Eff.</span>
             </div>
-            <span style={{ fontSize: 'clamp(16px, 5.5vw, 24px)' }} className="font-normal text-black leading-none mt-1.5">{(totalSelectedBalance || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+            <span style={{ fontSize: 'clamp(16px, 5.5vw, 24px)' }} className="font-normal text-black leading-none mt-1.5">{(totalSelectedBalance < 0 ? '-' : '')}{Math.abs(totalSelectedBalance || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
          </div>
       </div>
 
@@ -1415,13 +1415,13 @@ export const Reports: React.FC<ReportsProps> = ({ profile }) => {
                    <div className="p-1.5 bg-white rounded-lg flex flex-col border border-neutral-100 shadow-sm">
                       <span style={{ fontSize: 'clamp(8px, 1.8vw, 10px)', fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="font-normal text-[#57606F] leading-none mb-1">Recurring In</span>
                       <span style={{ fontSize: 'clamp(11px, 2.8vw, 13px)', fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="font-bold text-black leading-none">
-                        {commitmentData.monthlyIncome.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                        {commitmentData.monthlyIncome < 0 ? '-' : ''}{Math.abs(commitmentData.monthlyIncome).toLocaleString(undefined, { maximumFractionDigits: 0 })}
                       </span>
                    </div>
                    <div className="p-1.5 bg-white rounded-lg flex flex-col border border-neutral-100 shadow-sm">
                       <span style={{ fontSize: 'clamp(8px, 1.8vw, 10px)', fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="font-normal text-[#57606F] leading-none mb-1">Recurring Out</span>
                       <span style={{ fontSize: 'clamp(11px, 2.8vw, 13px)', fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="font-bold text-black leading-none">
-                        {commitmentData.monthlyExpense.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                        {commitmentData.monthlyExpense < 0 ? '-' : ''}{Math.abs(commitmentData.monthlyExpense).toLocaleString(undefined, { maximumFractionDigits: 0 })}
                       </span>
                    </div>
                 </div>
@@ -1448,7 +1448,7 @@ export const Reports: React.FC<ReportsProps> = ({ profile }) => {
                         {/* 30% Amount */}
                         <div className="flex items-end flex-col shrink-0 pl-2 border-l border-neutral-150">
                            <span style={{ fontSize: 'clamp(11px, 3.2vw, 13px)' }} className={`font-normal leading-none ${item.type === 'income' ? 'text-emerald-700' : 'text-neutral-800'}`}>
-                              {item.type === 'income' ? '+' : '-'}{item.calculatedMonthly.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                              {item.type === 'income' ? '+' : '-'}{item.calculatedMonthly < 0 ? '-' : ''}{Math.abs(item.calculatedMonthly).toLocaleString(undefined, { maximumFractionDigits: 0 })}
                            </span>
                         </div>
                       </div>

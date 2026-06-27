@@ -4,6 +4,8 @@ import { X, Send, Sparkles, MessageSquare, Crown } from 'lucide-react';
 import { executeVantageAITask } from '../lib/VantageAIRouter';
 import { PremiumMarketingCard } from './PremiumMarketingCard';
 import { useTranslation } from 'react-i18next';
+import { doc, updateDoc } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 
 interface VantageAIModalProps {
   isOpen: boolean;
@@ -17,6 +19,8 @@ interface VantageAIModalProps {
 
 export const VantageAIModal: React.FC<VantageAIModalProps> = ({ isOpen, onClose, uid, accounts, transactions, accountBalances, profile }) => {
   const { t } = useTranslation();
+  const tierClean = (profile?.subscriptionTier || 'free').toLowerCase().replace(' ', '');
+  const hasAIAccess = tierClean === 'tier2' || tierClean === 'tier3' || tierClean === 'premium' || !!(profile?.vantageAiUnlockedUntil && new Date(profile.vantageAiUnlockedUntil).getTime() > Date.now());
   const [queryInput, setQueryInput] = useState('');
   const [activeQuery, setActiveQuery] = useState('');
   const [response, setResponse] = useState<string | null>(null);
@@ -29,8 +33,29 @@ export const VantageAIModal: React.FC<VantageAIModalProps> = ({ isOpen, onClose,
     t('vantage_ai_modal.q3')
   ];
 
+  const handleClaimSandboxTokens = async () => {
+    if (!profile?.uid) return;
+    try {
+      const userRef = doc(db, 'users', profile.uid);
+      await updateDoc(userRef, { 
+        vantageAiTokens: 50000,
+        subscriptionTier: 'tier 3',
+        isPremium: true
+      });
+    } catch (err) {
+      console.error("Error claiming sandbox tokens:", err);
+    }
+  };
+
   const handleQuery = async (text: string) => {
     if (!text.trim()) return;
+
+    const currentTokens = typeof profile?.vantageAiTokens === 'number' ? profile.vantageAiTokens : 0;
+    if (currentTokens <= 0) {
+      setResponse("No Vantage AI tokens remaining! Please upgrade your plan in settings to Tier 2 or Tier 3 to receive more tokens.");
+      return;
+    }
+
     setLoading(true);
     setActiveQuery(text);
     setResponse(null);
@@ -69,8 +94,9 @@ export const VantageAIModal: React.FC<VantageAIModalProps> = ({ isOpen, onClose,
         ${lifeProfile}
         
         System Instruction: You are VANTAGE, a professional and highly skilled financial advisor. 
-        Your goal is to provide precise, helpful, and clear financial advice based on the user's data and financial profile.
-        Be helpful, professional, and direct. Use standard financial terminology and maintain a premium tone.
+        Your goal is to provide precise, helpful, and clear financial insights based on the user's data and financial profile.
+        Be helpful, professional, and maintain a premium tone. Use standard financial terminology.
+        CRITICAL RULE: You must NEVER give direct recommendations or tips. You must ALWAYS phrase any advice, tips, suggestions, or insights as "Based on research...", "Online sources suggest...", "General industry research indicates...", or "According to financial research and online resources...". Never state recommendations or tips directly or as personal instructions.
         Prioritize optimization strategies.
         If asked about affordability, correlate total liquidity vs average spending rate.
         Format your response in plain text.
@@ -80,6 +106,13 @@ export const VantageAIModal: React.FC<VantageAIModalProps> = ({ isOpen, onClose,
         prompt: `${context}\n\nUser Query: ${text}`
       });
       setResponse(textResponse || t('vantage_ai_modal.neural_fail'));
+
+      // Decrement AI tokens dynamically
+      if (profile?.uid) {
+        const userRef = doc(db, 'users', profile.uid);
+        const nextTokens = Math.max(0, currentTokens - 100);
+        await updateDoc(userRef, { vantageAiTokens: nextTokens });
+      }
     } catch (error: any) {
       console.error("Vantage AI Error:", error);
       setResponse(error.message || t('vantage_ai_modal.unstable_fail'));
@@ -117,9 +150,18 @@ export const VantageAIModal: React.FC<VantageAIModalProps> = ({ isOpen, onClose,
                     <h2 className="text-[3vw] font-bold text-vantage-green leading-none" style={{ fontFamily: "'Google Sans', sans-serif" }}>
                       {t('vantage_ai_modal.advisor_ai', 'Advisor AI')}
                     </h2>
-                    <span className="text-[2vw] text-vantage-muted font-normal mt-1" style={{ fontFamily: "'Google Sans', sans-serif" }}>
-                      {t('vantage_ai_modal.premium_interface', 'Premium Assistant Interface')}
-                    </span>
+                    <div className="flex items-center gap-3 mt-1 flex-wrap">
+                      <span className="text-[2vw] text-vantage-muted font-normal" style={{ fontFamily: "'Google Sans', sans-serif" }}>
+                        {hasAIAccess ? `Tokens remaining: ${typeof profile?.vantageAiTokens === 'number' ? profile.vantageAiTokens.toLocaleString() : '0'}` : t('vantage_ai_modal.premium_interface', 'Premium Assistant Interface')}
+                      </span>
+                      <button
+                        onClick={handleClaimSandboxTokens}
+                        className="px-2.5 py-0.5 text-[1.5vw] md:text-xs font-bold text-vantage-green bg-vantage-green/10 border border-vantage-green/25 rounded-full hover:bg-vantage-green/20 transition-colors cursor-pointer"
+                        style={{ fontFamily: "'Google Sans', sans-serif" }}
+                      >
+                        Claim Sandbox Tokens
+                      </button>
+                    </div>
                  </div>
               </div>
               <button 
@@ -132,7 +174,7 @@ export const VantageAIModal: React.FC<VantageAIModalProps> = ({ isOpen, onClose,
 
             {/* Chat Content */}
             <div className="flex-1 overflow-y-auto p-6 space-y-10 scrollbar-hide" ref={scrollRef}>
-              {profile.subscriptionTier !== 'premium' ? (
+              {!hasAIAccess ? (
                 <div className="flex flex-col gap-4 py-4">
                    <PremiumMarketingCard 
                      featureName={t('vantage_ai_modal.advisor_ai')} 
@@ -225,7 +267,7 @@ export const VantageAIModal: React.FC<VantageAIModalProps> = ({ isOpen, onClose,
             </div>
 
             {/* Search Input Bar */}
-            {!loading && profile.subscriptionTier === 'premium' && (
+            {!loading && hasAIAccess && (
               <div className="p-6 pt-4 bg-vantage-card border-t border-[#E1E8ED]">
                 <div className="relative group">
                   <div className="relative flex items-center">

@@ -328,7 +328,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
                     className="w-full bg-white border-none text-sm font-bold text-[#111c2d] outline-none cursor-pointer p-0 font-sans"
                   >
                     {accounts.length > 0 ? (
-                      accounts.map((acc: any) => (
+                      accounts.filter((a: any) => !a.isArchived || (a.accountId || a.id) === selectedAccountId).map((acc: any) => (
                         <option key={acc.accountId || acc.id} value={acc.accountId || acc.id}>{acc.name}</option>
                       ))
                     ) : (

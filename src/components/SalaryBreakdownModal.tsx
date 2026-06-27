@@ -1239,22 +1239,22 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
                       </div>
 
                       {/* DYNAMIC INCOME CHANNELS */}
-                      <div className="flex flex-col w-full p-2 space-y-3">
+                      <div className="flex flex-col w-[300px] ml-0 mr-[-27px] p-2 space-y-3">
                         {dbRecurringIncomes.length === 0 && customAuxiliaries.length === 0 ? (
                            <div className="flex flex-col items-center text-center py-8 bg-white rounded-xl border border-[#E1E8ED] space-y-4">
                              <div className="h-12 w-12 rounded-full bg-neutral-50 flex items-center justify-center text-neutral-400">
                                <Coins size={24} />
                              </div>
                              <div className="space-y-1">
-                               <p className="text-sm font-bold text-[#111C2D]">No income sources linked</p>
-                               <p className="text-xs text-[#57606F]">Link a recurring stream to begin allocation</p>
+                               <p className="text-sm font-bold text-[#111C2D]">{t('salary_overview.no_income_sources_linked', 'No income sources linked')}</p>
+                               <p className="text-xs text-[#57606F]">{t('salary_overview.link_recurring_stream', 'Link a recurring stream to begin allocation')}</p>
                              </div>
                              <button
                                type="button"
                                onClick={() => setIsCreatingSchedule(true)}
                                className="px-4 py-2 bg-[#A6DDB1] text-[#366945] rounded-lg text-xs font-bold hover:brightness-95 active:scale-95 transition-all cursor-pointer shadow-sm"
                              >
-                               Link First Income Source
+                               <span>{t('salary_overview.link_first_income_source', 'Link First Income Source')}</span>
                              </button>
                            </div>
                         ) : (
@@ -1264,13 +1264,13 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
                               <div 
                                 key={`income-stream-${inc.id}-${index}`}
                                 onClick={() => toggleIncomeSelection(inc.id)}
-                                className="bg-white border border-[#E1E8ED] rounded-xl p-4 flex items-center justify-between cursor-pointer transition-all"
+                                className="bg-white border border-[#E1E8ED] rounded-xl p-4 flex items-center justify-between gap-4 cursor-pointer transition-all w-full min-w-0"
                               >
-                                <div className="flex items-center gap-4">
-                                  <div className="h-10 w-10 rounded-full bg-[#E8F5E9] flex items-center justify-center text-[#2E7D32]">
+                                <div className="flex items-center gap-4 min-w-0 flex-1">
+                                  <div className="h-10 w-10 rounded-full bg-[#E8F5E9] flex items-center justify-center text-[#2E7D32] shrink-0">
                                       <Coins size={20} />
                                   </div>
-                                  <div>
+                                  <div className="min-w-0 flex-1 text-left rtl:text-right">
                                       <p 
                                         className="text-sm text-[#111C2D]" 
                                         style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
@@ -1285,14 +1285,14 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
                                       </p>
                                   </div>
                                 </div>
-                                <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-4 shrink-0">
                                     <p 
                                       className="text-sm"
                                       style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700, color: '#1B5E20' }}
                                     >
                                       +{activeBaseCurrency} {Number(inc.amount || 0).toLocaleString()}
                                     </p>
-                                    <div className={`w-6 h-6 rounded-md border flex items-center justify-center transition-colors ${selectedIncomes.includes(inc.id) ? 'bg-[#2E7D32] border-[#2E7D32]' : 'bg-white border-[#D1D5DB]'}`}>
+                                    <div className={`w-6 h-6 rounded-md border flex items-center justify-center transition-colors shrink-0 ${selectedIncomes.includes(inc.id) ? 'bg-[#2E7D32] border-[#2E7D32]' : 'bg-white border-[#D1D5DB]'}`}>
                                       {selectedIncomes.includes(inc.id) && <Check size={16} className="text-white" />}
                                     </div>
                                 </div>
@@ -1304,13 +1304,13 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
                               <div 
                                 key={`custom-aux-${aux.id}-${index}`}
                                 onClick={() => toggleIncomeSelection(aux.id)}
-                                className="bg-white border border-[#E1E8ED] rounded-xl p-4 flex items-center justify-between cursor-pointer transition-all"
+                                className="bg-white border border-[#E1E8ED] rounded-xl p-4 flex items-center justify-between gap-4 cursor-pointer transition-all w-full min-w-0"
                               >
-                                <div className="flex items-center gap-4">
-                                  <div className="h-10 w-10 rounded-full bg-[#E3F2FD] flex items-center justify-center text-[#1976D2]">
+                                <div className="flex items-center gap-4 min-w-0 flex-1">
+                                  <div className="h-10 w-10 rounded-full bg-[#E3F2FD] flex items-center justify-center text-[#1976D2] shrink-0">
                                     <Coins size={20} />
                                   </div>
-                                  <div>
+                                  <div className="min-w-0 flex-1 text-left rtl:text-right">
                                     <p className="text-sm text-[#111C2D]" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}>
                                       {aux.title}
                                     </p>
@@ -1319,11 +1319,11 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
                                     </p>
                                   </div>
                                 </div>
-                                <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-4 shrink-0">
                                   <p className="text-sm font-bold text-[#1B5E20]" style={{ fontFamily: "'Google Sans', sans-serif" }}>
                                     +{activeBaseCurrency} {Number(aux.amount || 0).toLocaleString()}
                                   </p>
-                                  <div className={`w-6 h-6 rounded-md border flex items-center justify-center transition-colors ${selectedIncomes.includes(aux.id) ? 'bg-[#2E7D32] border-[#2E7D32]' : 'bg-white border-[#D1D5DB]'}`}>
+                                  <div className={`w-6 h-6 rounded-md border flex items-center justify-center transition-colors shrink-0 ${selectedIncomes.includes(aux.id) ? 'bg-[#2E7D32] border-[#2E7D32]' : 'bg-white border-[#D1D5DB]'}`}>
                                     {selectedIncomes.includes(aux.id) && <Check size={16} className="text-white" />}
                                   </div>
                                 </div>
@@ -1387,7 +1387,7 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
                   </div>
 
                   {/* Envelope Categories List (Managed via custom wizard toggles) */}
-                  <div className="flex flex-col gap-2 flex-1 min-h-[180px]">
+                  <div className="flex flex-col gap-2 flex-1 min-h-[180px] w-[280px]">
                     
                     {/* Header with link button to manage active categories precisely */}
                     <div className="flex items-center justify-between px-0.5">
@@ -1398,7 +1398,7 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
                         style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
                         className="text-[#A6DDB1] hover:brightness-110 active:scale-95 text-[clamp(10px,2.5vw,11.5px)] pl-2 font-normal transition-all cursor-pointer bg-white border-none outline-none select-none"
                       >
-                        Browse All Categories & Sub-Categories
+                        <span>{t('salary_overview.browse_all_categories', 'Browse All Categories & Sub-Categories')}</span>
                       </button>
                     </div>
 
@@ -1457,7 +1457,7 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
                 </div>
 
                 {/* Bottom Calculations Panel & Action Button (Fixed Footer) */}
-                <div className="p-4 bg-white border border-[#E1E8ED] rounded-[24px] shrink-0 flex flex-col gap-3 mx-4 mb-4 w-[312px] ml-[10px]">
+                <div className="p-4 bg-white border border-[#E1E8ED] rounded-[24px] shrink-0 flex flex-col gap-3 mx-auto mb-4 w-[280px]">
                   {/* Calculations Row Details */}
                   <div className="grid grid-cols-3 gap-2 py-4 text-center w-full bg-[#EAEDF5] rounded-xl mb-4">
                     <div className="flex flex-col gap-1">
@@ -1670,7 +1670,7 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
                                 style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 500 }}
                                 className="text-[clamp(1rem,2.2vw,1.2rem)] text-[#1E2229]"
                               >
-                                {t(`categories.${cat.name}`, displayCatName)}
+                                {t(`categories.${cat.name}`, displayCatName) as string}
                               </span>
                             </div>
                             <span 

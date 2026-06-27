@@ -1041,7 +1041,8 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
     const userEmail = profile?.email || 'majedhabal2@gmail.com';
     const existingCreatedAt = profile?.createdAt || new Date().toISOString();
     const existingLastLogin = profile?.lastLogin || new Date().toISOString();
-    const existingSubscriptionTier = profile?.subscriptionTier === 'free' ? 'Premium' : (profile?.subscriptionTier || 'Premium');
+    const rawTier = (profile?.subscriptionTier || 'free').toLowerCase();
+    const existingSubscriptionTier = rawTier === 'premium' ? 'tier 1' : (rawTier === 'tier1' ? 'tier 1' : (rawTier === 'tier2' ? 'tier 2' : (rawTier === 'tier3' ? 'tier 3' : rawTier)));
 
     const payload = {
       uid: uid,
@@ -1746,13 +1747,13 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                           }, 100);
                         }}
                         style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
-                        className={`px-3 py-1.5 h-[32px] rounded-full border text-[10.5px] uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center ${
+                        className={`px-3 py-1.5 h-[32px] rounded-full border text-[10.5px] transition-all cursor-pointer flex items-center justify-center ${
                           isSelected 
                             ? 'bg-black text-[#00FF88] border-black scale-[1.01] shadow-sm font-semibold' 
                             : 'bg-neutral-50 text-neutral-600 border-neutral-200 hover:border-neutral-400'
                         }`}
                       >
-                        {t(`onboarding.status_${status.toLowerCase()}`, status)}
+                        {t(`marital_status_options.${status.toLowerCase()}`, status)}
                       </button>
                     );
                   })}
@@ -1778,7 +1779,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
           <div className="flex flex-col gap-1.5 self-start max-w-[85%] animate-fadeIn">
             <div className="bg-[#E9ECEF] text-[#000000] rounded-2xl rounded-tl-none p-2.5 shadow-sm border border-[#D1D8DD]/50">
               <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: "clamp(11px, 3.2vw, 13px)" }} className="leading-relaxed">
-                {t("onboarding.tell_household", "Tell us about your household and dependents below. You can skip this or add family members directly.")}
+                {t("onboarding.dependents_info", "Tell us about your household and dependents below. You can skip this or add family members directly.")}
               </p>
             </div>
           </div>
@@ -1802,7 +1803,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
           <div className="flex flex-col gap-1.5 self-start w-full max-w-[90%] animate-fadeIn">
             <div className="bg-[#E9ECEF] text-[#000000] rounded-2xl rounded-tl-none p-2.5 shadow-sm border border-[#D1D8DD]/50 animate-fadeIn">
               <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: "clamp(11px, 3.2vw, 13px)" }} className="leading-relaxed">
-                {t("onboarding.income_sources_query", "Are you currently working? Please tell us more about your income sources.")}
+                {t("onboarding.working_query", "Are you currently working? Please tell us more about your income sources.")}
               </p>
             </div>
 
@@ -3334,7 +3335,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
 
       {/* --- WHATSAPP BOTTOM CHAT CONTROL INPUTS --- */}
       {activeStep <= 7 && (
-        <footer className="footer bg-white border-t border-[#E1E8ED] p-2.5 shrink-0 shadow-sm flex flex-col gap-1.5 select-none animate-fadeIn">
+        <footer className="footer bg-white border-t border-[#E1E8ED] p-4 shrink-0 shadow-sm flex flex-col gap-1.5 select-none animate-fadeIn">
           
           <div className="max-w-2xl mx-auto w-full flex gap-1.5 items-center">
             
@@ -3502,9 +3503,9 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                       <span className="flex items-center justify-center">
                         <UserPlus size={11} />
                       </span>
-                      <div className="flex items-center justify-center gap-1">
-                        <span>Add dependent</span>
-                        <ChevronDown size={11} className={`transition-transform duration-200 ${isAddDependentDropdownOpen ? 'rotate-180' : ''}`} />
+                    <div className="flex items-center justify-center gap-1 p-2 rounded-lg border border-neutral-200" style={{ backgroundColor: "#000000" }}>
+                        <span className="text-white">{t("add_dependent", "Add dependent")}</span>
+                        <ChevronDown size={11} className={`transition-transform duration-200 text-white ${isAddDependentDropdownOpen ? 'rotate-180' : ''}`} />
                       </div>
                     </button>
 
@@ -3513,7 +3514,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                       style={{ fontFamily: "'Google Sans', sans-serif", backgroundColor: "#A6DDB1" }}
                       className="px-4 h-full text-black text-[11px] rounded-xl hover:scale-[1.01] transition-all cursor-pointer flex items-center gap-1 font-bold"
                     >
-                      {dependents.length === 0 ? "No dependents" : "Confirm"}
+                      {dependents.length === 0 ? t("no_dependents", "No dependents") : t("confirmation_modal.confirm", "Confirm")}
                       <ChevronRight size={11} className="stroke-[3]" />
                     </button>
                   </div>

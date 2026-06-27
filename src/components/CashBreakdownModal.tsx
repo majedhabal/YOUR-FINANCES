@@ -274,7 +274,7 @@ export const CashBreakdownModal: React.FC<CashBreakdownModalProps> = ({
                                 }} 
                                 className="tabular-nums leading-none"
                               >
-                                {acc.originalBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                {acc.originalBalance < 0 ? '-' : ''}{Math.abs(acc.originalBalance).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 <span 
                                   style={{ 
                                     fontFamily: "'Google Sans', sans-serif", 
@@ -297,7 +297,7 @@ export const CashBreakdownModal: React.FC<CashBreakdownModalProps> = ({
                                   }} 
                                   className="tabular-nums mt-1 leading-none"
                                 >
-                                  ≈ {acc.balanceInPrimary.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {primaryCurrency}
+                                  ≈ {acc.balanceInPrimary < 0 ? '-' : ''}{Math.abs(acc.balanceInPrimary).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {primaryCurrency}
                                 </span>
                               )}
                             </div>

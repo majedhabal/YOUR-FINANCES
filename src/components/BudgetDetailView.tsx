@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
-import { formatLabel } from '../lib/stringUtils';
+import { formatLabel, translateCategoryOrSubcategory } from '../lib/stringUtils';
 import { 
   ChevronLeft,
   MoreHorizontal,
@@ -74,9 +74,30 @@ export const BudgetDetailView: React.FC<BudgetDetailViewProps> = ({
   onBack,
   onEdit
 }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [selectedTx, setSelectedTx] = React.useState<Transaction | null>(null);
   const [txToDelete, setTxToDelete] = React.useState<any | null>(null);
+
+  const activeCurrency = budget.currency || 'AED';
+
+  const rawTitle = budget.subcategory 
+    ? budget.subcategory 
+    : (budget.categoryTitle?.includes(' > ') 
+        ? budget.categoryTitle.split(' > ').pop()?.trim() 
+        : (budget.categoryTitle || budget.title || budget.category));
+
+  const translatedTitle = rawTitle 
+    ? translateCategoryOrSubcategory(rawTitle, t) 
+    : t('budget_card.allocation', 'Allocation');
+
+  const dueDateText = useMemo(() => {
+    if (budget.period) {
+      const [year, month] = budget.period.split('-').map(Number);
+      const date = new Date(year, month - 1, 1);
+      return date.toLocaleDateString(i18n.language, { month: 'short', day: 'numeric' });
+    }
+    return t('budget_detail.first_of_month', '1st of the month');
+  }, [budget.period, i18n.language, t]);
   
   const filterBudgetTransactions = (txs: Transaction[]) => {
     const activeAccountIds = new Set(accounts.filter(a => !a.isArchived).map(a => a.id));
@@ -137,7 +158,7 @@ export const BudgetDetailView: React.FC<BudgetDetailViewProps> = ({
       {/* Budget Header */}
       <header className="mt-[50px] px-0 py-0 flex items-center justify-center">
         <h1 className="text-[36px] font-bold text-[#111c2d] mt-[-70px]">
-          {formatLabel(budget.subcategory || (budget.categoryTitle?.includes(' > ') ? budget.categoryTitle.split(' > ').pop() : budget.categoryTitle))}
+          {translatedTitle}
         </h1>
       </header>
 
@@ -151,11 +172,13 @@ export const BudgetDetailView: React.FC<BudgetDetailViewProps> = ({
             </div>
           </div>
 
-          <h2 className="text-4xl font-extrabold text-[#111c2d]">{spentThisMonth.toLocaleString(undefined, { style: 'currency', currency: 'USD' })}</h2>
+          <h2 className="text-4xl font-extrabold text-[#111c2d]">
+            {activeCurrency} {spentThisMonth.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
+          </h2>
 
           <div className="flex justify-between text-xs mb-xs">
-            <span className="text-[#5f5e5e]">{t('budget_detail.budget_limit')} {limit.toLocaleString(undefined, { style: 'currency', currency: 'USD' })}</span>
-            <span className="font-bold text-[#111c2d]">{Math.max(0, limit - spentThisMonth).toLocaleString(undefined, { style: 'currency', currency: 'USD' })} {t('budget_detail.remaining')}</span>
+            <span className="text-[#5f5e5e]">{t('budget_detail.budget_limit')} {activeCurrency} {limit.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</span>
+            <span className="font-bold text-[#111c2d]">{activeCurrency} {Math.max(0, limit - spentThisMonth).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })} {t('budget_detail.remaining')}</span>
           </div>
           
           {/* Progress Bar */}
@@ -176,7 +199,7 @@ export const BudgetDetailView: React.FC<BudgetDetailViewProps> = ({
         </div>
         <div className="bg-white p-md rounded-[20px] border border-[#F2F4F7] shadow-sm px-[10px] ml-[10px] h-[65px]">
           <span className="font-label-md text-on-surface-variant text-xs mt-[5px]">{t('budget_detail.due_date')}</span>
-          <p className="text-lg font-bold text-on-surface mt-[5px]">Oct 1st</p>
+          <p className="text-lg font-bold text-on-surface mt-[5px]">{dueDateText}</p>
         </div>
       </section>
 
@@ -187,24 +210,30 @@ export const BudgetDetailView: React.FC<BudgetDetailViewProps> = ({
           <span className="text-[#A6DDB1] font-bold text-sm cursor-pointer" onClick={() => window.dispatchEvent(new CustomEvent('switch-tab', { detail: { tab: 'activity' } }))}>{t('budget_detail.view_all')}</span>
         </div>
         <div className="space-y-md">
-          {currentMonthTxs.map((tx) => (
-            <div key={tx.id} className="flex items-center gap-md">
-              <div className="w-12 h-12 rounded-xl bg-surface-container-low flex items-center justify-center border border-outline-variant/20">
-                {renderIcon(tx.emoji)}
+          {currentMonthTxs.map((tx) => {
+            const txCategoryText = t(`categories.${tx.category}`, formatLabel(tx.category));
+            const txSubcategory = tx.subcategory || tx.subCategory;
+            const txSubcategoryText = txSubcategory ? t(`subcategories.${txSubcategory}`, formatLabel(txSubcategory)) : txCategoryText;
+
+            return (
+              <div key={tx.id} className="flex items-center gap-md">
+                <div className="w-12 h-12 rounded-xl bg-surface-container-low flex items-center justify-center border border-outline-variant/20">
+                  {renderIcon(tx.emoji)}
+                </div>
+                <div className="flex-1">
+                  <p className="text-base font-bold text-on-surface">{tx.notes || txSubcategoryText}</p>
+                  <p className="text-xs text-on-surface-variant">
+                    {new Date(tx.date).toLocaleDateString(i18n.language, { month: 'short', day: 'numeric' })} • {txSubcategoryText}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-base font-bold text-on-surface">
+                    -{activeCurrency} {tx.amount.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
+                  </p>
+                </div>
               </div>
-              <div className="flex-1">
-                <p className="text-base font-bold text-on-surface">{tx.notes || formatLabel(tx.category)}</p>
-                <p className="text-xs text-on-surface-variant">
-                  {new Date(tx.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} • {formatLabel(tx.subcategory || tx.category)}
-                </p>
-              </div>
-              <div className="text-right">
-                <p className="text-base font-bold text-on-surface">
-                  -${tx.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </p>
-              </div>
-            </div>
-          ))}
+            );
+          })}
           {currentMonthTxs.length === 0 && <p className="text-on-surface-variant">{t('budget_detail.no_transactions')}</p>}
         </div>
       </main>

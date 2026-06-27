@@ -15,10 +15,12 @@ import {
   Activity,
   TrendingUp,
   BrainCircuit,
-  Plus
+  Plus,
+  Camera
 } from 'lucide-react';
 import { Settings } from './Settings';
 import { NotificationDispatchHub } from './NotificationDispatchHub';
+import { ReceiptScannerModal } from './ReceiptScannerModal';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -29,6 +31,8 @@ interface LayoutProps {
   setIsAIModalOpen?: (open: boolean) => void;
   isTxModalOpen?: boolean;
   setIsTxModalOpen?: (open: boolean) => void;
+  txMode?: 'expense' | 'income' | 'transfer';
+  setTxMode?: (mode: 'expense' | 'income' | 'transfer') => void;
   profile?: any;
   accounts?: any[];
   transactions?: any[];
@@ -36,7 +40,7 @@ interface LayoutProps {
 }
 
 export const Layout: React.FC<LayoutProps> = ({ 
-  children, activeTab, setActiveTab, isAIModalOpen, setIsAIModalOpen, setIsTxModalOpen, profile, accounts, transactions, accountBalances
+  children, activeTab, setActiveTab, isAIModalOpen, setIsAIModalOpen, isTxModalOpen, setIsTxModalOpen, txMode, setTxMode, profile, accounts, transactions, accountBalances
 }) => {
   const { t } = useTranslation();
   const [isOffline, setIsOffline] = React.useState<boolean>(() => {
@@ -55,8 +59,15 @@ export const Layout: React.FC<LayoutProps> = ({
 
   const [isSalaryModalOpen, setIsSalaryModalOpen] = React.useState(false);
   const [isTxDetailModalOpen, setIsTxDetailModalOpen] = React.useState(false);
+  const [isAccountModalOpen, setIsAccountModalOpen] = React.useState(false);
   const [isAccountDetailModalOpen, setIsAccountDetailModalOpen] = React.useState(false);
   const [isBreakdownModalOpen, setIsBreakdownModalOpen] = React.useState(false);
+  const [isDebtModalOpen, setIsDebtModalOpen] = React.useState(false);
+  const [isMilestoneModalOpen, setIsMilestoneModalOpen] = React.useState(false);
+  const [isDebtMilestoneModalOpen, setIsDebtMilestoneModalOpen] = React.useState(false);
+  const [isDispatchHubOpen, setIsDispatchHubOpen] = React.useState(false);
+  const [isReceiptScannerOpen, setIsReceiptScannerOpen] = React.useState(false);
+  const [isStatementVaultOpen, setIsStatementVaultOpen] = React.useState(false);
 
   useEffect(() => {
     const handleSalaryModal = (e: any) => {
@@ -65,25 +76,55 @@ export const Layout: React.FC<LayoutProps> = ({
     const handleTxDetailModal = (e: any) => {
       setIsTxDetailModalOpen(e.detail.isOpen);
     };
+    const handleAccountModal = (e: any) => {
+      setIsAccountModalOpen(e.detail.isOpen);
+    };
     const handleAccountDetailModal = (e: any) => {
       setIsAccountDetailModalOpen(e.detail.isOpen);
     };
     const handleBreakdownModal = (e: any) => {
       setIsBreakdownModalOpen(e.detail.isOpen);
     };
+    const handleDebtModal = (e: any) => {
+      setIsDebtModalOpen(e.detail.isOpen);
+    };
+    const handleMilestoneModal = (e: any) => {
+      setIsMilestoneModalOpen(e.detail.isOpen);
+    };
+    const handleDebtMilestoneModal = (e: any) => {
+      setIsDebtMilestoneModalOpen(e.detail.isOpen);
+    };
+    const handleDispatchHub = (e: any) => {
+      setIsDispatchHubOpen(e.detail.isOpen);
+    };
+    const handleStatementVault = (e: any) => {
+      setIsStatementVaultOpen(e.detail.isOpen);
+    };
     window.addEventListener('salary-modal-toggled', handleSalaryModal);
     window.addEventListener('tx-detail-modal-toggled', handleTxDetailModal);
+    window.addEventListener('account-modal-toggled', handleAccountModal);
     window.addEventListener('account-detail-modal-toggled', handleAccountDetailModal);
     window.addEventListener('breakdown-modal-toggled', handleBreakdownModal);
+    window.addEventListener('debt-modal-toggled', handleDebtModal);
+    window.addEventListener('milestone-modal-toggled', handleMilestoneModal);
+    window.addEventListener('debt-milestone-modal-toggled', handleDebtMilestoneModal);
+    window.addEventListener('dispatch-hub-toggled', handleDispatchHub);
+    window.addEventListener('statement-vault-toggled', handleStatementVault);
     return () => {
       window.removeEventListener('salary-modal-toggled', handleSalaryModal);
       window.removeEventListener('tx-detail-modal-toggled', handleTxDetailModal);
+      window.removeEventListener('account-modal-toggled', handleAccountModal);
       window.removeEventListener('account-detail-modal-toggled', handleAccountDetailModal);
       window.removeEventListener('breakdown-modal-toggled', handleBreakdownModal);
+      window.removeEventListener('debt-modal-toggled', handleDebtModal);
+      window.removeEventListener('milestone-modal-toggled', handleMilestoneModal);
+      window.removeEventListener('debt-milestone-modal-toggled', handleDebtMilestoneModal);
+      window.removeEventListener('dispatch-hub-toggled', handleDispatchHub);
+      window.removeEventListener('statement-vault-toggled', handleStatementVault);
     };
   }, []);
 
-  const shouldHideHeaderFooter = isSalaryModalOpen || isTxDetailModalOpen || isAccountDetailModalOpen || isBreakdownModalOpen;
+  const shouldHideHeaderFooter = isSalaryModalOpen || isTxDetailModalOpen || isAccountModalOpen || isAccountDetailModalOpen || isBreakdownModalOpen || isDebtModalOpen || isTxModalOpen || isMilestoneModalOpen || isDebtMilestoneModalOpen || isAIModalOpen || activeTab === 'ai' || isStatementVaultOpen;
 
   return (
     <div className="w-full h-screen flex flex-col bg-[#F8FAFC] text-black overflow-hidden relative">
@@ -100,14 +141,14 @@ export const Layout: React.FC<LayoutProps> = ({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
-              className="absolute bottom-24 right-5 bg-white rounded-2xl shadow-xl p-2 flex flex-col gap-1 w-56"
+              className="absolute bottom-24 right-5 bg-white rounded-2xl shadow-xl p-2 flex flex-col gap-1 w-56 border border-neutral-100"
               onClick={(e) => e.stopPropagation()}
             >
-              <button className="text-left px-4 py-3 text-sm font-bold text-[#1E2229] hover:bg-[#A6DDB1]/20 rounded-lg" onClick={() => { setIsFabMenuOpen(false); setIsTxModalOpen?.(true); }}>{t('layout.create_new_transfer', 'Create new transfer')}</button>
-              <button className="text-left px-4 py-3 text-sm font-bold text-[#1E2229] hover:bg-[#A6DDB1]/20 rounded-lg" onClick={() => { setIsFabMenuOpen(false); window.dispatchEvent(new CustomEvent('trigger-debt-config')); }}>{t('layout.create_new_debt', 'Create new debt')}</button>
-              <button className="text-left px-4 py-3 text-sm font-bold text-[#1E2229] hover:bg-[#A6DDB1]/20 rounded-lg" onClick={() => { setIsFabMenuOpen(false); setIsTxModalOpen?.(true); }}>{t('layout.create_new_income', 'Create new income')}</button>
-              <button className="text-left px-4 py-3 text-sm font-bold text-[#1E2229] hover:bg-[#A6DDB1]/20 rounded-lg" onClick={() => { setIsFabMenuOpen(false); setIsTxModalOpen?.(true); }}>{t('layout.create_new_expense', 'Create new expense')}</button>
-              <button className="text-left px-4 py-3 text-sm font-bold text-[#1E2229] hover:bg-[#A6DDB1]/20 rounded-lg" onClick={() => { setIsFabMenuOpen(false); window.dispatchEvent(new CustomEvent('trigger-savings-goal-config')); }}>{t('layout.create_new_saving_goal', 'Create new saving goal')}</button>
+              <button className="text-left px-4 py-3 text-sm font-bold text-[#111c2d] hover:bg-[#A6DDB1]/10 rounded-xl transition-colors" onClick={() => { setTxMode?.('transfer'); setIsFabMenuOpen(false); setIsTxModalOpen?.(true); }}>{t('layout.new_transfer', 'New transfer')}</button>
+              <button className="text-left px-4 py-3 text-sm font-bold text-[#111c2d] hover:bg-[#A6DDB1]/10 rounded-xl transition-colors" onClick={() => { setIsFabMenuOpen(false); window.dispatchEvent(new CustomEvent('trigger-debt-config')); }}>{t('layout.new_debt', 'New debt')}</button>
+              <button className="text-left px-4 py-3 text-sm font-bold text-[#111c2d] hover:bg-[#A6DDB1]/10 rounded-xl transition-colors" onClick={() => { setTxMode?.('income'); setIsFabMenuOpen(false); setIsTxModalOpen?.(true); }}>{t('layout.new_income', 'New income')}</button>
+              <button className="text-left px-4 py-3 text-sm font-bold text-[#111c2d] hover:bg-[#A6DDB1]/10 rounded-xl transition-colors" onClick={() => { setTxMode?.('expense'); setIsFabMenuOpen(false); setIsTxModalOpen?.(true); }}>{t('layout.new_expense', 'New expense')}</button>
+              <button className="text-left px-4 py-3 text-sm font-bold text-[#111c2d] hover:bg-[#A6DDB1]/10 rounded-xl transition-colors" onClick={() => { setIsFabMenuOpen(false); window.dispatchEvent(new CustomEvent('trigger-savings-goal-config')); }}>{t('layout.new_saving_goal', 'New saving goal')}</button>
             </motion.div>
           </motion.div>
         )}
@@ -154,13 +195,25 @@ export const Layout: React.FC<LayoutProps> = ({
       )}
 
       {/* CONTENT CANVAS */}
-      <main className="flex-1 w-full relative z-10 box-border pb-28 bg-[#F8FAFC] overflow-y-auto overflow-x-hidden">
+      <main className={`flex-1 w-full relative z-10 box-border ${shouldHideHeaderFooter ? 'pb-0' : 'pb-28'} bg-[#F8FAFC] overflow-y-auto overflow-x-hidden`}>
         {children}
       </main>
 
       {/* UNIFIED STICKY FOOTER BOTTOM NAVIGATION DOCK */}
-      {!shouldHideHeaderFooter && (
+      {!shouldHideHeaderFooter && !isDispatchHubOpen && (
         <nav className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-[460px] box-border select-none shrink-0">
+        {/* Receipt Scanner FAB (Camera) */}
+        <button
+          onClick={() => setIsReceiptScannerOpen(true)}
+          className="fixed bottom-40 right-6 z-[60] w-14 h-14 bg-white border border-neutral-200 text-[#1E3A20] rounded-full flex items-center justify-center shadow-lg hover:bg-neutral-50 transition-all active:scale-95 group"
+          title={t('layout.scan_receipt', 'Scan receipt with AI')}
+        >
+          <Camera size={22} className="text-[#1E3A20] group-hover:scale-105 transition-transform" />
+          <span className="absolute -top-1 -right-1 bg-[#A6DDB1] text-[#1E3A20] text-[9px] font-bold px-1.5 py-0.5 rounded-full border border-white flex items-center gap-0.5 shadow-sm">
+            AI
+          </span>
+        </button>
+
         {/* FAB */}
         <button
           onClick={() => setIsFabMenuOpen(true)}
@@ -202,6 +255,15 @@ export const Layout: React.FC<LayoutProps> = ({
           })}
         </div>
       </nav>
+      )}
+      {profile?.uid && (
+        <ReceiptScannerModal
+          isOpen={isReceiptScannerOpen}
+          onClose={() => setIsReceiptScannerOpen(false)}
+          uid={profile.uid}
+          profile={profile}
+          accounts={accounts || []}
+        />
       )}
     </div>
   );

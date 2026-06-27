@@ -653,7 +653,7 @@ export const Accounts: React.FC<AccountsProps> = ({ profile, onNavigateToTransac
                                   className="text-[9.5px] text-neutral-400 font-normal mt-1 leading-none font-g-sans"
                                   style={{ fontFamily: "'Google Sans', sans-serif" }}
                                 >
-                                  ≈ {activeBaseCurr} {Math.abs(translatedBalance).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                  ≈ {activeBaseCurr} {translatedBalance < 0 ? '-' : ''}{Math.abs(translatedBalance).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </span>
                               )}
                             </div>

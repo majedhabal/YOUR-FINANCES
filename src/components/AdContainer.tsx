@@ -7,7 +7,7 @@ interface AdContainerProps {
 }
 
 export const AdContainer: React.FC<AdContainerProps> = ({ subscriptionTier }) => {
-  if (subscriptionTier === 'premium') return null;
+  if (subscriptionTier && subscriptionTier.toLowerCase() !== 'free') return null;
 
   return (
     <motion.div 

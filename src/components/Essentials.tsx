@@ -52,7 +52,6 @@ import { EssentialsHeader } from './EssentialsHeader';
 import { BudgetDetailView } from './BudgetDetailView';
 import { SavingsSection } from './SavingsSection';
 import { DebtSection } from './DebtSection';
-import { AddGoalModal } from './AddGoalModal';
 import { GoalTransactionModal } from './GoalTransactionModal';
 import { DebtTransactionModal } from './DebtTransactionModal';
 import { BudgetTransactionModal } from './BudgetTransactionModal';
@@ -142,7 +141,10 @@ export const Essentials: React.FC<DailyLogProps> = ({ profile }) => {
     return [];
   });
   const [isMilestoneModalOpen, setIsMilestoneModalOpen] = useState(false);
-  const [isAddGoalModalOpen, setIsAddGoalModalOpen] = useState(false);
+  
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent('milestone-modal-toggled', { detail: { isOpen: isMilestoneModalOpen } }));
+  }, [isMilestoneModalOpen]);
   const [editingMilestone, setEditingMilestone] = useState<any | null>(null);
   const [milestoneToDelete, setMilestoneToDelete] = useState<any | null>(null);
   const [showArchivedGoals, setShowArchivedGoals] = useState(false);
@@ -151,6 +153,10 @@ export const Essentials: React.FC<DailyLogProps> = ({ profile }) => {
   // Debt Milestones State
   const [debtMilestones, setDebtMilestones] = useState<any[]>([]);
   const [isDebtMilestoneModalOpen, setIsDebtMilestoneModalOpen] = useState(false);
+  
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent('debt-milestone-modal-toggled', { detail: { isOpen: isDebtMilestoneModalOpen } }));
+  }, [isDebtMilestoneModalOpen]);
   const [editingDebtMilestone, setEditingDebtMilestone] = useState<any | null>(null);
   const [debtMilestoneToDelete, setDebtMilestoneToDelete] = useState<any | null>(null);
   const [showManageLinkedModal, setShowManageLinkedModal] = useState(false);
@@ -386,21 +392,11 @@ useEffect(() => {
         setActiveSubTab(subtab);
       }
     };
-    const handleTriggerSavings = () => {
-      setIsMilestoneModalOpen(true);
-    };
-    const handleTriggerDebtConfig = () => {
-      setIsDebtMilestoneModalOpen(true);
-    };
 
     window.addEventListener('trigger-daily-log-budget-config', handleTrigger);
-    window.addEventListener('trigger-savings-goal-config', handleTriggerSavings);
-    window.addEventListener('trigger-debt-config', handleTriggerDebtConfig);
     window.addEventListener('set-daily-log-subtab', handleSetSubtab);
     return () => {
       window.removeEventListener('trigger-daily-log-budget-config', handleTrigger);
-      window.removeEventListener('trigger-savings-goal-config', handleTriggerSavings);
-      window.removeEventListener('trigger-debt-config', handleTriggerDebtConfig);
       window.removeEventListener('set-daily-log-subtab', handleSetSubtab);
     };
   }, []);
@@ -869,7 +865,7 @@ useEffect(() => {
         transactions={allTransactions}
         onDeleteMilestone={(ms) => setSavingsGoalAction({ type: 'delete', ms })}
         onAddTransaction={(ms) => setTargetForTx({ type: 'milestone', target: ms })}
-        onAddGoal={() => setIsAddGoalModalOpen(true)}
+        onAddGoal={() => window.dispatchEvent(new CustomEvent('trigger-savings-goal-config'))}
         currency={profile.baseCurrency || 'AED'}
          />
 
@@ -879,6 +875,7 @@ useEffect(() => {
           transactions={allTransactions} 
           onDeleteDebt={(acc) => setDebtMilestoneAction({ type: 'delete', ms: acc })}                
           onAddDebtTransaction={(acc) => setTargetForTx({ type: 'debt', target: acc })}
+          onAddDebt={() => window.dispatchEvent(new CustomEvent('trigger-debt-config'))}
           currency={profile.baseCurrency || 'AED'}
         />
 
@@ -887,7 +884,7 @@ useEffect(() => {
           id="essentials-debt-insight"
           className="relative overflow-hidden flex flex-col transition-all bg-[#FEF2F2] border border-[#FECACA] rounded-2xl p-6"
         >
-          <div className="flex items-center gap-2 text-[#B91C1C] mb-3">
+          <div className="flex items-center gap-2 text-[#B91C1C] mb-3" style={{ backgroundColor: '#ffffff' }}>
             <Lightbulb size={20} />
             <span className="font-bold text-sm">{t('essentials.vantage_insight')}</span>
           </div>
@@ -1002,13 +999,6 @@ useEffect(() => {
         accounts={accounts}
         allTransactions={allTransactions}
         exchangeRates={exchangeRates}
-      />
-
-      <AddGoalModal 
-        isOpen={isAddGoalModalOpen} 
-        onClose={() => setIsAddGoalModalOpen(false)} 
-        uid={profile.uid}
-        currency={profile.baseCurrency || 'AED'}
       />
 
       {/* Centralized Protective Confirmation Pop-up Overlay for Savings Goals */}
@@ -2184,7 +2174,7 @@ export const MilestoneConfigModal: React.FC<{
                             </span>
                           </div>
                           <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 600 }} className="text-[11px] text-gray-500">
-                            {acc.currency} {balanceVal.toLocaleString('en-US', { maximumFractionDigits: 0 })}
+                            {acc.currency} {balanceVal < 0 ? '-' : ''}{Math.abs(balanceVal).toLocaleString('en-US', { maximumFractionDigits: 0 })}
                           </span>
                         </div>
                       );
@@ -2251,7 +2241,7 @@ export const MilestoneConfigModal: React.FC<{
                     <div className="flex flex-col gap-1 w-full">
                       <div className="flex items-baseline gap-1">
                         <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-gray-900 text-sm leading-none">
-                          {activeBaseCurr} {recommendedVal.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
+                          {activeBaseCurr} {recommendedVal < 0 ? '-' : ''}{Math.abs(recommendedVal).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
                         </span>
                         <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[10px] text-gray-500 uppercase">
                           per month
@@ -2264,7 +2254,7 @@ export const MilestoneConfigModal: React.FC<{
                   )}
                 </div>
                 <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[9px] text-gray-400 uppercase tracking-widest mt-2 block">
-                  BASED ON {activeBaseCurr} {linkedBalancesSum.toLocaleString('en-US', { maximumFractionDigits: 0 })} CURRENTLY LINKED
+                  BASED ON {activeBaseCurr} {linkedBalancesSum < 0 ? '-' : ''}{Math.abs(linkedBalancesSum).toLocaleString('en-US', { maximumFractionDigits: 0 })} CURRENTLY LINKED
                 </span>
               </section>
 

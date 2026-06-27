@@ -30,6 +30,27 @@
         } catch (e) {
           console.warn(e);
         }
+
+        // Prevent pinch-zoom gestures
+        document.addEventListener('touchstart', function(event) {
+          if (event.touches.length > 1) {
+            event.preventDefault();
+          }
+        }, { passive: false });
+
+        document.addEventListener('gesturestart', function(event) {
+          event.preventDefault();
+        });
+
+        // Prevent double-tap to zoom
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function(event) {
+          const now = (new Date()).getTime();
+          if (now - lastTouchEnd <= 300) {
+            event.preventDefault();
+          }
+          lastTouchEnd = now;
+        }, false);
       })();
     </script>
     <meta name="theme-color" content="#20c997" />
@@ -49,6 +70,10 @@
       gtag('config', 'G-TVMMKL3JQD');
     </script>
     <style>
+      /* Prevent pinch-to-zoom at CSS level */
+      html, body {
+        touch-action: pan-x pan-y;
+      }
       #splash-screen {
         position: fixed;
         inset: 0;

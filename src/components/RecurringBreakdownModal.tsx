@@ -134,7 +134,7 @@ export const RecurringBreakdownModal: React.FC<RecurringBreakdownModalProps> = (
                     }} 
                     className="text-emerald-600 tracking-tight tabular-nums"
                   >
-                    {primaryCurrency} {monthlyIncome.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    {primaryCurrency} {monthlyIncome < 0 ? '-' : ''}{Math.abs(monthlyIncome).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </span>
                 </div>
                 
@@ -148,7 +148,7 @@ export const RecurringBreakdownModal: React.FC<RecurringBreakdownModalProps> = (
                     }} 
                     className="text-rose-500 tracking-tight tabular-nums"
                   >
-                    {primaryCurrency} {monthlyExpense.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    {primaryCurrency} {monthlyExpense < 0 ? '-' : ''}{Math.abs(monthlyExpense).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </span>
                 </div>
 
@@ -164,7 +164,7 @@ export const RecurringBreakdownModal: React.FC<RecurringBreakdownModalProps> = (
                     }} 
                     className={`tracking-tight tabular-nums ${netSurplus >= 0 ? 'text-emerald-600' : 'text-rose-500'}`}
                   >
-                    {primaryCurrency} {netSurplus.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    {primaryCurrency} {netSurplus < 0 ? '-' : ''}{Math.abs(netSurplus).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </span>
                 </div>
               </div>

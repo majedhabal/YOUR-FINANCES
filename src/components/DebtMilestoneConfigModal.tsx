@@ -43,6 +43,10 @@ export const DebtMilestoneConfigModal: React.FC<DebtMilestoneConfigModalProps> =
   const activeBaseCurr = profile?.baseCurrency || profile?.currency || 'AED';
 
   useEffect(() => {
+    window.dispatchEvent(new CustomEvent('debt-modal-toggled', { detail: { isOpen } }));
+  }, [isOpen]);
+
+  useEffect(() => {
     if (isOpen) {
       if (editingMilestone) {
         setName(editingMilestone.name || '');

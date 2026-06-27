@@ -25,7 +25,7 @@ export const AIInsights: React.FC<AIInsightsProps> = ({ profile, onUpdateProfile
   const [forecastLoading, setForecastLoading] = useState(false);
   const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false);
 
-  const isPremium = profile?.subscriptionTier === 'premium';
+  const isPremium = !!(profile?.isPremium || (profile?.subscriptionTier && profile.subscriptionTier.toLowerCase() !== 'free'));
 
   const generateForecast = async () => {
     setForecastLoading(true);
@@ -35,7 +35,8 @@ export const AIInsights: React.FC<AIInsightsProps> = ({ profile, onUpdateProfile
       const prompt = `You are Vantage AI. Perform a DEEP FINANCIAL FORECAST for the next 6 months based on:
          Balance: $${context.balance}
          Recent Transactions: ${txContext}
-         Predict trajectory and suggest 3 pivot points for wealth maximization. Concisely.`;
+         Predict trajectory and suggest 3 pivot points for wealth maximization. Concisely.
+         CRITICAL RULE: You must NEVER give direct recommendations or tips. You must ALWAYS phrase any advice, suggestions, or insights as "Based on research...", "Online sources suggest...", or "According to financial research...". Never state recommendations or tips directly.`;
       
       const text = await executeVantageAITask('generate_financial_forecast', { prompt });
       setForecast(text || "Forecast unavailable.");
@@ -96,7 +97,8 @@ export const AIInsights: React.FC<AIInsightsProps> = ({ profile, onUpdateProfile
         Current User Balance: $${context.balance}. 
         Recent Transaction History: ${txContext}.
         User Question/Request: "${promptText}"
-        Give a concise (max 60 words), witty, and strategically sound answer. Be honest about their health but stay high-end.`;
+        Give a concise (max 60 words), witty, and strategically sound answer. Be honest about their health but stay high-end.
+        CRITICAL RULE: You must NEVER give direct recommendations or tips. You must ALWAYS phrase any advice, tips, suggestions, or insights as "Based on research...", "Online sources suggest...", or "According to financial research...". Never state recommendations or tips directly.`;
       
       const text = await executeVantageAITask('summarize_document', { prompt });
       setInsight(text || "Insight unavailable.");
@@ -171,7 +173,7 @@ export const AIInsights: React.FC<AIInsightsProps> = ({ profile, onUpdateProfile
             featureName={t('ai.financial_advisor')}
             description={t('ai.unlock_advantages')} 
           />
-          <AdContainer subscriptionTier="free" />
+          <AdContainer subscriptionTier={profile?.subscriptionTier || 'free'} />
         </div>
       ) : (
         <>

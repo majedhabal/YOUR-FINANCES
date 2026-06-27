@@ -160,7 +160,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
   const [aiForecastLoading, setAiForecastLoading] = useState(false);
   const [expandedTypes, setExpandedTypes] = useState<Record<string, boolean>>({});
 
-  const isPremium = profile?.subscriptionTier === 'premium';
+  const isPremium = !!(profile?.isPremium || (profile?.subscriptionTier && profile.subscriptionTier.toLowerCase() !== 'free'));
   const now = useMemo(() => new Date(), []);
 
   // Fetch sub-collections
@@ -215,12 +215,27 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
     loadRates();
   }, []);
 
-  // Initialize selectedAccIds to all active accounts
+  // Initialize selectedAccIds to all active accounts or a filtered one
   useEffect(() => {
-    if (accounts.length > 0 && selectedAccIds.size === 0) {
+    const filterAccId = localStorage.getItem('analytics_filter_account_id');
+    if (filterAccId) {
+      setSelectedAccIds(new Set([filterAccId]));
+      localStorage.removeItem('analytics_filter_account_id');
+    } else if (accounts.length > 0 && selectedAccIds.size === 0) {
       setSelectedAccIds(new Set(accounts.filter(a => !a.isArchived).map(a => a.id)));
     }
   }, [accounts]);
+
+  // Handle live tab-switching events with account filter
+  useEffect(() => {
+    const handleSwitchTab = (e: any) => {
+      if (e.detail?.tab === 'analytics' && e.detail?.accountId) {
+        setSelectedAccIds(new Set([e.detail.accountId]));
+      }
+    };
+    window.addEventListener('switch-tab', handleSwitchTab);
+    return () => window.removeEventListener('switch-tab', handleSwitchTab);
+  }, []);
 
   const selectAll = () => {
     setSelectedAccIds(new Set(accounts.filter(a => !a.isArchived).map(a => a.id)));
@@ -295,8 +310,8 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
 
     const calculatedTotalDebt = liabilitiesSum / baseRateToAED;
 
-    // Confirmed income = Total confirmed income transactions + account starting balances (Rule 17)
-    // Refined to include both 'income' and 'Inflow' types and only asset account starting balances
+    // Confirmed income = Sum of all income transactions + legacy starting balances (Rule 17)
+    // We must avoid double-counting if a starting balance is already ledgered as a transaction.
     const totalConfirmedIncomeTxSum = allTransactions
       .filter(tx => 
         (tx.type === 'income' || tx.type === 'Inflow') && 
@@ -316,7 +331,16 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
         !liabilityTypes.includes(acc.type) && 
         acc.loanDirection !== 'lent'
       )
-      .reduce((sum, acc) => sum + (Number(acc.startingBalance || 0) * getRateToAED(acc.currency || 'AED')), 0);
+      .reduce((sum, acc) => {
+        const accountId = String(acc.id);
+        const hasLedgeredStartingBalance = allTransactions.some(tx => 
+          (tx.accountId === accountId || tx.toAccountId === accountId) && 
+          (tx.subcategory === 'starting_balance' || tx.notes === 'Initial Balance Setup' || tx.notes === 'Starting Balance' || tx.subcategory === 'Starting Balance')
+        );
+        // If it's already in the ledger, don't add it from the account field
+        if (hasLedgeredStartingBalance) return sum;
+        return sum + (Number(acc.startingBalance || 0) * getRateToAED(acc.currency || 'AED'));
+      }, 0);
 
     const calculatedTotalConfirmedIncome = (totalConfirmedIncomeTxSum + totalStartingBalances) / baseRateToAED;
 
@@ -1100,7 +1124,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
     const formatCurrency = (val: number) => {
       const primaryCurrency = profile?.baseCurrency || profile?.currency || 'AED';
       const symbol = primaryCurrency === 'USD' ? '$' : primaryCurrency === 'EUR' ? '€' : primaryCurrency === 'GBP' ? '£' : `${primaryCurrency} `;
-      return `${symbol}${val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      return `${val < 0 ? '-' : ''}${symbol}${Math.abs(val).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     };
 
     return (
@@ -2041,6 +2065,21 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
           background-color: #fafcfd !important;
         }
 
+        /* User Requested Style Adjustments - 2026-06-27 */
+        div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) {
+          background-color: #ffffff !important;
+        }
+        div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > h3:nth-of-type(1) {
+          color: #A6DDB1 !important;
+        }
+        div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(2) > span:nth-of-type(1) {
+          color: #000000 !important;
+        }
+        div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(6) > button:nth-of-type(1) {
+          font-family: 'Google Sans', sans-serif !important;
+          font-weight: 700 !important;
+        }
+
         /* User Requested Style Adjustments */
         div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(1) > div#analytics-networth-card:nth-of-type(1) {
           height: 100px !important;
@@ -2368,13 +2407,13 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
                 <div>
                   <p className="text-[10px] font-bold text-[#8c8c99] mb-1">{t('analytics.total_inflow')}</p>
                   <p className="text-xl font-bold text-[#366945]">
-                    {profile?.baseCurrency || profile?.currency || 'AED'} {totalInflow.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    {profile?.baseCurrency || profile?.currency || 'AED'} {totalInflow < 0 ? '-' : ''}{Math.abs(totalInflow).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </p>
                 </div>
                 <div>
                   <p className="text-[10px] font-bold text-[#8c8c99] mb-1">{t('analytics.burn_rate')}</p>
                   <p className="text-xl font-bold text-[#111c2d]">
-                    {profile?.baseCurrency || profile?.currency || 'AED'} {burnRate.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    {profile?.baseCurrency || profile?.currency || 'AED'} {burnRate < 0 ? '-' : ''}{Math.abs(burnRate).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </p>
                 </div>
               </div>
@@ -2429,7 +2468,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
                 <div className="flex items-center justify-between gap-1 mb-4">
                   <div className="flex flex-col">
                       <span className="text-sm text-[#8c8c99]">{primaryCurrency}</span>
-                      <span className="text-2xl font-bold text-[#111c2d]">{totalCashOnHand.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                      <span className="text-2xl font-bold text-[#111c2d]">{totalCashOnHand < 0 ? '-' : ''}{Math.abs(totalCashOnHand).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                   </div>
                   <div className="w-10 h-10 bg-[#f4f4f8] rounded-xl flex items-center justify-center text-[#8C8C99]">
                     <WalletIcon size={20} />
@@ -2488,7 +2527,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
                   <div className="flex items-baseline gap-1">
                     <span className="text-sm text-[#8c8c99]">{primaryCurrency}</span>
                     <span className="text-2xl font-bold text-[#366945]">
-                      {totalRecurringIncome.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      {totalRecurringIncome < 0 ? '-' : ''}{Math.abs(totalRecurringIncome).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                   </div>
                   
@@ -2503,7 +2542,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
                   <div className="flex items-baseline gap-1">
                     <span className="text-sm text-[#8c8c99]">{primaryCurrency}</span>
                     <span className="text-2xl font-bold text-[#ba1a1a]">
-                      {totalRecurringExpenses.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      {totalRecurringExpenses < 0 ? '-' : ''}{Math.abs(totalRecurringExpenses).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                   </div>
                 </div>
@@ -2531,7 +2570,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
               
               // Formatting helper inside local block
               const formatCurrencyLocal = (val: number) => {
-                return `${symbol}${val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                return `${val < 0 ? '-' : ''}${symbol}${Math.abs(val).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
               };
 
               const userBaseRateToAED = exchangeRates[primaryCurrency] || 1.0;

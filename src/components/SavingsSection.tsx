@@ -1,6 +1,7 @@
 import React from 'react';
 import { Target, Trash2, TrendingUp, Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { translateCategoryOrSubcategory } from '../lib/stringUtils';
 
 export const SavingsSection: React.FC<{ 
   milestones: any[], 
@@ -97,7 +98,7 @@ export const SavingsSection: React.FC<{
                       <Target size={20} className="text-[#366945]" />
                     </div>
                     <div>
-                      <div className="text-sm font-bold text-[#111C2D]">{t(`subcategories.${m.name}`, m.name) || t('savings_section.unnamed_goal')}</div>
+                      <div className="text-sm font-bold text-[#111C2D]">{(translateCategoryOrSubcategory(m.name, t) || t('savings_section.unnamed_goal')) as string}</div>
                       <div className="text-[10px] text-gray-500">
                         {t('savings_section.est_completion')} <span className="font-bold text-gray-900">{estCompletionDate ? estCompletionDate.toLocaleDateString(undefined, { month: 'short', year: 'numeric' }) : t('common.na', 'N/A')}</span>
                       </div>

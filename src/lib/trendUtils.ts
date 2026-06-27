@@ -87,7 +87,12 @@ export const calculateExpectedBankBalance = (
   transactions: any[]
 ): number => {
   const accountId = String(acc.id);
-  let total = Number(acc.startingBalance || 0);
+  const hasLedgeredStartingBalance = transactions.some(tx => 
+    (tx.accountId === accountId || tx.toAccountId === accountId) && 
+    (tx.subcategory === 'starting_balance' || tx.notes === 'Initial Balance Setup' || tx.notes === 'Starting Balance' || tx.subcategory === 'Starting Balance')
+  );
+
+  let total = hasLedgeredStartingBalance ? 0 : Number(acc.startingBalance || 0);
 
   const now = new Date();
   const todayEnd = new Date(now);
@@ -99,8 +104,6 @@ export const calculateExpectedBankBalance = (
     const txDate = new Date(tx.date);
     if (isNaN(txDate.getTime())) return;
     if (txDate > todayEnd) return;
-
-    if (tx.notes === 'Starting Balance' || tx.subcategory === 'Starting Balance') return;
 
     const amount = Number(tx.amount || 0);
     
@@ -143,9 +146,14 @@ export const calculateAccountBalances = (
 
     const isLiability = ['credit', 'loan', 'mortgage', 'Credit Card', 'Personal Loan', 'Mortgage'].includes(acc.type) && acc.loanDirection !== 'lent';
     
-    // Standard Rule: (Starting Balance) + (Sum of all Income) - (Sum of all Expenses)
-    // For liabilities, we start with a negative balance representing debt
-    let total = Number(acc.startingBalance);
+    const hasLedgeredStartingBalance = transactions.some(tx => 
+      (tx.accountId === accountId || tx.toAccountId === accountId) && 
+      (tx.subcategory === 'starting_balance' || tx.notes === 'Initial Balance Setup' || tx.notes === 'Starting Balance' || tx.subcategory === 'Starting Balance')
+    );
+
+    // Rule 17 & 16: If we have a ledgered starting balance, we start from 0 to avoid doubling.
+    // Otherwise, we use acc.startingBalance as a fallback for legacy or non-ledgered accounts.
+    let total = hasLedgeredStartingBalance ? 0 : Number(acc.startingBalance || 0);
     if (isNaN(total)) total = 0;
     if (isLiability && total > 0) total = -total;
     

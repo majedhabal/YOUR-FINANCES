@@ -8,6 +8,7 @@ import { handleFirestoreError, OperationType } from '../lib/firebaseUtils';
 import { signInWithPopup, GoogleAuthProvider, FacebookAuthProvider } from 'firebase/auth';
 import { setCachedAccessToken } from '../lib/googleAuth';
 import { seedUserCustomCategories } from '../lib/categoryUtils';
+import { LanguageSelector } from './LanguageSelector';
 
 const privacySections = [
   {
@@ -136,7 +137,7 @@ export const BiometricLogin: React.FC<BiometricLoginProps> = ({ onSuccess }) => 
             email: user.email || 'vantage.fb.user@private.com',
             displayName: user.displayName ? user.displayName.split(' ')[0] : 'Sara Spence',
             fullName: user.displayName || 'Sara Spence',
-            subscriptionTier: 'Premium',
+            subscriptionTier: 'free',
             fingerprintLoginEnabled: false,
             lastLogin: nowTs,
             createdAt: nowTs,
@@ -181,7 +182,7 @@ export const BiometricLogin: React.FC<BiometricLoginProps> = ({ onSuccess }) => 
           fullName: 'Founder Profile',
           email: 'founder@me-vantage.com',
           isPremium: true,
-          subscriptionTier: 'Premium',
+          subscriptionTier: 'tier 3',
           isOnboarded: false,
           geminiInsightsEnabled: true,
           theme: 'light',
@@ -223,7 +224,7 @@ export const BiometricLogin: React.FC<BiometricLoginProps> = ({ onSuccess }) => 
           email: cleanEmail,
           displayName: cleanEmail.split('@')[0],
           fullName: '', // Start strictly empty for native gray text placeholder hint validation
-          subscriptionTier: 'Premium', 
+          subscriptionTier: 'free', 
           fingerprintLoginEnabled: false,
           lastLogin: nowTs,
           createdAt: nowTs,
@@ -304,7 +305,7 @@ export const BiometricLogin: React.FC<BiometricLoginProps> = ({ onSuccess }) => 
           email: user.email || 'vantage.user@private.com',
           displayName: user.displayName ? user.displayName.split(' ')[0] : '',
           fullName: '', // Start empty for clean name registration tests fallback
-          subscriptionTier: 'Premium',
+          subscriptionTier: 'free',
           fingerprintLoginEnabled: false,
           lastLogin: nowTs,
           createdAt: nowTs,
@@ -353,7 +354,7 @@ export const BiometricLogin: React.FC<BiometricLoginProps> = ({ onSuccess }) => 
           fullName: '', // Ensure blank name fallback to trigger pristine native placeholders gray hints
           email: 'test@yourfinances.me',
           isPremium: true,
-          subscriptionTier: 'Premium',
+          subscriptionTier: 'tier 3',
           isOnboarded: false,
           geminiInsightsEnabled: true,
           theme: 'light',
@@ -377,7 +378,7 @@ export const BiometricLogin: React.FC<BiometricLoginProps> = ({ onSuccess }) => 
               id="auth-back-btn"
             >
               <ArrowLeft size={14} />
-              Back
+              {t('onboarding_flow.auth_gateway.back', 'Back')}
             </button>
             
             <div className="flex flex-col items-end gap-0.5 select-none text-right">
@@ -890,8 +891,9 @@ export const BiometricLogin: React.FC<BiometricLoginProps> = ({ onSuccess }) => 
               <span className="text-[9px] text-[#57606F] mt-0.5 leading-none">by ME Vantage</span>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <span onClick={() => window.open('https://www.yourfinances.me/', '_blank')} className="text-[10px] text-neutral-400 font-mono cursor-pointer hover:text-emerald-700 transition-colors">yourfinances.me</span>
+          <div className="flex items-center gap-4">
+            <span onClick={() => window.open('https://www.yourfinances.me/', '_blank')} className="hidden sm:inline text-[10px] text-neutral-400 font-mono cursor-pointer hover:text-emerald-700 transition-colors">yourfinances.me</span>
+            <LanguageSelector className="border border-[#E1E8ED] bg-[#F8F9FA] px-2.5 py-1 rounded-xl text-xs" />
           </div>
         </div>
       </header>
@@ -903,23 +905,23 @@ export const BiometricLogin: React.FC<BiometricLoginProps> = ({ onSuccess }) => 
         <section className="flex flex-col items-center text-center gap-5 max-w-3xl mx-auto py-4" id="hero-segment" style={{ marginTop: '-38px', marginBottom: '0px' }}>
           
           <h1 className="text-3xl sm:text-4.5xl md:text-5xl lg:text-5.5xl font-bold text-neutral-900 leading-[1.12]" id="tagline-asset">
-            Your future financial freedom starts with YOUR FINANCES
+            {t('footer.tagline', 'Your future financial freedom starts with YOUR FINANCES')}
           </h1>
           
           <p className="text-sm sm:text-base text-[#57606F] font-normal max-w-2xl leading-relaxed mt-2">
-            A beautiful, lightweight, security-first command center design that keeps checking accounts, manual budgets, physical cash envelopes, and liabilities in absolute relational alignment inside UAE-enclave secure databases.
+            {t('footer.tagline_description', 'A beautiful, lightweight, security-first command center design that keeps checking accounts, manual budgets, physical cash envelopes, and liabilities in absolute relational alignment inside UAE-enclave secure databases.')}
           </p>
 
           {/* Embedded Credentials Login Console */}
           <div className="w-full max-w-sm mx-auto bg-white border border-[#E1E8ED] rounded-2xl p-5 shadow-[0_4px_20px_rgba(0,0,0,0.02)] flex flex-col gap-4 mt-2" id="home-login-card">
             <h2 className="text-[11px] font-bold text-neutral-500 uppercase tracking-wider text-center select-none" style={{ fontFamily: '"Google Sans", sans-serif' }}>
-              Launch Personal Workspace
+              {t('onboarding_flow.auth_gateway.title', 'Launch Personal Workspace')}
             </h2>
             
             <AnimatePresence mode="wait">
               {status === 'idle' && (
                 <motion.div 
-                  key="home-idle-form"
+                   key="home-idle-form"
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
@@ -931,7 +933,7 @@ export const BiometricLogin: React.FC<BiometricLoginProps> = ({ onSuccess }) => 
                     className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl text-center text-xs font-bold shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <Fingerprint size={16} />
-                    Secure Google credential lock
+                    {t('onboarding_flow.auth_gateway.google_login', 'Secure Google credential lock')}
                   </button>
 
                   <button 
@@ -940,18 +942,18 @@ export const BiometricLogin: React.FC<BiometricLoginProps> = ({ onSuccess }) => 
                     className="w-full py-3 px-4 bg-[#1877F2] hover:bg-[#166FE5] disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl text-center text-xs font-bold shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <Facebook size={16} />
-                    Continue with Facebook
+                    {t('onboarding_flow.auth_gateway.facebook_login', 'Continue with Facebook')}
                   </button>
 
                   <div className="flex items-center select-none py-0.5">
                     <div className="flex-1 border-t border-neutral-200"></div>
-                    <span className="px-3 text-[10px] text-neutral-400 font-bold">Or use your email</span>
+                    <span className="px-3 text-[10px] text-neutral-400 font-bold">{t('onboarding_flow.auth_gateway.or_direct_gateway', 'Or use your email')}</span>
                     <div className="flex-1 border-t border-neutral-200"></div>
                   </div>
 
                   <div className="flex flex-col gap-3 rounded-xl border border-[#E1E8ED] bg-[#F8FAFC] p-4 shadow-sm text-left w-full">
                     <label className="text-[11px] font-bold text-neutral-700" htmlFor="direct-email-field-home">
-                      Email Login/Sign Up
+                      {t('onboarding_flow.auth_gateway.email_gateway_label', 'Email Login/Sign Up')}
                     </label>
                     <input 
                       id="direct-email-field-home"
@@ -969,11 +971,17 @@ export const BiometricLogin: React.FC<BiometricLoginProps> = ({ onSuccess }) => 
                   </div>
 
                   <button
-                    onClick={handleSandboxBypass}
+                    onClick={() => {
+                      if (emailInput && emailInput.includes('@') && complianceChecked) {
+                        handleDirectEmailBypass(emailInput);
+                      } else {
+                        setErrorMsg('Please enter a valid email address and agree to the terms.');
+                      }
+                    }}
                     disabled={!complianceChecked}
                     className="w-full py-2.5 bg-neutral-900 border border-neutral-800 hover:bg-neutral-850 disabled:opacity-40 disabled:cursor-not-allowed text-[#FFFFFF] rounded-xl text-xs font-bold shadow-md transition-transform active:scale-95 text-center cursor-pointer"
                   >
-                    🚀 Enter development sandbox
+                    🚀 {t('onboarding_flow.auth_gateway.sign_in_up_btn', 'Email Sign In/Up')}
                   </button>
                 </motion.div>
               )}
@@ -997,8 +1005,8 @@ export const BiometricLogin: React.FC<BiometricLoginProps> = ({ onSuccess }) => 
                     </div>
                   </div>
                   <div className="text-center">
-                    <p className="text-emerald-600 font-bold text-xs">Connecting securely</p>
-                    <p className="text-[#57606F] text-[10px] mt-0.5 font-normal">Authenticating portal connection session</p>
+                    <p className="text-emerald-600 font-bold text-xs">{t('onboarding_flow.auth_gateway.connecting', 'Connecting securely')}</p>
+                    <p className="text-[#57606F] text-[10px] mt-0.5 font-normal">{t('onboarding_flow.auth_gateway.authenticating', 'Authenticating portal connection session')}</p>
                   </div>
                 </motion.div>
               )}
@@ -1013,7 +1021,7 @@ export const BiometricLogin: React.FC<BiometricLoginProps> = ({ onSuccess }) => 
                   <div className="w-12 h-12 rounded-full bg-emerald-500 flex items-center justify-center shadow-md text-white">
                     <UnlockIcon size={20} />
                   </div>
-                  <p className="text-neutral-900 font-bold text-xs text-center mt-2">Active session authorized</p>
+                  <p className="text-neutral-900 font-bold text-xs text-center mt-2">{t('onboarding_flow.auth_gateway.authorized', 'Active session authorized')}</p>
                 </motion.div>
               )}
 
@@ -1032,7 +1040,7 @@ export const BiometricLogin: React.FC<BiometricLoginProps> = ({ onSuccess }) => 
                       onClick={() => setStatus('idle')}
                       className="px-4 py-2 bg-neutral-100 hover:bg-neutral-150 text-neutral-800 rounded-xl text-xs font-bold transition-all cursor-pointer text-center"
                     >
-                      Retry Connection
+                      {t('onboarding_flow.auth_gateway.retry', 'Retry Connection')}
                     </button>
                     <button 
                       onClick={handleSandboxBypass}
@@ -1055,23 +1063,23 @@ export const BiometricLogin: React.FC<BiometricLoginProps> = ({ onSuccess }) => 
                   className="mt-0.5 w-4 h-4 rounded border-[#D1D8E0] text-emerald-600 focus:ring-emerald-500 accent-emerald-600 cursor-pointer"
                 />
                 <span className="text-[#57606F] text-[10px] font-normal leading-relaxed select-none">
-                  I agree to{' '}
+                  {t('footer.agree_to_privacy', 'I agree to ')}
                   <button
                     type="button"
-                    onClick={(e) => { e.preventDefault(); setActiveModal('privacy'); }}
+                    onClick={(e) => { e.preventDefault(); window.open('https://www.yourfinances.me/privacy', '_blank'); }}
                     className="text-emerald-600 font-bold hover:underline cursor-pointer"
                   >
-                    Privacy Policy
-                  </button>{' '}
-                  and{' '}
+                    {t('footer.privacy_policy', 'Privacy Policy')}
+                  </button>
+                  {t('footer.and', ' and ')}
                   <button
                     type="button"
                     onClick={(e) => { e.preventDefault(); window.open('https://www.yourfinances.me/terms-of-engagement', '_blank'); }}
                     className="text-emerald-600 font-bold hover:underline cursor-pointer"
                   >
-                    Terms & Conditions
-                  </button>{' '}
-                  to gain access.
+                    {t('footer.terms_conditions', 'Terms & Conditions')}
+                  </button>
+                  {t('footer.to_gain_access', ' to gain access.')}
                 </span>
               </label>
             </div>
@@ -1085,8 +1093,8 @@ export const BiometricLogin: React.FC<BiometricLoginProps> = ({ onSuccess }) => 
       <footer className="w-full border-t border-[#E1E8ED] bg-[#F8FAFC]/50 py-8 px-6 mt-12 shrink-0 select-none">
         <div className="max-w-6xl w-full mx-auto flex flex-col sm:flex-row gap-4 items-center justify-between text-center sm:text-left">
           <div className="flex flex-col gap-0.5">
-            <span className="text-[12px] font-bold text-neutral-800">YOUR FINANCES by ME Vantage</span>
-            <span className="text-[10px] text-[#57606F] font-normal">All your finances consolidated under one pristine view.</span>
+            <span className="text-[12px] font-bold text-neutral-800">{t('footer.branding', 'YOUR FINANCES by ME Vantage')}</span>
+            <span className="text-[10px] text-[#57606F] font-normal">{t('footer.branding_description', 'All your finances consolidated under one pristine view.')}</span>
           </div>
 
           <div className="flex flex-col items-center sm:items-end gap-1 font-sans">

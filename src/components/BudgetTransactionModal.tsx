@@ -34,11 +34,12 @@ export const BudgetTransactionModal: React.FC<{
     };
   }, [isOpen]);
 
+  const activeAccounts = accounts.filter(acc => !acc.isArchived);
   useEffect(() => {
-    if (accounts.length > 0 && !sourceAccountId) {
-      setSourceAccountId(accounts[0].id);
+    if (activeAccounts.length > 0 && !sourceAccountId) {
+      setSourceAccountId(activeAccounts[0].id);
     }
-  }, [accounts]);
+  }, [activeAccounts]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -101,7 +102,7 @@ export const BudgetTransactionModal: React.FC<{
                   {t("budget_modal.source_account", "Source Account")}
                 </label>
                 <select value={sourceAccountId} onChange={e => setSourceAccountId(e.target.value)} className="w-full bg-[#f4f4f8] border border-[#d8d8e5] rounded-xl px-4 py-3 text-sm focus:border-[#a6ddb1] outline-none" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}>
-                  {accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name}</option>)}
+                  {activeAccounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name}</option>)}
                 </select>
               </div>
 
@@ -112,7 +113,7 @@ export const BudgetTransactionModal: React.FC<{
                   </label>
                   <select value={destinationAccountId} onChange={e => setDestinationAccountId(e.target.value)} className="w-full bg-[#f4f4f8] border border-[#d8d8e5] rounded-xl px-4 py-3 text-sm focus:border-[#a6ddb1] outline-none" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}>
                     <option value="">{t("budget_modal.select_account", "Select Account")}</option>
-                    {accounts.filter(acc => acc.id !== sourceAccountId).map(acc => <option key={acc.id} value={acc.id}>{acc.name}</option>)}
+                    {activeAccounts.filter(acc => acc.id !== sourceAccountId).map(acc => <option key={acc.id} value={acc.id}>{acc.name}</option>)}
                   </select>
                 </div>
               )}

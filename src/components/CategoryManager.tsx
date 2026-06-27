@@ -405,14 +405,14 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
         </button>
         <div className="flex flex-col gap-1">
           <h2
-            className="text-[clamp(20px,3.5vw,28px)] text-neutral-900 dark:text-white uppercase tracking-tighter leading-tight"
+            className="text-[clamp(20px,3.5vw,28px)] text-neutral-900 dark:text-white leading-tight"
             style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
             id="taxonomy-main-title"
           >
             {t("taxonomy.title", "Taxonomy")}
           </h2>
           <p
-            className="text-[clamp(9px,2.8vw,12px)] text-emerald-600 dark:text-vantage-green uppercase tracking-[0.4em]"
+            className="text-[clamp(9px,2.8vw,12px)] text-emerald-600 dark:text-vantage-green"
             style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
             id="taxonomy-subtitle"
           >
@@ -435,7 +435,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
           </div>
           <div className="text-center flex flex-col gap-3">
             <h3
-              className="text-[clamp(16px,3.5vw,22px)] text-neutral-900 dark:text-white uppercase"
+              className="text-[clamp(16px,3.5vw,22px)] text-neutral-900 dark:text-white"
               style={{
                 fontFamily: "'Google Sans', sans-serif",
                 fontWeight: 700,
@@ -445,7 +445,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
               {t("taxonomy.initialize_system", "Initialize System")}
             </h3>
             <p
-              className="text-[clamp(9px,2.8vw,11px)] text-neutral-500 dark:text-vantage-blue-grey max-w-[280px] mx-auto uppercase leading-relaxed tracking-widest"
+              className="text-[clamp(9px,2.8vw,11px)] text-neutral-500 dark:text-vantage-blue-grey max-w-[280px] mx-auto leading-relaxed"
               style={{
                 fontFamily: "'Google Sans', sans-serif",
                 fontWeight: 400,
@@ -481,7 +481,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
             id="matrix-nodes-header"
           >
             <span
-              className="text-[clamp(9px,2.8vw,12px)] text-neutral-500 dark:text-vantage-blue-grey uppercase tracking-[0.3em]"
+              className="text-[clamp(9px,2.8vw,12px)] text-neutral-500 dark:text-vantage-blue-grey"
               style={{
                 fontFamily: "'Google Sans', sans-serif",
                 fontWeight: 700,
@@ -624,14 +624,14 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
 
                   <div className="flex items-center justify-between border-t border-[#E1E8ED] dark:border-white/[0.03] pt-1.5 mt-0.5">
                     <span
-                      className={`text-[clamp(9px,2.2vw,11px)] px-1.5 py-0.5 rounded uppercase tracking-[0.1em] border ${natureColors[cat.nature] || "bg-neutral-100 dark:bg-white/5 text-[#57606F] dark:text-vantage-blue-grey border-[#E1E8ED] dark:border-white/10"}`}
+                      className={`text-[clamp(9px,2.2vw,11px)] px-1.5 py-0.5 rounded border ${natureColors[cat.nature] || "bg-neutral-100 dark:bg-white/5 text-[#57606F] dark:text-vantage-blue-grey border-[#E1E8ED] dark:border-white/10"}`}
                       style={{
                         fontFamily: "'Google Sans', sans-serif",
                         fontWeight: 400,
                       }}
                       id={`category-nature-${cat.id}`}
                     >
-                      {cat.nature}
+                      {t(`taxonomy.nature_${cat.nature.toLowerCase()}`, cat.nature) as string}
                     </span>
                     <button
                       onClick={() =>
@@ -670,7 +670,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
                             id={`sub-node-${cat.id}-${i}`}
                           >
                             <span
-                              className="text-[clamp(11px,2.8vw,13px)] text-[#57606F] dark:text-vantage-blue-grey uppercase tracking-wider truncate mr-2"
+                              className="text-[clamp(11px,2.8vw,13px)] text-[#57606F] dark:text-vantage-blue-grey truncate mr-2"
                               style={{
                                 fontFamily: "'Google Sans', sans-serif",
                                 fontWeight: 400,
@@ -745,7 +745,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
                                 id={`sub-node-archived-${cat.id}-${i}`}
                               >
                                 <span
-                                  className="text-[clamp(11px,2.8vw,13px)] text-[#57606F] dark:text-vantage-blue-grey line-through uppercase tracking-wider truncate mr-2"
+                                  className="text-[clamp(11px,2.8vw,13px)] text-[#57606F] dark:text-vantage-blue-grey line-through truncate mr-2"
                                   style={{
                                     fontFamily: "'Google Sans', sans-serif",
                                     fontWeight: 400,
@@ -819,7 +819,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
                               fontWeight: 400,
                               fontSize: "clamp(9px, 2.8vw, 11px)",
                             }}
-                            className="h-8 px-2.5 bg-[#A6DDB1] text-neutral-900 rounded-lg hover:bg-[#86CA93] transition-all flex items-center justify-center active:scale-95 uppercase tracking-wider cursor-pointer"
+                            className="h-8 px-2.5 bg-[#A6DDB1] text-neutral-900 rounded-lg hover:bg-[#86CA93] transition-all flex items-center justify-center active:scale-95 cursor-pointer"
                             id={`btn-add-sub-${cat.id}`}
                           >
                             <Plus size={12} className="mr-0.5" />{" "}
@@ -849,7 +849,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
             id="edit-modal-card"
           >
             <h3
-              className="text-[clamp(18px,3.5vw,22px)] text-black dark:text-white uppercase tracking-tighter"
+              className="text-[clamp(18px,3.5vw,22px)] text-black dark:text-white"
               style={{
                 fontFamily: "'Google Sans', sans-serif",
                 fontWeight: 700,
@@ -862,7 +862,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
             <div className="flex flex-col gap-4" id="edit-modal-form">
               <div className="flex flex-col gap-1.5">
                 <label
-                  className="text-[clamp(9px,2.8vw,11px)] text-[#57606F] dark:text-vantage-blue-grey uppercase font-black tracking-widest ml-1"
+                  className="text-[clamp(9px,2.8vw,11px)] text-[#57606F] dark:text-vantage-blue-grey ml-1"
                   style={{
                     fontFamily: "'Google Sans', sans-serif",
                     fontWeight: 400,
@@ -890,7 +890,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
                 <>
                   <div className="flex flex-col gap-1.5">
                     <label
-                      className="text-[clamp(9px,2.8vw,11px)] text-[#57606F] dark:text-vantage-blue-grey uppercase font-black tracking-widest ml-1"
+                      className="text-[clamp(9px,2.8vw,11px)] text-[#57606F] dark:text-vantage-blue-grey ml-1"
                       style={{
                         fontFamily: "'Google Sans', sans-serif",
                         fontWeight: 400,
@@ -914,7 +914,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
                             fontWeight: 400,
                             fontSize: "clamp(9px, 2vw, 11px)",
                           }}
-                          className={`py-2 rounded-lg uppercase border transition-all cursor-pointer ${editingObj.nature === n ? "bg-[#A6DDB1] text-neutral-900 border-[#A6DDB1]" : "bg-neutral-50 dark:bg-white/5 text-[#57606F] dark:text-vantage-blue-grey border-[#E1E8ED] dark:border-white/5"}`}
+                          className={`py-2 rounded-lg border transition-all cursor-pointer ${editingObj.nature === n ? "bg-[#A6DDB1] text-neutral-900 border-[#A6DDB1]" : "bg-neutral-50 dark:bg-white/5 text-[#57606F] dark:text-vantage-blue-grey border-[#E1E8ED] dark:border-white/5"}`}
                           id={`edit-nature-toggle-${n}`}
                         >
                           {t(`taxonomy.nature_${n.toLowerCase()}`, n)}
@@ -924,7 +924,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
                   </div>
                   <div className="flex flex-col gap-1.5">
                     <label
-                      className="text-[clamp(9px,2.8vw,11px)] text-[#57606F] dark:text-vantage-blue-grey uppercase font-black tracking-widest ml-1"
+                      className="text-[clamp(9px,2.8vw,11px)] text-[#57606F] dark:text-vantage-blue-grey ml-1"
                       style={{
                         fontFamily: "'Google Sans', sans-serif",
                         fontWeight: 400,
@@ -961,7 +961,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
                   fontWeight: 400,
                   fontSize: "11px",
                 }}
-                className="flex-1 bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-800 dark:text-neutral-300 uppercase tracking-widest active:scale-95 transition-all flex items-center justify-center hover:bg-neutral-200 dark:hover:bg-neutral-800 cursor-pointer"
+                className="flex-1 bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-800 dark:text-neutral-300 active:scale-95 transition-all flex items-center justify-center hover:bg-neutral-200 dark:hover:bg-neutral-800 cursor-pointer"
                 id="edit-modal-cancel-button"
               >
                 {t("taxonomy.cancel", "Cancel")}
@@ -989,7 +989,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
                   fontWeight: 400,
                   fontSize: "11px",
                 }}
-                className="flex-[2] bg-[#A6DDB1] hover:bg-[#86CA93] text-neutral-900 uppercase tracking-widest shadow-lg active:scale-95 transition-all flex items-center justify-center cursor-pointer"
+                className="flex-[2] bg-[#A6DDB1] hover:bg-[#86CA93] text-neutral-900 shadow-lg active:scale-95 transition-all flex items-center justify-center cursor-pointer"
                 id="edit-modal-save-button"
               >
                 {t("taxonomy.update_protocol", "Update Protocol")}
@@ -1014,7 +1014,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
           >
             <div className="flex flex-col gap-1" id="add-modal-header">
               <h3
-                className="text-[clamp(18px,3.5vw,22px)] text-black dark:text-white uppercase tracking-tighter leading-tight"
+                className="text-[clamp(18px,3.5vw,22px)] text-black dark:text-white leading-tight"
                 style={{
                   fontFamily: "'Google Sans', sans-serif",
                   fontWeight: 700,
@@ -1024,7 +1024,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
                 {t("taxonomy.define_master_node", "Define Master Node")}
               </h3>
               <p
-                className="text-[clamp(9px,2.8vw,12px)] text-emerald-600 dark:text-[#A6DDB1] uppercase tracking-[0.4em]"
+                className="text-[clamp(9px,2.8vw,12px)] text-emerald-600 dark:text-[#A6DDB1]"
                 style={{
                   fontFamily: "'Google Sans', sans-serif",
                   fontWeight: 700,
@@ -1038,7 +1038,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
             <div className="flex flex-col gap-5" id="add-modal-form">
               <div className="flex flex-col gap-2">
                 <label
-                  className="text-[clamp(9px,2.8vw,11px)] text-[#57606F] dark:text-vantage-blue-grey uppercase font-black tracking-widest px-1"
+                  className="text-[clamp(9px,2.8vw,11px)] text-[#57606F] dark:text-vantage-blue-grey px-1"
                   style={{
                     fontFamily: "'Google Sans', sans-serif",
                     fontWeight: 400,
@@ -1066,7 +1066,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
               <div className="grid grid-cols-2 gap-4" id="add-modal-grid">
                 <div className="flex flex-col gap-2">
                   <label
-                    className="text-[clamp(9px,2.8vw,11px)] text-[#57606F] dark:text-vantage-blue-grey uppercase font-black tracking-widest px-1"
+                    className="text-[clamp(9px,2.8vw,11px)] text-[#57606F] dark:text-vantage-blue-grey px-1"
                     style={{
                       fontFamily: "'Google Sans', sans-serif",
                       fontWeight: 400,
@@ -1076,7 +1076,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
                     Nature
                   </label>
                   <select
-                    className="w-full bg-white dark:bg-[#161616] border border-[#E1E8ED] dark:border-white/10 rounded-xl p-3 text-[clamp(12px,2.5vw,14px)] text-black dark:text-white outline-none appearance-none font-normal uppercase focus:border-[#A6DDB1] dark:focus:border-[#A6DDB1] min-h-[44px]"
+                    className="w-full bg-white dark:bg-[#161616] border border-[#E1E8ED] dark:border-white/10 rounded-xl p-3 text-[clamp(12px,2.5vw,14px)] text-black dark:text-white outline-none appearance-none font-normal focus:border-[#A6DDB1] dark:focus:border-[#A6DDB1] min-h-[44px]"
                     style={{
                       fontFamily: "'Google Sans', sans-serif",
                       fontWeight: 400,
@@ -1100,7 +1100,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
                 </div>
                 <div className="flex flex-col gap-2">
                   <label
-                    className="text-[clamp(9px,2.8vw,11px)] text-[#57606F] dark:text-vantage-blue-grey uppercase font-black tracking-widest px-1"
+                    className="text-[clamp(9px,2.8vw,11px)] text-[#57606F] dark:text-vantage-blue-grey px-1"
                     style={{
                       fontFamily: "'Google Sans', sans-serif",
                       fontWeight: 400,
@@ -1135,7 +1135,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
                   fontWeight: 400,
                   fontSize: "11px",
                 }}
-                className="flex-1 bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-800 dark:text-neutral-300 uppercase tracking-[0.2em] hover:bg-neutral-200 dark:hover:bg-neutral-800 transition-all active:scale-95 flex items-center justify-center cursor-pointer"
+                className="flex-1 bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-800 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-800 transition-all active:scale-95 flex items-center justify-center cursor-pointer"
                 id="add-modal-abort-button"
               >
                 {t("taxonomy.abort", "Abort")}
@@ -1149,7 +1149,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
                   fontWeight: 400,
                   fontSize: "11px",
                 }}
-                className="flex-[2] bg-[#A6DDB1] hover:bg-[#86CA93] text-neutral-900 uppercase tracking-[0.2em] shadow-xl hover:opacity-90 active:scale-95 transition-all flex items-center justify-center cursor-pointer"
+                className="flex-[2] bg-[#A6DDB1] hover:bg-[#86CA93] text-neutral-900 shadow-xl hover:opacity-90 active:scale-95 transition-all flex items-center justify-center cursor-pointer"
                 id="add-modal-submit-button"
               >
                 {t("taxonomy.establish_node", "Establish Node")}
@@ -1180,7 +1180,7 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
               id="confirm-modal-card"
             >
               <h3
-                className="text-neutral-800 dark:text-white uppercase tracking-wider text-[clamp(13px,3.8vw,16px)]"
+                className="text-neutral-800 dark:text-white text-[clamp(13px,3.8vw,16px)]"
                 style={{
                   fontFamily: "'Google Sans', sans-serif",
                   fontWeight: 700,
@@ -1289,10 +1289,10 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
                     fontFamily: "'Google Sans', sans-serif",
                     fontWeight: 400,
                   }}
-                  className="w-full h-[38px] md:h-[42px] bg-[#A6DDB1] hover:bg-[#86CA93] active:scale-95 text-neutral-900 transition-all rounded-xl uppercase tracking-wider flex items-center justify-center cursor-pointer font-bold text-[clamp(11px,2.8vw,13px)]"
+                  className="w-full h-[38px] md:h-[42px] bg-[#A6DDB1] hover:bg-[#86CA93] active:scale-95 text-neutral-900 transition-all rounded-xl flex items-center justify-center cursor-pointer font-bold text-[clamp(11px,2.8vw,13px)]"
                   id="confirm-modal-proceed-button"
                 >
-                  {t("taxonomy.proceed", "PROCEED")}
+                  {t("taxonomy.proceed", "Proceed")}
                 </button>
 
                 <button
@@ -1302,10 +1302,10 @@ export const CategoryManager: React.FC<CategoryManagerProps> = ({
                     fontWeight: 400,
                     fontSize: "clamp(11px, 2.8vw, 13px)",
                   }}
-                  className="w-full text-neutral-400 hover:text-neutral-600 dark:text-neutral-400 dark:hover:text-neutral-200 transition-colors uppercase tracking-wider text-center cursor-pointer py-1 font-normal"
+                  className="w-full text-neutral-400 hover:text-neutral-600 dark:text-neutral-400 dark:hover:text-neutral-200 transition-colors text-center cursor-pointer py-1 font-normal"
                   id="confirm-modal-cancel-button"
                 >
-                  {t("taxonomy.cancel_uppercase", "CANCEL")}
+                  {t("taxonomy.cancel_uppercase", "Cancel")}
                 </button>
               </div>
             </motion.div>

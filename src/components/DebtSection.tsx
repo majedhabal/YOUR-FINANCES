@@ -5,10 +5,11 @@ import { useTranslation } from 'react-i18next';
 export const DebtSection: React.FC<{ 
   accounts: any[], 
   transactions: any[], 
-  onDeleteDebt: (acc: any) => void,
+  onDeleteDebt: (acc: any) => void, 
   onAddDebtTransaction: (acc: any) => void,
+  onAddDebt?: () => void,
   currency: string
-}> = ({ accounts, transactions, onDeleteDebt, onAddDebtTransaction, currency }) => {
+}> = ({ accounts, transactions, onDeleteDebt, onAddDebtTransaction, onAddDebt, currency }) => {
   const { t } = useTranslation();
   const debtAccounts = accounts.filter(acc => 
     ['credit', 'loan', 'mortgage', 'Credit Card', 'Personal Loan', 'Mortgage'].includes(acc.type)
@@ -50,10 +51,16 @@ export const DebtSection: React.FC<{
         </div>
       </div>
 
-      {/* Active Liabilities */}
-      <h3 className="text-xs font-bold text-gray-500 mb-4" style={{ fontFamily: "'Google Sans', sans-serif" }}>
-        {t('debt_section.active_liabilities', 'Active liabilities')}
-      </h3>
+      {/* Header */}
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-xs font-bold text-gray-500" style={{ fontFamily: "'Google Sans', sans-serif" }}>
+          {t('debt_section.active_liabilities', 'Active liabilities')}
+        </h3>
+        <button onClick={onAddDebt} className="text-xs text-[#366945] font-bold flex items-center gap-1 cursor-pointer bg-transparent border-none">
+          <Plus size={14} /> {t('debt_section.add_debt', 'Add Debt')}
+        </button>
+      </div>
+
       <div className="flex flex-col gap-3">
         {debtAccounts.length > 0 ? (
           debtAccounts.map(acc => {

@@ -58,6 +58,12 @@
     "consent_request_p": "Allow Vantage AI to process transaction data for financial analysis?",
     "consent_request_div": "Your data is parsed privately. We don't share user identity to Gemini model."
   },
+  "marital_status_options": {
+    "single": "Single",
+    "married": "Married",
+    "widowed": "Widowed",
+    "others": "Others"
+  },
   "accounts": {
     "title": "Accounts",
     "overview_title": "Accounts Overview",
@@ -114,6 +120,15 @@
     "active_viewing_period": "Active Viewing Period",
     "breakdown": "Breakdown"
   },
+  "salary_overview": {
+    "title": "Monthly Salary",
+    "subtitle": "Click to manage your allocation",
+    "view_breakdown": "View breakdown",
+    "browse_all_categories": "Browse All Categories & Sub-Categories",
+    "no_income_sources_linked": "No income sources linked",
+    "link_recurring_stream": "Link a recurring stream to begin allocation",
+    "link_first_income_source": "Link First Income Source"
+  },
   "activity": {
     "title": "Activity",
     "search_transactions": "Search transactions...",
@@ -163,13 +178,20 @@
   },
   "analytics": {
     "title": "Analytics",
+    "your_analytics": "Your Analytics",
+    "export_pdf_summary": "Export PDF Summary",
+    "current_situation": "Current Situation",
+    "historical_analysis": "Historical Analysis",
+    "forecast": "Forecast",
+    "complete_history": "Complete History",
+    "last": "Last",
     "analysis_overview": "Analysis Overview",
     "add_transaction": "Add Transaction",
     "add_account": "Add Account",
     "timeline_now": "Now",
     "timeline_past": "Past",
     "timeline_future": "Future",
-    "extra_savings": "Extra Savings",
+    "extra_savings": "Extra savings",
     "apply_budget_feedback": "Apply Budget Feedback",
     "filter_drawer": "Filter",
     "premium_modal": "Premium",
@@ -195,7 +217,6 @@
     "last_30_days_comparison": "Last 30 days comparison",
     "total_inflow": "Total Inflow",
     "burn_rate": "Burn Rate",
-    "net_worth": "Net Worth",
     "cash_available": "Cash available",
     "vantage_insight": "Vantage Insight",
     "total_debts": "Total debts",
@@ -212,13 +233,10 @@
     "scenario_planner": "Scenario planner",
     "what_if": "What if?",
     "adjust_savings_description": "Adjust your monthly savings to see the impact on your long-term wealth.",
-    "extra_savings": "Extra savings",
     "capital_impact": "10-Year capital impact (7% compounding)",
     "apply_to_budget": "Apply to Budget",
     "future_cash_flow": "Future cash flow",
     "projected_6_months": "Projected for the next 6 months",
-    "income": "Income",
-    "expenses": "Expenses",
     "avg_net_surplus": "Avg. net surplus",
     "liquidity_score": "Liquidity score",
     "vantage_ai_prediction": "Vantage AI prediction",
@@ -247,14 +265,12 @@
     "unrecorded_transaction": "Unrecorded financial transaction line log"
   },
   "budgets": {
-    "title": "Budgets",
-    "essential_needs": "Essential Needs",
-    "personal_wants": "Personal Wants",
-    "savings": "Savings",
-    "remaining": "Remaining",
-    "add_spend": "Add Spend",
-    "recent_transactions": "Recent Transactions",
-    "view_all": "View All",
+    "envelope_budget_pools": "envelope budget pools",
+    "automated_salary_breakdowns": "Automated salary breakdowns and spending caps",
+    "configure_target_envelope": "Configure target envelope",
+    "syncing_active_constraints": "Syncing active constraints...",
+    "no_active_tracking_envelopes": "No active tracking envelopes initiated",
+    "initialize_envelope_desc": "Initialize an envelope allocation parameters target block from your transaction creation window panels to automate allocations.",
     "envelope_limit": "Envelope limit"
   },
   "debt_management": {
@@ -279,7 +295,7 @@
   },
   "ai": {
     "unlock_advantages": "Unlock Strategic Advantages",
-    "initialize_premium": "Initialize premium sequence",
+    "initialize_premium": "Join the premium club",
     "ask_question": "Ask a question about your finances...",
     "vantage_insight": "Vantage Financial Insight",
     "financial_advisor": "Financial Advisor",
@@ -459,7 +475,63 @@
     "show_analytics_desc": "Factor transactions into budget & trend reports.",
     "interest": "Interest Rate (%)",
     "due_date": "Due Date",
-    "last_synced": "Last synced"
+    "last_synced": "Last synced",
+    "liquid_assets": "Liquid Assets",
+    "allocate": "Allocate",
+    "unallocated_cash_desc": "Capital Available for Allocation",
+    "non_liquid_assets": "Non-Liquid Assets",
+    "deployed_capital_desc": "Deployed Capital in Sub-Assets",
+    "total_account_value": "Total Account Value",
+    "current_liquidity": "Current Liquidity",
+    "account_type_label": "Account Type",
+    "min_balance_floor_label": "Min Balance Floor",
+    "estimated_growth": "Estimated Monthly Growth",
+    "based_on_apr": "Based on {{rate}}% APR",
+    "total_invested": "Total Invested",
+    "current_value": "Current Value",
+    "total_return": "Total Return",
+    "sub_asset_performance": "Sub-Asset Performance",
+    "add_transaction": "Add Transaction",
+    "projected_future": "Projected (Future)",
+    "received_current": "Received (Current)",
+    "asset_allocation_status": "Asset Allocation Status",
+    "liquid_assets_present": "Liquid Assets Present",
+    "fully_allocated_assets": "Fully Allocated Assets",
+    "credit_limit_label": "Credit Limit",
+    "payment_due_date_label": "Payment Due Date",
+    "not_set": "Not Set",
+    "interest_rate_label": "Interest Rate",
+    "payment_protocol_label": "Payment Protocol",
+    "manual": "Manual",
+    "projected_liquidity": "Projected Liquidity",
+    "surplus_expected": "Surplus Expected",
+    "deficit_expected": "Deficit Expected",
+    "account_status": "Account Status",
+    "status_active": "Active",
+    "status_archived": "Archived",
+    "balance_audit": "Balance Audit (Live Ledger)",
+    "starting_equilibrium": "Starting Equilibrium",
+    "gross_inflow": "Gross Inflow ({{count}} Docs)",
+    "gross_outflow": "Gross Outflow",
+    "net_liquidity_result": "Net Liquidity Result",
+    "sync_divergence": "Sync Divergence Detected!",
+    "edit_account": "Edit Account",
+    "view_account_details": "View Account Details",
+    "account_settings": "Account Settings",
+    "name_label": "Name",
+    "min_balance": "Min Balance",
+    "transfer_fee": "Transfer Fee",
+    "starting_balance_label": "Starting Balance",
+    "calculated_balance": "Calculated Balance",
+    "new_projection": "New Projection",
+    "sub_asset_manager": "Sub-Asset Manager",
+    "add_asset": "Add Asset",
+    "asset_name": "Asset Name",
+    "principal": "Principal",
+    "current": "Current",
+    "projected_yield": "Projected Yield",
+    "received": "Received",
+    "yield_period": "Yield Period"
   },
   "add_account": {
     "define_identity": "Define identity",
@@ -570,18 +642,11 @@
     "used": "Used",
     "add_spend": "Add Spend"
   },
-  "budgets": {
-    "envelope_budget_pools": "envelope budget pools",
-    "automated_salary_breakdowns": "Automated salary breakdowns and spending caps",
-    "configure_target_envelope": "Configure target envelope",
-    "syncing_active_constraints": "Syncing active constraints...",
-    "no_active_tracking_envelopes": "No active tracking envelopes initiated",
-    "initialize_envelope_desc": "Initialize an envelope allocation parameters target block from your transaction creation window panels to automate allocations.",
-    "envelope_limit": "Envelope limit"
-  },
   "footer": {
     "tagline": "Your Future Financial Freedom starts with YOUR FINANCES",
+    "tagline_description": "A beautiful, lightweight, security-first command center design that keeps checking accounts, manual budgets, physical cash envelopes, and liabilities in absolute relational alignment inside UAE-enclave secure databases.",
     "branding": "YOUR FINANCES by ME Vantage",
+    "branding_description": "All your finances consolidated under one pristine view.",
     "framework": "UAE Financial Security Framework",
     "agree_to_privacy": "I agree to ",
     "privacy_policy": "Privacy Policy",
@@ -617,10 +682,10 @@
     "personal_wants": "Personal Wants",
     "emergency_funds": "Emergency Funds",
     "spent_percent": "{{percent}}% spent",
-    "total_budgeted": "Total budgeted",
     "essential_needs_header": "Essential Needs",
     "personal_wants_header": "Personal Wants",
-    "emergency_funds_header": "Emergency Funds"
+    "emergency_funds_header": "Emergency Funds",
+    "spending_trend_14_days": "Spending Trend (Last 14 Days)"
   },
   "budget_modal": {
     "default_transfer_note": "Budget transfer",
@@ -665,7 +730,7 @@
     "nature_want": "Want",
     "nature_must": "Must",
     "nature_income": "Income",
-    "unarchive_subcategory_title": "Unarchive Sub-category",
+    "unarchive_subcategory_title": "UNARCHIVE SUB-CATEGORY",
     "append_placeholder": "Append...",
     "add_button": "ADD",
     "modify_node": "Modify Node",
@@ -685,7 +750,6 @@
     "archive_category_title": "ARCHIVE CATEGORY",
     "unarchive_category_title": "UNARCHIVE CATEGORY",
     "archive_subcategory_title": "ARCHIVE SUB-CATEGORY",
-    "unarchive_subcategory_title": "UNARCHIVE SUB-CATEGORY",
     "delete_category_body": "Are you sure you want to delete this category?",
     "delete_subcategory_body": "Are you sure you want to delete this sub-category?",
     "archive_category_body": "Are you sure you want to archive this category?",
@@ -789,7 +853,8 @@
     "create_new_debt": "Create new debt",
     "create_new_income": "Create new income",
     "create_new_expense": "Create new expense",
-    "create_new_saving_goal": "Create new saving goal"
+    "create_new_saving_goal": "Create new saving goal",
+    "scan_receipt": "Scan receipt with AI"
   },
   "net_worth_breakdown_modal": {
     "title": "Net Worth Calculations",
@@ -813,7 +878,67 @@
     "checklist_add_placeholder": "Add a new task...",
     "confirm_btn": "Confirm",
     "dismiss_btn": "Dismiss",
-    "approval_required": "Approval Required"
+    "approval_required": "Approval Required",
+    "hub_title": "Vantage dispatch hub",
+    "hub_subtitle": "Aggregated streams & pending tasks",
+    "upcoming_payday": "Upcoming payday alert",
+    "payday_alert_desc": "Your monthly base income is dropping soon on Day {{day}}. Configure your breakdown matrix to secure your budget allocation.",
+    "configure_breakdown": "Configure breakdown",
+    "upcoming_allocations": "Upcoming allocations",
+    "pending_count": "{{count}} pending",
+    "salary_distribution": "{{month}} {{year}} Salary distribution",
+    "allocations_mature_desc": "Your planned allocation is mature. Confirming will distribute the funds to your designated envelope budgets and execute internal transfers.",
+    "verify_salary_receipt": "Verify salary receipt",
+    "allocation_checklist": "Allocation checklist",
+    "allocations_done": "{{count}} / {{total}} Done",
+    "transfer_to": "Transfer to {{name}}",
+    "confirmed": "Confirmed",
+    "pending_approvals": "Pending approvals",
+    "actions_count": "{{count}} Action Required |||| {{count}} Actions Required",
+    "approval_queue_empty": "Approval queue is empty",
+    "scheduled_tx": "Scheduled Transaction",
+    "vantage_account": "Vantage Account",
+    "sched_label": "Sched: {{date}}",
+    "processing": "Processing...",
+    "approve": "Approve",
+    "dismiss": "Dismiss",
+    "dispatch_push_logs": "Dispatch push logs",
+    "active_alerts_count": "{{count}} Active alert |||| {{count}} Active alerts",
+    "daily_spends_overview": "Daily Spends Overview",
+    "daily_warning_desc": "Near consumed warning for Daily Spends budget at 80% boundary. Spent: ",
+    "warning_desc": "Near consumed warning for category budget. Spent: ",
+    "critical_desc": "Exceeded allocation limit for category budget. Spent: ",
+    "of_total_budget": "of total budget",
+    "fired_label": "Fired: {{date}} • {{time}}",
+    "daily_warning_title": "Daily Spends Alert: {{remaining}} {{currency}} left for today.",
+    "category_warning_title": "Vantage Alert: {{percent}}% of {{category}} budget consumed. {{remaining}} {{currency}} remaining.",
+    "daily_critical_title": "Vantage Critical: Daily Spends breached at {{percent}}%!",
+    "category_critical_title": "Vantage Critical: {{category}} budget breached at {{percent}}%!",
+    "clear": "Clear",
+    "reminders_milestones": "Reminders & timeline milestones",
+    "no_active_milestones": "No active milestones",
+    "personal_checklist": "Personal financial checklist",
+    "seed_verify_daily": "Verify daily spending budgets",
+    "seed_audit_sub": "Audit subscription schedules",
+    "seed_optimize_invest": "Optimize active investment tiers",
+    "checklist_pending": "{{count}} Pending",
+    "scheduled_at": "⏲️ Scheduled: {{date}} at {{time}}",
+    "completed_reminders": "Completed reminders",
+    "completed_count": "{{count}} Archived",
+    "was_scheduled": "Was scheduled: {{date}} at {{time}}",
+    "restore": "Restore",
+    "restore_tooltip": "Restore to active queue",
+    "remove_tooltip": "Permanently remove",
+    "append_quick_action": "Append quick action...",
+    "schedule_alarm": "Schedule dynamic alarm",
+    "automated_dispatch_time": "⏲️ Automated Dispatch Time",
+    "date": "Date",
+    "time": "Time",
+    "confirm_proceeding": "Confirm Proceeding",
+    "delete_chk_confirm": "Are you sure you want to proceed with deleting this checklist item?",
+    "reject_tx_confirm": "Are you sure you want to proceed with rejecting and removing this transaction approval draft?",
+    "proceed": "Proceed",
+    "cancel": "Cancel"
   },
   "onboarding_flow": {
     "auth_gateway": {
@@ -825,9 +950,14 @@
       "email_gateway_label": "Email connection gateway",
       "password_entry_label": "Enter your password",
       "email_placeholder": "name@company.com",
+      "back": "Back",
       "password_placeholder": "Password",
       "continue_btn": "Continue",
-      "sign_in_up_btn": "Sign In / Sign Up"
+      "sign_in_up_btn": "Sign In / Sign Up",
+      "connecting": "Connecting securely",
+      "authenticating": "Authenticating portal connection session",
+      "authorized": "Active session authorized",
+      "retry": "Retry Connection"
     }
   },
   "pending_approvals": {
@@ -851,16 +981,25 @@
     "unlock": "Unlock {{featureName}}",
     "instant_ai": "Instant AI",
     "dashboard_security": "Dashboard security",
-    "initialize": "Initialize premium sequence",
+    "initialize": "Join the premium club",
     "footer": "Powered by Google Gemini // Access restricted to premium level nodes"
   },
   "premium_modal": {
     "sparkles_title": "YOUR FINANCES Premium",
     "strategic_edge": "The strategic edge",
     "benefits": {
-      "ad_free": { "title": "Ad-Free Experience", "desc": "Focus on your wealth without distractions. Zero third-party interruptions." },
-      "receipt": { "title": "Vision Receipt Scanning", "desc": "Automatic expense extraction. Stop manual entry, start living." },
-      "ai": { "title": "AI Wealth Advisor", "desc": "Deep forecasting, proactive portfolio pivots, and 24/7 strategic chat." }
+      "ad_free": {
+        "title": "Ad-Free Experience",
+        "desc": "Focus on your wealth without distractions. Zero third-party interruptions."
+      },
+      "receipt": {
+        "title": "Vision Receipt Scanning",
+        "desc": "Automatic expense extraction. Stop manual entry, start living."
+      },
+      "ai": {
+        "title": "AI Wealth Advisor",
+        "desc": "Deep forecasting, proactive portfolio pivots, and 24/7 strategic chat."
+      }
     },
     "plan_title": "Signature plan",
     "price_label": "$19.99 / month",
@@ -887,12 +1026,30 @@
     "subtitle": "System Security & Data Minimization Standards",
     "lead_paragraph": "Vantage AI is committed to an architectural paradigm prioritizing absolute user sovereignty, zero trackers, and cryptographic isolation. This document outlines our structural protocols regarding storage, intelligence resolution, and automatic API sync scopes.",
     "protocols": {
-      "sec_1": { "title": "1. Ledger Sovereignty & Vault Storage", "desc": "All ledger indices, personal financial records, and manual account balances are persisted inside a secure, sandboxed Google Firebase Firestore cloud vault database. Access controls are regulated by strict user-level authorization rules. No third parties have access to your raw numeric balance profiles." },
-      "sec_2": { "title": "2. Cryptographic Telemetry Isolation", "desc": "Vantage AI operates under strict telemetry-free principles. We do not implement diagnostic trackers, tracking pixels, or user behavior analytics tools. Alert thresholds exists purely within your sandboxed profile. No background telemetry is shared with external advertising servers." },
-      "sec_3": { "title": "3. Self-Destruct Command & Data Purging", "desc": "In accordance with zero-knowledge data ownership standards, you may invoke the permanent \"Self-Destruct Matrix\" at any time from your settings menu. Activating this command dispatches bulk delete requests to wipe your cloud Firestore paths, immediately invalidates your authenticated active tokens, and purges all cookies, indexes, and cache from your browser." },
-      "sec_4": { "title": "4. Portability & Compliance Retention", "desc": "Compliance requires active ownership. You can request a complete structured JSON copy of your personal transactional ledger list, or print/export these privacy standards at any time for your offline compliance registers. We fully support standard offline storage policies and GDPR portability regulations." },
-      "sec_5": { "title": "5. AI & Generative Intelligence", "desc": "All generative intelligence, financial projections, conversational assistant transactions, and smart categorization are securely processed via proxy. Data is dispatched via server-side APIs to Google Gemini. Zero identifiers or user profiles are sent in plain requests, and we enforce a zero-cache policy on transient session logs." },
-      "sec_6": { "title": "6. Enhanced Integrations", "desc": "Sync tools for Google Calendar and Google Tasks operate under strict user-directed consent scopes. OAuth transport credentials and synchronized task attributes reside safely within secure client caches or sandboxed database variables. No secondary synchronization data is shared, sold, or distributed." }
+      "sec_1": {
+        "title": "1. Ledger Sovereignty & Vault Storage",
+        "desc": "All ledger indices, personal financial records, and manual account balances are persisted inside a secure, sandboxed Google Firebase Firestore cloud vault database. Access controls are regulated by strict user-level authorization rules. No third parties have access to your raw numeric balance profiles."
+      },
+      "sec_2": {
+        "title": "2. Cryptographic Telemetry Isolation",
+        "desc": "Vantage AI operates under strict telemetry-free principles. We do not implement diagnostic trackers, tracking pixels, or user behavior analytics tools. Alert thresholds exists purely within your sandboxed profile. No background telemetry is shared with external advertising servers."
+      },
+      "sec_3": {
+        "title": "3. Self-Destruct Command & Data Purging",
+        "desc": "In accordance with zero-knowledge data ownership standards, you may invoke the permanent \"Self-Destruct Matrix\" at any time from your settings menu. Activating this command dispatches bulk delete requests to wipe your cloud Firestore paths, immediately invalidates your authenticated active tokens, and purges all cookies, indexes, and cache from your browser."
+      },
+      "sec_4": {
+        "title": "4. Portability & Compliance Retention",
+        "desc": "Compliance requires active ownership. You can request a complete structured JSON copy of your personal transactional ledger list, or print/export these privacy standards at any time for your offline compliance registers. We fully support standard offline storage policies and GDPR portability regulations."
+      },
+      "sec_5": {
+        "title": "5. AI & Generative Intelligence",
+        "desc": "All generative intelligence, financial projections, conversational assistant transactions, and smart categorization are securely processed via proxy. Data is dispatched via server-side APIs to Google Gemini. Zero identifiers or user profiles are sent in plain requests, and we enforce a zero-cache policy on transient session logs."
+      },
+      "sec_6": {
+        "title": "6. Enhanced Integrations",
+        "desc": "Sync tools for Google Calendar and Google Tasks operate under strict user-directed consent scopes. OAuth transport credentials and synchronized task attributes reside safely within secure client caches or sandboxed database variables. No secondary synchronization data is shared, sold, or distributed."
+      }
     },
     "metadata": {
       "active_session": "Active Client Session",
@@ -940,8 +1097,9 @@
     "widget_delete_title": "Delete Widget",
     "widget_to_label": "To:",
     "widget_from_label": "From:",
-    "side_header": "Configure Your Live Widgets",
-    "side_desc": "Use the controls on the left to configure your quick-add widgets. Once added, install the app on your Android device (Add to Home Screen) to access them natively on your home grid.",
+    "side_header": "Interactive Hybrid Widget Simulator",
+    "side_desc": "Scroll through your active budgets and record transactions directly. This mimics the native Android Hybrid Widget powered by BroadcastReceiver and RemoteViews.",
+    "hybrid_widget_title": "Hybrid Budgets",
     "toast_msg": "Beautiful new Quick-Add widget placed on your virtual Android homescreen!"
   },
   "recurring_breakdown_modal": {
@@ -1092,24 +1250,51 @@
       },
       "t2": {
         "title": "2. Premium Services & Subscriptions",
-        "b1": { "head": "Tiered Access", "txt": "Premium features, including Gemini AI Insights, Google Calendar Sync, and Google Tasks Integration, are reserved for paid subscribers." },
-        "b2": { "head": "Billing", "txt": "Subscriptions are managed via the Google Play Store/Apple App Store. Under UAE Consumer Protection Law, all fees are transparent and published before purchase." },
-        "b3": { "head": "Cancellation", "txt": "You may cancel at any time; however, access to Premium \"Nodes\" will terminate at the end of the current billing cycle." }
+        "b1": {
+          "head": "Tiered Access",
+          "txt": "Premium features, including Gemini AI Insights, Google Calendar Sync, and Google Tasks Integration, are reserved for paid subscribers."
+        },
+        "b2": {
+          "head": "Billing",
+          "txt": "Subscriptions are managed via the Google Play Store/Apple App Store. Under UAE Consumer Protection Law, all fees are transparent and published before purchase."
+        },
+        "b3": {
+          "head": "Cancellation",
+          "txt": "You may cancel at any time; however, access to Premium \"Nodes\" will terminate at the end of the current billing cycle."
+        }
       },
       "t3": {
         "title": "3. AI-Augmented Financial Advice (Disclaimer)",
-        "b1": { "head": "Informational Purpose", "txt": "The Gemini AI integrations provide automated financial analysis and \"Insights.\" This content is for informational purposes only and does not constitute professional financial, legal, or investment advice." },
-        "b2": { "head": "User Responsibility", "txt": "You are solely responsible for verifying the accuracy of any AI-generated suggestions before taking financial action. ME Vantage is not liable for financial losses resulting from AI-generated content or \"Hallucinations\"." }
+        "b1": {
+          "head": "Informational Purpose",
+          "txt": "The Gemini AI integrations provide automated financial analysis and \"Insights.\" This content is for informational purposes only and does not constitute professional financial, legal, or investment advice."
+        },
+        "b2": {
+          "head": "User Responsibility",
+          "txt": "You are solely responsible for verifying the accuracy of any AI-generated suggestions before taking financial action. ME Vantage is not liable for financial losses resulting from AI-generated content or \"Hallucinations\"."
+        }
       },
       "t4": {
         "title": "4. Third-Party Integrations",
-        "b1": { "head": "Google Ecosystem", "txt": "The App utilizes Google APIs for authentication, calendar events, and task management. Your use is subject to Google’s Terms of Service in addition to these terms." },
-        "b2": { "head": "Currency Exchange", "txt": "Rates provided via ExchangeRate-API are mid-market rates and may differ from the \"Buy/Sell\" rates offered by your local UAE or Philippine banks." }
+        "b1": {
+          "head": "Google Ecosystem",
+          "txt": "The App utilizes Google APIs for authentication, calendar events, and task management. Your use is subject to Google’s Terms of Service in addition to these terms."
+        },
+        "b2": {
+          "head": "Currency Exchange",
+          "txt": "Rates provided via ExchangeRate-API are mid-market rates and may differ from the \"Buy/Sell\" rates offered by your local UAE or Philippine banks."
+        }
       },
       "t5": {
         "title": "5. Intellectual Property",
-        "b1": { "head": "The \"Vantage\" Brand", "txt": "All code, custom UI (including the Slim Obsidian and Emerald Green brand elements), and documentation are the exclusive property of ME Vantage Analytics and Strategy." },
-        "b2": { "head": "Usage Limits", "txt": "You may not reverse-engineer, scrape, or attempt to replicate the core logic of the Vantage ledger for commercial resale." }
+        "b1": {
+          "head": "The \"Vantage\" Brand",
+          "txt": "All code, custom UI (including the Slim Obsidian and Emerald Green brand elements), and documentation are the exclusive property of ME Vantage Analytics and Strategy."
+        },
+        "b2": {
+          "head": "Usage Limits",
+          "txt": "You may not reverse-engineer, scrape, or attempt to replicate the core logic of the Vantage ledger for commercial resale."
+        }
       },
       "t6": {
         "title": "6. Limitation of Liability",
@@ -1139,16 +1324,46 @@
   },
   "product_tour": {
     "steps": {
-      "s1": { "title": "App Introduction", "text": "Your future financial freedom starts with YOUR FINANCES. Let’s take a brief tour to show you how to effortlessly manage your net worth, monitor budgets, and achieve your financial goals with absolute clarity." },
-      "s2": { "title": "Financial Summary", "text": "This is your financial reporting. Get a real-time overview of your combined Net Worth, Available Cash , and Total Assets tracked safely in one dashboard layer." },
-      "s3": { "title": "Accounts Hub", "text": "This is where your financial infrastructure lives. Tap here to manage your liquid bank accounts, review physical cash, and track outstanding credit card liabilities." },
-      "s4": { "title": "Transactions Details", "text": "Your transaction history, simplified. Keep tabs on standard daily cash sependings and review transaction groups to see exactly where your money moves." },
-      "s5": { "title": "Income & Envelopes", "text": "Track your budget boundaries without the stress. This area showcases your automated income allocation and personalized framework mini-budgets, living safely right here under your active Essentials tab." },
-      "s6": { "title": "Saving Goals", "text": "Keep an eye on your long-term goals. Watch your milestone targets grow and track allocation toward your goals." },
-      "s7": { "title": "Debt Management", "text": "Eliminate your debts. Monitor card statements and outstanding debt limits seamlessly over an aggregated, pressure-free space." },
-      "s8": { "title": "Quick Action", "text": "Ready to add a new transaction, transfer funds between accounts, or update an envelope target? Tap this central button to initiate a fresh action instantly from any screen." },
-      "s9": { "title": "Smart Alerts", "text": "Never miss a critical financial notification. Tap here to view alerts, payment due date notices, set your own reminders and strategic tracking insights." },
-      "s10": { "title": "Profile & Settings", "text": "Customize your profile and app. Tap here to modify your base currency choice, update personal goals, configure notifications, or review our legal policies safely." }
+      "s1": {
+        "title": "App Introduction",
+        "text": "Your future financial freedom starts with YOUR FINANCES. Let’s take a brief tour to show you how to effortlessly manage your net worth, monitor budgets, and achieve your financial goals with absolute clarity."
+      },
+      "s2": {
+        "title": "Financial Summary",
+        "text": "This is your financial reporting. Get a real-time overview of your combined Net Worth, Available Cash , and Total Assets tracked safely in one dashboard layer."
+      },
+      "s3": {
+        "title": "Accounts Hub",
+        "text": "This is where your financial infrastructure lives. Tap here to manage your liquid bank accounts, review physical cash, and track outstanding credit card liabilities."
+      },
+      "s4": {
+        "title": "Transactions Details",
+        "text": "Your transaction history, simplified. Keep tabs on standard daily cash sependings and review transaction groups to see exactly where your money moves."
+      },
+      "s5": {
+        "title": "Income & Envelopes",
+        "text": "Track your budget boundaries without the stress. This area showcases your automated income allocation and personalized framework mini-budgets, living safely right here under your active Essentials tab."
+      },
+      "s6": {
+        "title": "Saving Goals",
+        "text": "Keep an eye on your long-term goals. Watch your milestone targets grow and track allocation toward your goals."
+      },
+      "s7": {
+        "title": "Debt Management",
+        "text": "Eliminate your debts. Monitor card statements and outstanding debt limits seamlessly over an aggregated, pressure-free space."
+      },
+      "s8": {
+        "title": "Quick Action",
+        "text": "Ready to add a new transaction, transfer funds between accounts, or update an envelope target? Tap this central button to initiate a fresh action instantly from any screen."
+      },
+      "s9": {
+        "title": "Smart Alerts",
+        "text": "Never miss a critical financial notification. Tap here to view alerts, payment due date notices, set your own reminders and strategic tracking insights."
+      },
+      "s10": {
+        "title": "Profile & Settings",
+        "text": "Customize your profile and app. Tap here to modify your base currency choice, update personal goals, configure notifications, or review our legal policies safely."
+      }
     },
     "controls": {
       "step_counter": "Step {{step}} of 10",
@@ -1278,4 +1493,3 @@
     "Missing": "Missing"
   }
 }
-

@@ -9,7 +9,7 @@ import { TransactionDetailModal } from './TransactionDetailModal';
 import { AddTransactionModal } from './AddTransactionModal';
 import { MASTER_CATEGORIES } from '../lib/constants';
 import { getAuth } from 'firebase/auth';
-import { formatLabel } from '../lib/stringUtils';
+import { formatLabel, translateCategoryOrSubcategory } from '../lib/stringUtils';
 
 export interface Transaction {
   id: string;
@@ -57,11 +57,39 @@ export const Transactions: React.FC<TransactionsProps> = ({
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  // Custom filter states
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [selectedAccountId, setSelectedAccountId] = useState('All');
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [categories, setCategories] = useState<any[]>([]);
+
+  useEffect(() => {
+    const filterAccId = localStorage.getItem('transactions_filter_account_id');
+    if (filterAccId) {
+      setSelectedAccountId(filterAccId);
+      setIsFilterDrawerOpen(true);
+      localStorage.removeItem('transactions_filter_account_id');
+    }
+  }, []);
+
+  useEffect(() => {
+    const handleSwitchTab = (e: any) => {
+      if (e.detail?.tab === 'activity' && e.detail?.accountId) {
+        setSelectedAccountId(e.detail.accountId);
+        setIsFilterDrawerOpen(true);
+      }
+    };
+    window.addEventListener('switch-tab', handleSwitchTab);
+    return () => window.removeEventListener('switch-tab', handleSwitchTab);
+  }, []);
+
   useEffect(() => {
     if (!uid) return;
     setLoading(true);
     const txQuery = query(collection(db, 'users', uid, 'transactions'), orderBy('date', 'desc'));
     const recQuery = query(collection(db, 'users', uid, 'recurringTransactions'));
+    const catQuery = query(collection(db, `users/${uid}/custom_categories`));
     
     const unsubscribeTx = onSnapshot(txQuery, (snapshot) => {
       const items: Transaction[] = [];
@@ -98,7 +126,20 @@ export const Transactions: React.FC<TransactionsProps> = ({
       });
       setRecurringTransactions(items);
     });
-    return () => { unsubscribeTx(); unsubscribeRec(); };
+
+    const unsubscribeCat = onSnapshot(catQuery, (snapshot) => {
+      const items: any[] = [];
+      snapshot.forEach((doc) => {
+        items.push({ id: doc.id, ...doc.data() });
+      });
+      setCategories(items);
+    });
+
+    return () => { 
+      unsubscribeTx(); 
+      unsubscribeRec(); 
+      unsubscribeCat();
+    };
   }, [uid]);
 
   const todayStr = new Date().toISOString().split('T')[0];
@@ -112,8 +153,29 @@ export const Transactions: React.FC<TransactionsProps> = ({
     return list.filter(t => {
       const matchesSearch = (t.notes || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
                             (t.category || '').toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesType = selectedType === 'All' || t.type === selectedType;
-      return matchesSearch && matchesType;
+      
+      const matchesType = selectedType === 'All' || 
+                          t.type === selectedType || 
+                          (selectedType === 'Inflow' && (t.type === 'income' || t.type === 'Inflow')) ||
+                          (selectedType === 'Outflow' && (t.type === 'expense' || t.type === 'Outflow'));
+
+      let matchesDate = true;
+      if (startDate) {
+        matchesDate = matchesDate && t.date >= startDate;
+      }
+      if (endDate) {
+        matchesDate = matchesDate && t.date <= endDate;
+      }
+
+      const matchesAccount = selectedAccountId === 'All' || 
+                            t.accountId === selectedAccountId ||
+                            (() => {
+                              const selectedAcc = accounts.find(a => (a.accountId || a.id) === selectedAccountId);
+                              return selectedAcc ? (t.accountId === selectedAcc.id || t.accountId === selectedAcc.accountId) : false;
+                            })();
+      const matchesCategory = selectedCategory === 'All' || t.category === selectedCategory;
+
+      return matchesSearch && matchesType && matchesDate && matchesAccount && matchesCategory;
     });
   };
 
@@ -196,22 +258,118 @@ export const Transactions: React.FC<TransactionsProps> = ({
 
       <AnimatePresence>
         {isFilterDrawerOpen && (
-          <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="w-full flex gap-2 p-3 bg-white border border-[#E5E7EB] rounded-2xl overflow-hidden shrink-0">
-            {(['All', 'Inflow', 'Outflow'] as const).map((type) => (
-              <button
-                key={type}
-                onClick={() => setSelectedType(type)}
-                className="px-4 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer"
-                style={{
-                  backgroundColor: selectedType === type ? '#A6DDB1' : '#F3F4F6',
-                  borderColor: selectedType === type ? 'transparent' : '#E5E7EB',
-                  color: selectedType === type ? '#111C2D' : '#4B5563'
-                }}
-              >
+          <motion.div 
+            initial={{ opacity: 0, height: 0 }} 
+            animate={{ opacity: 1, height: 'auto' }} 
+            exit={{ opacity: 0, height: 0 }} 
+            className="w-full bg-white border border-[#E5E7EB] rounded-[24px] p-5 flex flex-col gap-4 shadow-xs overflow-hidden shrink-0"
+            style={{ fontFamily: "'Google Sans', sans-serif" }}
+          >
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              {/* Type / Flow filter */}
+              <div className="flex flex-col gap-2">
+                <label className="text-[12px] text-gray-500 font-normal">
+                  {t('activity.filter_by_type', 'Transaction Type')}
+                </label>
+                <div className="flex gap-1.5 flex-wrap">
+                  {(['All', 'Inflow', 'Outflow'] as const).map((type) => (
+                    <button
+                      key={type}
+                      onClick={() => setSelectedType(type)}
+                      className="px-3 py-1.5 rounded-full text-xs font-bold border transition-all cursor-pointer"
+                      style={{
+                        backgroundColor: selectedType === type ? '#A6DDB1' : '#F3F4F6',
+                        borderColor: selectedType === type ? 'transparent' : '#E5E7EB',
+                        color: selectedType === type ? '#111C2D' : '#4B5563'
+                      }}
+                    >
+                      {type === 'All' ? t('activity.all_records') : (type === 'Inflow' ? t('activity.confirmed_inflows') : t('activity.outflow_statements'))}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
-                {type === 'All' ? t('activity.all_records') : (type === 'Inflow' ? t('activity.confirmed_inflows') : t('activity.outflow_statements'))}
-              </button>
-            ))}
+              {/* Account filter */}
+              <div className="flex flex-col gap-2">
+                <label className="text-[12px] text-gray-500 font-normal">
+                  {t('activity.filter_by_account', 'Account')}
+                </label>
+                <select
+                  value={selectedAccountId}
+                  onChange={(e) => setSelectedAccountId(e.target.value)}
+                  className="w-full bg-white border border-[#E5E7EB] rounded-xl py-2 px-3 text-xs text-[#111C2D] focus:border-[#A6DDB1] outline-none transition-all font-normal"
+                >
+                  <option value="All">{t('activity.all_accounts', 'All Accounts')}</option>
+                  {accounts.filter(a => !a.isArchived || (a.accountId || a.id) === selectedAccountId).map(acc => {
+                    const accId = acc.accountId || acc.id;
+                    return (
+                      <option key={accId} value={accId}>
+                        {acc.name} ({acc.currency})
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+
+              {/* Category filter */}
+              <div className="flex flex-col gap-2">
+                <label className="text-[12px] text-gray-500 font-normal">
+                  {t('activity.filter_by_category', 'Category')}
+                </label>
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="w-full bg-white border border-[#E5E7EB] rounded-xl py-2 px-3 text-xs text-[#111C2D] focus:border-[#A6DDB1] outline-none transition-all font-normal"
+                >
+                  <option value="All">{t('activity.all_categories', 'All Categories')}</option>
+                  {categories.map(cat => (
+                    <option key={cat.id || cat.name} value={cat.name}>
+                      {translateCategoryOrSubcategory(cat.name, t)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Date Range filter */}
+              <div className="flex flex-col gap-2">
+                <label className="text-[12px] text-gray-500 font-normal">
+                  {t('activity.filter_by_date', 'Date Range')}
+                </label>
+                <div className="flex items-center gap-1">
+                  <input
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className="w-full bg-white border border-[#E5E7EB] rounded-xl py-1.5 px-2 text-xs text-[#111C2D] focus:border-[#A6DDB1] outline-none transition-all font-normal"
+                  />
+                  <span className="text-gray-400 text-xs font-normal">{t('activity.to', 'to')}</span>
+                  <input
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    className="w-full bg-white border border-[#E5E7EB] rounded-xl py-1.5 px-2 text-xs text-[#111C2D] focus:border-[#A6DDB1] outline-none transition-all font-normal"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Clear filter option if active */}
+            {(selectedType !== 'All' || selectedAccountId !== 'All' || selectedCategory !== 'All' || startDate || endDate) && (
+              <div className="flex justify-end pt-2 border-t border-neutral-100">
+                <button
+                  onClick={() => {
+                    setSelectedType('All');
+                    setSelectedAccountId('All');
+                    setSelectedCategory('All');
+                    setStartDate('');
+                    setEndDate('');
+                  }}
+                  className="text-xs text-red-500 hover:text-red-600 font-bold cursor-pointer flex items-center gap-1 active:scale-95 transition-all"
+                >
+                  {t('activity.clear_filters', 'Clear Filters')}
+                </button>
+              </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
@@ -296,6 +454,7 @@ const TransactionRow: React.FC<{ tx: Transaction; accounts: any[]; onClick: () =
   const translatedCategory = t(`categories.${displayCategory}`, t(`subcategories.${displayCategory}`, displayCategory));
   const getCatIcon = () => {
     const name = displayCategory.toLowerCase();
+    if (name.includes('transfer')) return <RefreshCw size={20} />;
     if (name.includes('grocer')) return <ShoppingCart size={20} />;
     if (name.includes('transp')) return <Car size={20} />;
     if (name.includes('health')) return <Activity size={20} />;
@@ -306,6 +465,7 @@ const TransactionRow: React.FC<{ tx: Transaction; accounts: any[]; onClick: () =
 
   const getCatStyles = () => {
     const name = displayCategory.toLowerCase();
+    if (name.includes('transfer')) return { bg: 'bg-[#F0F4FF]', text: 'text-[#3B82F6]' };
     if (name.includes('grocer')) return { bg: 'bg-[#e8f5e9]', text: 'text-[#366945]' };
     if (name.includes('transp')) return { bg: 'bg-[#f0f4ff]', text: 'text-[#3f51b5]' };
     if (name.includes('health')) return { bg: 'bg-[#fff0f0]', text: 'text-[#d32f2f]' };

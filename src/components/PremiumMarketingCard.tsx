@@ -65,7 +65,7 @@ export const PremiumMarketingCard: React.FC<PremiumMarketingCardProps> = ({ feat
         }}
         className="w-full h-[40px] md:h-[44px] rounded-xl text-[clamp(11px,2.8vw,13px)] tracking-wide shadow-sm hover:brightness-95 active:scale-95 transition-all relative z-10 flex items-center justify-center cursor-pointer border border-transparent outline-none select-none"
       >
-        {t('premium_marketing_card.initialize', 'Initialize premium sequence')}
+        {t('premium_marketing_card.initialize', 'Join the premium club')}
       </button>
 
       <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[clamp(8px,2vw,10px)] text-neutral-400 tracking-wide leading-none mt-1">

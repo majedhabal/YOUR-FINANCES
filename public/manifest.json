@@ -60,14 +60,14 @@
   ],
   "screenshots": [
     {
-      "src": "screenshots/mobile-dashboard.png",
+      "src": "/screenshots/mobile-dashboard.png",
       "sizes": "338x587",
       "type": "image/png",
       "form_factor": "narrow",
       "label": "Vantage Financial Workspace"
     },
     {
-      "src": "screenshots/desktop-dashboard.png",
+      "src": "/screenshots/desktop-dashboard.png",
       "sizes": "1363x584",
       "type": "image/png",
       "form_factor": "wide",
@@ -76,21 +76,21 @@
   ],
   "icons": [
     {
-      "src": "/icons/Your_Finances_Logo_Loading.png",
+      "src": "/icons/Your_Finances_Logo_192x192.jpg",
       "sizes": "192x192",
-      "type": "image/png",
+      "type": "image/jpeg",
       "purpose": "any"
     },
     {
-      "src": "/icons/Your_Finances_Logo_Loading.png",
+      "src": "/icons/Your_Finances_Logo_512x512.jpg",
       "sizes": "512x512",
-      "type": "image/png",
+      "type": "image/jpeg",
       "purpose": "any"
     },
     {
-      "src": "/icons/Your_Finances_Logo_Loading.png",
+      "src": "/icons/Your_Finances_Logo_512x512_Maskable.jpg",
       "sizes": "512x512",
-      "type": "image/png",
+      "type": "image/jpeg",
       "purpose": "maskable"
     }
   ]

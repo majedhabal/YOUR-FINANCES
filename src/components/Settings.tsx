@@ -13,6 +13,9 @@ import { RecurringTransactionsView } from './RecurringTransactionsView';
 import { PrivacyView } from './PrivacyView';
 import { TermsView } from './TermsView';
 import { AIConversationsHistoryView } from './AIConversationsHistoryView';
+import { ReferralProgramView } from './ReferralProgramView';
+import { StatementVaultModal } from './StatementVaultModal';
+import { Mail, ShieldCheck, FileText, Gift } from 'lucide-react';
 
 const ALL_CURRENCIES = [
   'AED', 'AFN', 'ALL', 'AMD', 'ANG', 'AOA', 'ARS', 'AUD', 'AWG', 'AZN',
@@ -43,7 +46,7 @@ interface SettingsProps {
 export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateProfile }) => {
   const { t } = useTranslation();
   const { deleteProfile } = useVantageActions(profile?.uid);
-  const [activeView, setActiveView] = useState<'main' | 'categories' | 'recurring' | 'privacy' | 'terms' | 'ai_conversations'>('main');
+  const [activeView, setActiveView] = useState<'main' | 'categories' | 'recurring' | 'privacy' | 'terms' | 'ai_conversations' | 'referrals'>('main');
   const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -74,6 +77,8 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
   const [tasksSyncEnabled, setTasksSyncEnabled] = useState(profile?.tasksSyncEnabled || false);
   const [geminiInsightsEnabled, setGeminiInsightsEnabled] = useState(profile?.geminiInsightsEnabled || false);
   const [fingerprintLoginEnabled, setFingerprintLoginEnabled] = useState(profile?.fingerprintLoginEnabled || false);
+  const [monthlyStatementEnabled, setMonthlyStatementEnabled] = useState(profile?.monthlyStatementEnabled || false);
+  const [isStatementVaultOpen, setIsStatementVaultOpen] = useState(false);
   const [showConsentModal, setShowConsentModal] = useState(false);
   const [simulateOffline, setSimulateOffline] = useState(() => {
     if (typeof window === 'undefined') return false;
@@ -131,6 +136,7 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
       setTasksSyncEnabled(profile.tasksSyncEnabled || false);
       setGeminiInsightsEnabled(profile.geminiInsightsEnabled || false);
       setFingerprintLoginEnabled(profile.fingerprintLoginEnabled || false);
+      setMonthlyStatementEnabled(profile.monthlyStatementEnabled || false);
       setTheme(profile.theme || 'dark');
       if (profile.fontSize) {
         setFontSizeState(profile.fontSize);
@@ -227,7 +233,18 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
     window.dispatchEvent(new CustomEvent('vantage-offline-simulation-update'));
   };
 
-  const isPremium = !!(profile?.isPremium || profile?.subscriptionTier === 'premium');
+  const isPremium = !!(profile?.isPremium || (profile?.subscriptionTier && profile.subscriptionTier.toLowerCase() !== 'free'));
+
+  const subscriptionTierDisplay = (() => {
+    const tier = profile?.subscriptionTier;
+    if (!tier) return 'Free Starter';
+    const lower = tier.toLowerCase().replace(' ', '');
+    if (lower === 'free') return 'Free Starter';
+    if (lower === 'tier1') return 'Tier 1';
+    if (lower === 'tier2') return 'Tier 2';
+    if (lower === 'tier3') return 'Tier 3';
+    return tier.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+  })();
 
   const baseCurrency = profile?.baseCurrency || profile?.currency || 'AED';
   const enabledCurrencies = profile?.enabledCurrencies || [];
@@ -323,8 +340,10 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
     try {
       const userRef = doc(db, 'users', profile.uid);
       const snap = await getDoc(userRef);
-      if (snap.exists() && snap.data().subscriptionTier === 'premium') {
-        onUpdateProfile({ ...profile, subscriptionTier: 'premium' });
+      const userTier = snap.exists() ? snap.data().subscriptionTier : null;
+      const lowerTier = (userTier || '').toLowerCase().replace(' ', '');
+      if (lowerTier && lowerTier !== 'free') {
+        onUpdateProfile({ ...profile, subscriptionTier: userTier });
         alert("Vantage Premium identity restored from Dashboard.");
       } else {
         alert("No active Premium license found in encrypted archives.");
@@ -389,11 +408,15 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
           label: t('settings.previous_ai_conversations'), 
           value: 'History logs',
           action: () => {
-            if (isPremium) {
-              setActiveView('ai_conversations');
-            } else {
-              setIsPremiumModalOpen(true);
-            }
+            setActiveView('ai_conversations');
+          },
+        },
+        { 
+          icon: Gift, 
+          label: 'Referrals & Rewards', 
+          value: profile?.referralCode || 'Generate Code',
+          action: () => {
+            setActiveView('referrals');
           },
         },
         { 
@@ -618,6 +641,26 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
           toggleValue: geminiInsightsEnabled,
           action: () => handleToggleFeature('geminiInsightsEnabled', geminiInsightsEnabled),
           disabled: !isPremium
+        },
+        {
+          icon: Mail,
+          label: 'AI Monthly Statement Email',
+          isInlineToggle: true,
+          toggleValue: monthlyStatementEnabled,
+          action: () => handleToggleFeature('monthlyStatementEnabled', monthlyStatementEnabled),
+          disabled: !isPremium
+        },
+        {
+          icon: FileText,
+          label: 'Secure Statement Vault',
+          value: 'Statements Archive',
+          action: () => {
+            if (isPremium) {
+              setIsStatementVaultOpen(true);
+            } else {
+              setIsPremiumModalOpen(true);
+            }
+          }
         }
       ]
     },
@@ -647,6 +690,10 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
 
   if (activeView === 'ai_conversations') {
     return <AIConversationsHistoryView uid={profile.uid} onBack={() => setActiveView('main')} />;
+  }
+
+  if (activeView === 'referrals') {
+    return <ReferralProgramView profile={profile} onBack={() => setActiveView('main')} onUpdateProfile={onUpdateProfile} />;
   }
 
   if (activeView === 'recurring') {
@@ -884,8 +931,8 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
           </div>
         </div>
         <div className="flex shrink-0">
-          <span className={`px-2 py-0.5 rounded-full tracking-wide ${isPremium ? 'bg-vantage-green/10 text-vantage-green border border-vantage-green/20' : 'bg-vantage-text/10 text-vantage-muted border border-vantage-text/15'}`} style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700, fontSize: '14px' }}>
-            {isPremium ? 'Premium' : 'Basic'}
+          <span className={`px-2 py-0.5 rounded-full tracking-wide ${isPremium ? 'bg-vantage-green/10 text-vantage-green border border-vantage-green/20' : 'bg-vantage-text/10 text-vantage-muted border border-vantage-text/15'}`} style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: '14px' }}>
+            {subscriptionTierDisplay}
           </span>
         </div>
       </div>
@@ -1366,6 +1413,15 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
           </div>
         )}
       </AnimatePresence>
+
+      {profile?.uid && (
+        <StatementVaultModal 
+          isOpen={isStatementVaultOpen}
+          onClose={() => setIsStatementVaultOpen(false)}
+          uid={profile.uid}
+          profile={profile}
+        />
+      )}
     </div>
   );
 };

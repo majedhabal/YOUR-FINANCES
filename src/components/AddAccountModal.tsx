@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Wallet, Building2 as BankIcon, Landmark, CreditCard, HandCoins, Home, ChevronRight, Check, Plus } from 'lucide-react';
-import { collection, serverTimestamp } from 'firebase/firestore';
+import { collection, serverTimestamp, getDocs } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { handleFirestoreError, OperationType } from '../lib/firebaseUtils';
 import { useVantageActions } from '../hooks/useVantageActions';
@@ -159,6 +159,10 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({ isOpen, onClos
   const [platformFees, setPlatformFees] = useState('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent('account-modal-toggled', { detail: { isOpen } }));
+  }, [isOpen]);
+
   const calculateTotalPrincipal = () => {
     return subAssets.reduce((sum, sa) => sum + (parseFloat(sa.principalInvested) || 0), 0);
   };
@@ -178,6 +182,20 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({ isOpen, onClos
   const handleAddAccount = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedType) return;
+
+    const isFree = !profile?.subscriptionTier || profile?.subscriptionTier?.toLowerCase() === 'free';
+    if (isFree) {
+      try {
+        const accountsSnapshot = await getDocs(collection(db, 'users', uid, 'accounts'));
+        if (accountsSnapshot.size >= 2) {
+          setErrorMessage("FREE LIMIT EXCEEDED: Free tier users can only create up to 2 accounts. Please upgrade to unlock unlimited accounts.");
+          window.dispatchEvent(new CustomEvent('trigger-premium-modal'));
+          return;
+        }
+      } catch (err) {
+        console.error("Failed to check accounts limit:", err);
+      }
+    }
     
     // Validate Investment Principal
     if (selectedType === 'investment') {
@@ -293,7 +311,8 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({ isOpen, onClos
 
   const baseCurrency = profile?.baseCurrency || profile?.currency || 'AED';
   const enabledCurrencies = profile?.enabledCurrencies || [];
-  const currencies = Array.from(new Set([baseCurrency, ...enabledCurrencies]));
+  const isFree = !profile?.subscriptionTier || profile?.subscriptionTier?.toLowerCase() === 'free';
+  const currencies = isFree ? [baseCurrency] : Array.from(new Set([baseCurrency, ...enabledCurrencies]));
 
   return (
     <AnimatePresence>
@@ -314,83 +333,77 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({ isOpen, onClos
               transition={{ duration: 0.15 }}
               style={{
                 fontFamily: "'Google Sans', sans-serif",
-                background: 'rgba(255, 255, 255, 0.55)',
-                backdropFilter: 'blur(22px)',
-                WebkitBackdropFilter: 'blur(22px)',
+                background: '#FFFFFF',
                 borderRadius: '24px',
-                border: '1px solid rgba(30, 34, 41, 0.08)',
+                border: '1px solid rgba(0, 0, 0, 0.08)',
               }}
-              className="relative w-full max-w-[92%] md:max-w-[450px] max-h-[90dvh] overflow-y-auto shadow-2xl [WebkitOverflowScrolling:touch]"
+              className="relative w-full max-w-[92%] md:max-w-[420px] max-h-[90dvh] overflow-y-auto shadow-2xl [WebkitOverflowScrolling:touch]"
             >
-              <div className="p-6 md:p-8 flex flex-col gap-5">
-              <div className="flex justify-between items-center">
-                <div className="flex flex-col gap-0.5 animate-none">
-                  <h3 style={{ fontFamily: "'Google Sans', sans-serif", fontSize: 'clamp(1.3rem, 4vw, 1.5rem)', color: '#1E2229' }} className="font-bold tracking-tight leading-tight">
-                    {step === 'type' ? t('add_account.define_identity') : t('add_account.account_details')}
+              <div className="p-6 md:p-8 flex flex-col gap-6">
+              <div className="flex justify-between items-start">
+                <div className="flex flex-col gap-1 animate-none">
+                  <h3 style={{ fontFamily: "'Google Sans', sans-serif", fontSize: '24px', color: '#111c2d' }} className="font-bold tracking-tight">
+                    {step === 'type' ? 'Define identity' : t('add_account.account_details')}
                   </h3>
-                  <p style={{ fontFamily: "'Google Sans', sans-serif", fontSize: 'clamp(0.95rem, 2.5vw, 1.05rem)', color: '#57606F' }} className="tracking-wide font-normal leading-tight">
-                    {step === 'type' ? t('add_account.select_source') : `${selectedType ? selectedType.charAt(0).toUpperCase() + selectedType.slice(1) : ''} ${t('add_account.configuration')}`}
+                  <p style={{ fontFamily: "'Google Sans', sans-serif", fontSize: '15px', color: '#6b7280' }} className="font-normal">
+                    {step === 'type' ? 'Select account source' : `${selectedType ? selectedType.charAt(0).toUpperCase() + selectedType.slice(1) : ''} configuration`}
                   </p>
                 </div>
-                <button onClick={handleClose} className="p-2 text-vantage-muted hover:text-vantage-text transition-colors active:scale-90 cursor-pointer">
-                  <X size={20} style={{ color: '#1E2229' }} />
+                <button onClick={handleClose} className="p-1 hover:bg-gray-100 rounded-full transition-colors cursor-pointer">
+                  <X size={24} className="text-[#111c2d]" />
                 </button>
               </div>
 
               {step === 'type' ? (
-                <div className="max-h-[75vh] overflow-y-auto pr-1 [WebkitOverflowScrolling:touch] flex flex-col gap-3 w-full animate-none">
+                <div className="flex flex-col gap-3.5 w-full animate-none">
                   {accountTypes.map((type) => (
                     <button
                       key={type.id}
                       onClick={() => handleSelectType(type)}
                       style={{ 
                         fontFamily: "'Google Sans', sans-serif",
-                        background: 'rgba(255, 255, 255, 0.40)',
-                        backdropFilter: 'blur(8px)',
-                        WebkitBackdropFilter: 'blur(8px)',
+                        background: '#F9FAFB',
                         borderRadius: '16px',
-                        border: '1px solid rgba(30, 34, 41, 0.08)',
+                        border: '1px solid rgba(0, 0, 0, 0.06)',
                       }}
-                      className="group w-full flex items-center justify-between py-3 px-4 hover:border-[#A6DDB1] hover:bg-white/60 hover:shadow-[0_0_12px_rgba(166,221,177,0.20)] transition-all text-left shadow-sm min-h-[58px]"
+                      className="group w-full flex items-center justify-between p-4 hover:border-[#A6DDB1] hover:bg-white transition-all text-left"
                     >
-                      <div className="flex items-center gap-3.5 min-w-0 max-w-[85%]">
-                        <div className="w-10 h-10 rounded-xl bg-[#A6DDB1]/10 flex items-center justify-center shrink-0 group-hover:bg-[#A6DDB1]/20 transition-colors">
-                          <type.icon className="text-[#1E2229] shrink-0" size={20} />
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-xl bg-[#E8F1FF] flex items-center justify-center shrink-0 transition-colors">
+                          <type.icon className="text-[#366945] shrink-0" size={24} />
                         </div>
-                        <div className="flex flex-col gap-0.5 min-w-0">
+                        <div className="flex flex-col gap-0.5">
                           <span 
-                            style={{ fontFamily: "'Google Sans', sans-serif", fontSize: 'clamp(1rem, 3.2vw, 1.15rem)' }} 
-                            className="font-bold text-[#1E2229] group-hover:text-[#20C997] transition-colors truncate whitespace-nowrap overflow-hidden"
+                            style={{ fontFamily: "'Google Sans', sans-serif", fontSize: '16px' }} 
+                            className="font-bold text-[#111c2d]"
                           >
                             {(() => {
                               switch(type.id) {
-                                case 'bank': return t('add_account.bank_account');
-                                case 'cash': return t('add_account.cash_account');
-                                case 'credit': return t('add_account.credit_card');
-                                case 'investment': return t('add_account.investment_portfolio');
+                                case 'bank': return 'Bank Account';
+                                case 'cash': return 'Cash Account';
+                                case 'credit': return 'Credit Card';
+                                case 'investment': return 'Investment Portfolio';
                                 default: return type.label;
                               }
                             })()}
                           </span>
                           <p 
-                            style={{ fontFamily: "'Google Sans', sans-serif", fontSize: 'clamp(0.85rem, 2.5vw, 0.95rem)' }} 
-                            className="text-[#57606F] tracking-tight font-normal truncate whitespace-nowrap overflow-hidden"
+                            style={{ fontFamily: "'Google Sans', sans-serif", fontSize: '13px' }} 
+                            className="text-[#6b7280] font-normal"
                           >
                             {(() => {
                               switch(type.id) {
-                                case 'bank': return t('add_account.bank_account_desc');
-                                case 'cash': return t('add_account.cash_account_desc');
-                                case 'credit': return t('add_account.credit_card_desc');
-                                case 'investment': return t('add_account.investment_portfolio_desc');
+                                case 'bank': return 'Savings, checking, or...';
+                                case 'cash': return 'Physical currency or p...';
+                                case 'credit': return 'Visa, Mastercard, or A...';
+                                case 'investment': return 'Stocks, crypto, real est...';
                                 default: return type.desc;
                               }
                             })()}
                           </p>
                         </div>
                       </div>
-                      <div className="w-8 h-8 rounded-full bg-[#1E2229]/5 flex items-center justify-center shrink-0 group-hover:bg-[#A6DDB1]/20 transition-all">
-                        <ChevronRight size={16} className="text-[#57606F] group-hover:text-[#1E2229] transition-colors" />
-                      </div>
+                      <ChevronRight size={18} className="text-gray-400 group-hover:text-[#111c2d] transition-colors" />
                     </button>
                   ))}
                 </div>
@@ -421,6 +434,11 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({ isOpen, onClos
                     >
                       {currencies.map(c => <option key={c} value={c} className="bg-white text-black">{c}</option>)}
                     </GlassSelect>
+                    {isFree && (
+                      <span className="text-[11px] text-[#A0AEC0] font-normal mt-1 block">
+                        Free tier is restricted to {baseCurrency}. Upgrade to unlock multi-currency support.
+                      </span>
+                    )}
 
                     {/* Starting Balance */}
                     <GlassInput
