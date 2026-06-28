@@ -1791,8 +1791,8 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
             <div className="bg-black text-white rounded-2xl rounded-tr-none p-2.5 shadow-sm">
               <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: "clamp(11px, 3.2vw, 13px)" }} className="tracking-tight">
                 {dependents.length === 0 
-                  ? t("onboarding.independent", "Independent (No dependents)") 
-                  : t("onboarding.dependents_added", `${dependents.length} household dependent(s) added`, { count: dependents.length })}
+                  ? t("onboarding.no_dependents", "Independent (No dependents)") 
+                  : t("onboarding.dependents_added", "{{count}} household dependent(s) added", { count: dependents.length })}
               </p>
             </div>
           </div>
@@ -1827,10 +1827,10 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                   }`}
                 >
                   <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-xs text-black font-bold">
-                    {t("onboarding.payroll_option_title", "I receive regular income and I want to manage my existing funds.")}
+                    {t("onboarding.payroll_title")}
                   </span>
                   <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[10px] text-neutral-500 leading-normal">
-                    {t("onboarding.payroll_option_desc", "Tip: You can set recurring salary transfers, allowances and also recurring expenses.")}
+                    {t("onboarding.payroll_tip")}
                   </p>
                 </button>
 
@@ -1851,10 +1851,10 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                   }`}
                 >
                   <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-xs text-black font-bold">
-                    {t("onboarding.lump_sum_option_title", "I don't have a regular income for now, but I want to manage my existing funds.")}
+                    {t("onboarding.lump_sum_title")}
                   </span>
                   <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[10px] text-neutral-500 leading-normal">
-                    {t("onboarding.lump_sum_option_desc", "Tip: You will not set up a recurring salary transfer, but you can set up multiple active accounts.")}
+                    {t("onboarding.lump_sum_tip")}
                   </p>
                 </button>
               </div>
@@ -2030,7 +2030,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
           <div className="flex flex-col gap-1.5 self-start max-w-[85%] animate-fadeIn">
             <div className="bg-[#E9ECEF] text-[#000000] rounded-2xl rounded-tl-none p-2.5 shadow-sm border border-[#D1D8DD]/50">
               <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: "clamp(11px, 3.2vw, 13px)" }} className="leading-relaxed font-normal">
-                {t("onboarding.goals_query", "Thank you! Now, please tell me what are your financial priority?")}
+                {t("onboarding.financial_priority_query", "Thank you! Now, please tell me what is your financial priority?")}
               </p>
             </div>
           </div>
@@ -3504,7 +3504,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                         <UserPlus size={11} />
                       </span>
                     <div className="flex items-center justify-center gap-1 p-2 rounded-lg border border-neutral-200" style={{ backgroundColor: "#000000" }}>
-                        <span className="text-white">{t("add_dependent", "Add dependent")}</span>
+                        <span className="text-white">{t("onboarding.add_dependent", "Add dependent")}</span>
                         <ChevronDown size={11} className={`transition-transform duration-200 text-white ${isAddDependentDropdownOpen ? 'rotate-180' : ''}`} />
                       </div>
                     </button>
@@ -3537,7 +3537,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                       }} 
                       className="block"
                     >
-                      Choose your current financial priority:
+                      {t("onboarding.choose_financial_priority", "Choose your current financial priority:")}
                     </span>
 
                     {/* Goal Selection Dropdown with Custom Icons */}
@@ -3570,7 +3570,11 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                             return <Sparkles size={14} className="text-neutral-400" />;
                           })()}
                           <span className="text-[12px]">
-                            {GOALS_CONFIG.find(g => g.key === primaryGoal)?.label || 'Select your financial priority...'}
+                            {
+                              primaryGoal 
+                                ? t(`onboarding.goals.${primaryGoal}.label`) 
+                                : t("onboarding.select_priority_placeholder", "Select your financial priority...")
+                            }
                           </span>
                         </div>
                         <ChevronDown size={14} className={`text-neutral-400 transition-transform duration-200 ${isGoalDropdownOpen ? 'rotate-180' : ''}`} />
@@ -3602,7 +3606,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                                   {goal.key === 'launch_business' && <Briefcase size={14} className="text-purple-500 shrink-0" />}
                                   {goal.key === 'investment_portfolio' && <TrendingUp size={14} className="text-emerald-500 shrink-0" />}
                                   {goal.key === 'retirement' && <Coins size={14} className="text-amber-500 shrink-0" />}
-                                  <span className="text-[12px] text-neutral-800">{goal.label}</span>
+                                  <span className="text-[12px] text-neutral-800">{t(`onboarding.goals.${goal.key}.label`)}</span>
                                 </div>
                                 {isSelected && <Check size={12} className="text-neutral-900 stroke-[3]" />}
                               </button>

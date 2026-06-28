@@ -79,3 +79,45 @@ self.addEventListener('fetch', (event) => {
     })
   );
 });
+
+// Push Notification Event: Handle incoming push messages
+self.addEventListener('push', (event) => {
+  let data = {};
+  if (event.data) {
+    try {
+      data = event.data.json();
+    } catch (e) {
+      data = { title: 'Your Finances', body: event.data.text() };
+    }
+  }
+
+  const title = data.title || 'Your Finances';
+  const options = {
+    body: data.body || 'You have a new update.',
+    icon: '/icons/icon-192x192.png',
+    badge: '/icons/icon-192x192.png',
+    data: {
+      url: data.url || '/'
+    }
+  };
+
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+// Notification Click Event: Handle user interaction
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  event.waitUntil(
+    clients.openWindow(event.notification.data.url || '/')
+  );
+});
+
+// Background Sync Event: Handle deferred tasks
+self.addEventListener('sync', (event) => {
+  if (event.tag === 'sync-transactions') {
+    event.waitUntil(
+      // Implement your logic to sync transactions when online
+      console.log('[Vantage SW] Background sync triggered:', event.tag)
+    );
+  }
+});

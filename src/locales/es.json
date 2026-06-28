@@ -339,8 +339,13 @@
     "working_query": "¿Estás trabajando actualmente? Por favor, cuéntanos más sobre tus fuentes de ingresos.",
     "payroll_title": "Recibo ingresos mensuales regulares y quiero gestionar mis fondos existentes.",
     "payroll_tip": "Consejo: Puedes configurar transferencias de salario recurrentes, subsidios y también gastos regulares.",
-    "lump_sum_title": "Recibo pagos únicos o fondos irregulares y prefiero presupuestar manualmente.",
+    "income_sources_selected": "Fuentes de Ingresos Seleccionadas:",
+    "regular_income_title": "Ingresos Regulares y Gestión de Fondos Existentes",
+    "existing_funds_title": "Solo Fondos Existentes",
+    "lump_sum_title": "No tengo ingresos regulares por ahora, pero quiero administrar mis fondos existentes.",
     "lump_sum_tip": "Consejo: Esto evitará los desgloses de salario automáticos y configurará los límites seleccionados.",
+    "base_currency_query": "¡Excelente! ¿Cuál es tu moneda base? Podrás seleccionar múltiples monedas más tarde.",
+    "choose_base_currency": "Elige la moneda base.",
     "base_currency_title": "Por favor, especifica la moneda base con la que deseas transaccionar y calcular tu patrimonio neto",
     "financial_objectives": "Ahora, selecciona qué objetivos financieros deseas priorizar en primer lugar:",
     "experience_level": "Excelentes opciones. ¿Cuál es tu nivel de experiencia estimado con rastreadores financieros?",
@@ -349,6 +354,9 @@
     "select_relationship": "Seleccionar relación",
     "no_dependents": "Independiente (Sin dependientes)",
     "dependents_added": "{{count}} dependiente(s) familiar(es) agregado(s)",
+    "financial_priority_query": "¡Gracias! Ahora, por favor dime, ¿cuál es tu prioridad financiera?",
+    "choose_financial_priority": "Elige tu prioridad financiera actual",
+    "select_priority_placeholder": "Elige tu prioridad financiera...",
     "working_offline": "Trabajando sin conexión. Tu perfil se guardará en la nube automáticamente.",
     "no_im_good": "No, estoy bien",
     "go_back": "Atrás",
@@ -357,6 +365,11 @@
     "goal_cushion": "Colchón de Meta / Cantidad Objetivo",
     "experience_rating": "Calificación de Experiencia",
     "salary_prompt": "Por favor, especifica los detalles de tu salario mensual y día de pago:",
+    "account_creation_title": "Creación de cuenta",
+    "account_name_label": "Nombre de cuenta",
+    "account_type_label": "Tipo de cuenta",
+    "starting_balance_label": "Saldo inicial",
+    "account_currency_label": "Código de moneda de la cuenta",
     "monthly_salary": "Salario mensual esperado (Ingreso neto o bruto)",
     "payment_day_label": "Día de pago del mes (Día del calendario)",
     "dedicated_account_label": "Enrutar este salario automáticamente a través de una Cuenta de Cheques principal dedicada.",
@@ -373,12 +386,12 @@
     "select_priority": "Selecciona tu prioridad financiera...",
     "goals": {
       "tackle_debt": {
-        "label": "Afrontar Deudas",
+        "label": "Gestionar deuda",
         "question": "¿Cuál es el saldo total de tus deudas pendientes?",
         "placeholder": "ej. 50000"
       },
       "emergency_fund": {
-        "label": "Fondo de Emergencia de 3 a 6 meses",
+        "label": "Fondo de emergencia de 3 - 6 meses",
         "question": "¿Cuál es el tamaño de tu colchón objetivo?",
         "placeholder": "ej. 20000"
       },
@@ -388,17 +401,17 @@
         "placeholder": "ej. 150000"
       },
       "launch_business": {
-        "label": "Lanzar un Negocio",
+        "label": "Lanzar un negocio",
         "question": "¿Cuál es tu meta estimada de capital inicial?",
         "placeholder": "ej. 100000"
       },
       "investment_portfolio": {
-        "label": "Crear un Portafolio de Inversión",
+        "label": "Construir una cartera de inversión",
         "question": "¿Cuál es tu meta de contribución de inversión mensual o anual?",
         "placeholder": "ej. 5000"
       },
       "retirement": {
-        "label": "Ahorrar para el Retiro",
+        "label": "Ahorrar para la jubilación",
         "question": "¿Cuál es tu fondo acumulado de retiro anual ideal?",
         "placeholder": "ej. 2500000"
       }
