@@ -4,22 +4,10 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Tab } from '../App';
 import { VantageLogo } from './VantageLogo';
 import { triggerHaptic, hapticPresets } from '../lib/haptics';
-import { 
-  LayoutDashboard, 
-  ReceiptText, 
-  ListTodo, 
-  Settings as SettingsIcon, 
-  WifiOff,
-  Home,
-  Landmark,
-  Activity,
-  TrendingUp,
-  BrainCircuit,
-  Plus,
-  Camera
-} from 'lucide-react';
+import { Settings as SettingsIcon, WifiOff, Home, Landmark, Activity, TrendingUp, BrainCircuit, Plus, Camera } from 'lucide-react';
 import { Settings } from './Settings';
 import { NotificationDispatchHub } from './NotificationDispatchHub';
+import { StreakTracker } from './StreakTracker';
 import { ReceiptScannerModal } from './ReceiptScannerModal';
 
 interface LayoutProps {
@@ -37,10 +25,11 @@ interface LayoutProps {
   accounts?: any[];
   transactions?: any[];
   accountBalances?: Record<string, number>;
+  streakUpdated?: boolean;
 }
 
 export const Layout: React.FC<LayoutProps> = ({ 
-  children, activeTab, setActiveTab, isAIModalOpen, setIsAIModalOpen, isTxModalOpen, setIsTxModalOpen, txMode, setTxMode, profile, accounts, transactions, accountBalances
+  children, activeTab, setActiveTab, isAIModalOpen, setIsAIModalOpen, isTxModalOpen, setIsTxModalOpen, txMode, setTxMode, profile, accounts, transactions, accountBalances, streakUpdated
 }) => {
   const { t } = useTranslation();
   const [isOffline, setIsOffline] = React.useState<boolean>(() => {
@@ -68,6 +57,9 @@ export const Layout: React.FC<LayoutProps> = ({
   const [isDispatchHubOpen, setIsDispatchHubOpen] = React.useState(false);
   const [isReceiptScannerOpen, setIsReceiptScannerOpen] = React.useState(false);
   const [isStatementVaultOpen, setIsStatementVaultOpen] = React.useState(false);
+  const [isBudgetDetailOpen, setIsBudgetDetailOpen] = React.useState(false);
+  const [isSettingsSubViewOpen, setIsSettingsSubViewOpen] = React.useState(false);
+  const [isBudgetTxModalOpen, setIsBudgetTxModalOpen] = React.useState(false);
 
   useEffect(() => {
     const handleSalaryModal = (e: any) => {
@@ -100,6 +92,15 @@ export const Layout: React.FC<LayoutProps> = ({
     const handleStatementVault = (e: any) => {
       setIsStatementVaultOpen(e.detail.isOpen);
     };
+    const handleBudgetDetail = (e: any) => {
+      setIsBudgetDetailOpen(e.detail.isOpen);
+    };
+    const handleSettingsSubView = (e: any) => {
+      setIsSettingsSubViewOpen(e.detail.isOpen);
+    };
+    const handleBudgetTxModal = (e: any) => {
+      setIsBudgetTxModalOpen(e.detail.isOpen);
+    };
     window.addEventListener('salary-modal-toggled', handleSalaryModal);
     window.addEventListener('tx-detail-modal-toggled', handleTxDetailModal);
     window.addEventListener('account-modal-toggled', handleAccountModal);
@@ -110,6 +111,9 @@ export const Layout: React.FC<LayoutProps> = ({
     window.addEventListener('debt-milestone-modal-toggled', handleDebtMilestoneModal);
     window.addEventListener('dispatch-hub-toggled', handleDispatchHub);
     window.addEventListener('statement-vault-toggled', handleStatementVault);
+    window.addEventListener('budget-detail-toggled', handleBudgetDetail);
+    window.addEventListener('settings-subview-toggled', handleSettingsSubView);
+    window.addEventListener('budget-tx-modal-toggled', handleBudgetTxModal);
     return () => {
       window.removeEventListener('salary-modal-toggled', handleSalaryModal);
       window.removeEventListener('tx-detail-modal-toggled', handleTxDetailModal);
@@ -121,10 +125,13 @@ export const Layout: React.FC<LayoutProps> = ({
       window.removeEventListener('debt-milestone-modal-toggled', handleDebtMilestoneModal);
       window.removeEventListener('dispatch-hub-toggled', handleDispatchHub);
       window.removeEventListener('statement-vault-toggled', handleStatementVault);
+      window.removeEventListener('budget-detail-toggled', handleBudgetDetail);
+      window.removeEventListener('settings-subview-toggled', handleSettingsSubView);
+      window.removeEventListener('budget-tx-modal-toggled', handleBudgetTxModal);
     };
   }, []);
 
-  const shouldHideHeaderFooter = isSalaryModalOpen || isTxDetailModalOpen || isAccountModalOpen || isAccountDetailModalOpen || isBreakdownModalOpen || isDebtModalOpen || isTxModalOpen || isMilestoneModalOpen || isDebtMilestoneModalOpen || isAIModalOpen || activeTab === 'ai' || isStatementVaultOpen;
+  const shouldHideHeaderFooter = isSalaryModalOpen || isTxDetailModalOpen || isAccountModalOpen || isAccountDetailModalOpen || isBreakdownModalOpen || isDebtModalOpen || isTxModalOpen || isMilestoneModalOpen || isDebtMilestoneModalOpen || isAIModalOpen || activeTab === 'ai' || isStatementVaultOpen || isBudgetDetailOpen || isSettingsSubViewOpen || isBudgetTxModalOpen;
 
   return (
     <div className="w-full h-screen flex flex-col bg-[#F8FAFC] text-black overflow-hidden relative">
@@ -160,9 +167,9 @@ export const Layout: React.FC<LayoutProps> = ({
 
       {/* CORE BRAND HEADER UTILITY */}
       {!shouldHideHeaderFooter && (
-        <header className="w-full sticky top-0 z-40 px-4 py-0 flex items-center justify-between select-none box-border border-b border-neutral-100 bg-white shrink-0">
+        <header className="w-full sticky top-0 z-40 px-4 py-0 flex items-center justify-between select-none box-border border-b border-neutral-100 bg-white shrink-0 h-[81px] rounded-none">
           <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => setActiveTab('essentials')}>
-            <div className="w-20 h-20 flex items-center justify-center filter drop-shadow Astro-Portrait-Mode">
+            <div className="w-20 h-20 flex items-center justify-center Astro-Portrait-Mode">
               <VantageLogo size="100%" />
             </div>
             <div className="flex flex-col">
@@ -177,12 +184,15 @@ export const Layout: React.FC<LayoutProps> = ({
               </div>
             )}
             {profile?.uid && (
-              <NotificationDispatchHub
-                uid={profile.uid}
-                accounts={accounts || []}
-                transactions={transactions || []}
-                accountBalances={accountBalances || {}}
-              />
+              <div className="flex items-center gap-2">
+                <StreakTracker streak={profile.dailyStreak} streakUpdated={streakUpdated} />
+                <NotificationDispatchHub
+                  uid={profile.uid}
+                  accounts={accounts || []}
+                  transactions={transactions || []}
+                  accountBalances={accountBalances || {}}
+                />
+              </div>
             )}
             <button 
               onClick={() => setActiveTab('settings')}

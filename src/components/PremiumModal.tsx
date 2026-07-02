@@ -41,7 +41,7 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, uid
   const plans: TierPlan[] = [
     {
       id: 'free',
-      name: 'Free Starter',
+      name: t('premium_modal.free_starter'),
       priceAED: 0,
       tokens: 0,
       icon: ShieldCheck,
@@ -55,7 +55,7 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, uid
     },
     {
       id: 'tier1',
-      name: 'Tier 1: Core Essential',
+      name: t('premium_modal.tier1'),
       priceAED: 19.99,
       tokens: 0,
       icon: Zap,
@@ -69,12 +69,12 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, uid
     },
     {
       id: 'tier2',
-      name: 'Tier 2: Elite AI Advisor',
+      name: t('premium_modal.tier2'),
       priceAED: 24.99,
       tokens: 5000,
       icon: Flame,
       color: 'text-amber-500',
-      badge: 'Best value',
+      badge: t('premium_modal.best_value'),
       features: [
         'Unlimited accounts allowed',
         'Full multi-currency support',
@@ -84,7 +84,7 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, uid
     },
     {
       id: 'tier3',
-      name: 'Tier 3: Vantage Command',
+      name: t('premium_modal.tier3'),
       priceAED: 49.99,
       tokens: 32000,
       icon: Trophy,

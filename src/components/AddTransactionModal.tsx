@@ -4,8 +4,9 @@ import { motion, AnimatePresence } from 'motion/react';
 import { X, RefreshCw } from 'lucide-react';
 import { collection, addDoc, serverTimestamp, onSnapshot, query, doc, updateDoc, increment } from 'firebase/firestore';
 import { db } from '../lib/firebase';
-import { formatLabel } from '../lib/stringUtils';
+import { formatLabel, translateCategoryOrSubcategory } from '../lib/stringUtils';
 import { getCachedAccessToken, createGoogleCalendarEvent, createGoogleTask, connectGoogleWorkspace } from '../lib/googleAuth';
+import { MASTER_CATEGORIES } from '../lib/constants';
 
 // Helper to calculate next generation date for recurring logic
 const calculateNextDate = (baseDate: string, freq: string, interval: number, dayOption: string = 'sameDate') => {
@@ -55,7 +56,7 @@ export const AddTransactionModal: React.FC<any> = ({
     const q = query(collection(db, `users/${uid}/custom_categories`));
     const unsubscribe = onSnapshot(q, (snap) => {
       const list = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setCategories(list);
+      setCategories(list.length > 0 ? list : MASTER_CATEGORIES.map((c, i) => ({ ...c, id: `default-${i}` })));
     });
     return () => unsubscribe();
   }, [uid]);
@@ -85,6 +86,17 @@ export const AddTransactionModal: React.FC<any> = ({
   const activeAccounts = accounts.filter((acc: any) => !acc.isArchived);
   const [accountId, setAccountId] = useState(activeAccounts[0]?.id || '');
   const [toAccountId, setToAccountId] = useState(activeAccounts[1]?.id || activeAccounts[0]?.id || '');
+
+  useEffect(() => {
+      if (activeAccounts.length > 0 && !accountId) {
+          setAccountId(activeAccounts[0].id);
+      }
+      if (activeAccounts.length > 1 && !toAccountId) {
+          setToAccountId(activeAccounts[1].id);
+      } else if (activeAccounts.length === 1 && !toAccountId) {
+          setToAccountId(activeAccounts[0].id);
+      }
+  }, [activeAccounts, accountId, toAccountId]);
   const [isRecurring, setIsRecurring] = useState(false);
   const [frequency, setFrequency] = useState('Monthly');
   const [interval, setInterval] = useState('1');
@@ -140,6 +152,7 @@ export const AddTransactionModal: React.FC<any> = ({
           type: 'Outflow', // Explicitly negative
           transactionType: 'transfer',
           date: today,
+          time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
           createdAt: serverTimestamp(),
           status: 'confirmed',
           isRecurring: false,
@@ -158,6 +171,7 @@ export const AddTransactionModal: React.FC<any> = ({
           type: 'Inflow', // Explicitly positive
           transactionType: 'transfer',
           date: today,
+          time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
           createdAt: serverTimestamp(),
           status: 'confirmed',
           isRecurring: false,
@@ -193,6 +207,7 @@ export const AddTransactionModal: React.FC<any> = ({
           accountId,
           type: transactionType,
           date: today,
+          time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
           createdAt: serverTimestamp(),
           status: 'confirmed',
           isRecurring
@@ -307,7 +322,7 @@ export const AddTransactionModal: React.FC<any> = ({
                    mode === 'income' ? t('add_transaction.income_title', 'Add Income') : 
                    t('add_transaction.expense_title', 'Add Expense')}
                 </h3>
-                <p className="text-[10px] font-bold text-[#8c8c99] tracking-widest uppercase">{t('add_transaction.control')}</p>
+                <p className="text-[10px] font-bold text-[#8c8c99]">{t('add_transaction.control')}</p>
               </div>
               <div className="flex bg-[#f4f4f8] p-1 rounded-xl border border-[#d8d8e5]">
                 <button 
@@ -359,7 +374,11 @@ export const AddTransactionModal: React.FC<any> = ({
                   <div>
                     <label className={labelStyles}>{t('add_transaction.category')}</label>
                     <select value={category} onChange={(e) => setCategory(e.target.value)} className={inputStyles}>
-                      {categories.map(cat => <option key={cat.id} value={cat.name}>{formatLabel(t(`categories.${cat.name}`, cat.name) as string)}</option>)}
+                      {categories.map(cat => (
+                        <option key={cat.id} value={cat.name}>
+                          {translateCategoryOrSubcategory(cat.name, t)}
+                        </option>
+                      ))}
                     </select>
                   </div>
 
@@ -367,8 +386,10 @@ export const AddTransactionModal: React.FC<any> = ({
                     <label className={labelStyles}>{t('add_transaction.sub_category')}</label>
                     <select value={subcategory} onChange={(e) => setSubcategory(e.target.value)} className={inputStyles}>
                         {categories.find(c => c.name === category)?.subcategories?.map((sub: string) => (
-                            <option key={`${category}-${sub}`} value={sub}>{formatLabel(t(`subcategories.${sub}`, sub) as string)}</option>
-                        )) || <option value="General">{t('subcategories.General', 'General')}</option>}
+                            <option key={`${category}-${sub}`} value={sub}>
+                              {translateCategoryOrSubcategory(sub, t)}
+                            </option>
+                        )) || <option value="General">{translateCategoryOrSubcategory('General', t)}</option>}
                     </select>
                   </div>
                 </>
@@ -487,7 +508,7 @@ export const AddTransactionModal: React.FC<any> = ({
                )}
 
               {/* Action Button */}
-              <button disabled={loading} className="w-full py-4 bg-[#a6ddb1] text-[#111c2d] rounded-2xl font-bold text-sm hover:brightness-105 transition-all flex items-center justify-center">
+              <button type="submit" disabled={loading} className="w-full py-4 bg-[#a6ddb1] text-[#111c2d] rounded-2xl font-bold text-sm hover:brightness-105 transition-all flex items-center justify-center">
                 {loading ? <RefreshCw className="animate-spin" /> : t('add_transaction.commit')}
               </button>
             </form>

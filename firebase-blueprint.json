@@ -83,7 +83,8 @@
         "hasAcceptedTerms": { "type": "boolean" },
         "onboardedAt": { "type": "string", "format": "date-time" },
         "lastLogin": { "type": "string", "format": "date-time" },
-        "subscriptionTier": { "type": "string" }
+        "subscriptionTier": { "type": "string" },
+        "aiTokens": { "type": "number" }
       },
       "required": ["uid", "fullName", "email"]
     },

@@ -56,14 +56,14 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
 }) => {
   const { t, i18n } = useTranslation();
   const getChecklistText = (item: ChecklistItem) => {
-    if (item.id === 'itm-1' && (item.text === 'Verify daily spending budgets' || item.text === 'Verificar presupuestos de gastos diarios')) {
-      return t('notification_dispatch_hub.seed_verify_daily', 'Verify daily spending budgets');
+    if (item.id === 'itm-1') {
+      return t('notification_dispatch_hub.seed_verify_daily', item.text);
     }
-    if (item.id === 'itm-2' && (item.text === 'Audit subscription schedules' || item.text === 'Auditar programaciones de suscripciones')) {
-      return t('notification_dispatch_hub.seed_audit_sub', 'Audit subscription schedules');
+    if (item.id === 'itm-2') {
+      return t('notification_dispatch_hub.seed_audit_sub', item.text);
     }
-    if (item.id === 'itm-3' && (item.text === 'Optimize active investment tiers' || item.text === 'Optimizar niveles de inversión activos')) {
-      return t('notification_dispatch_hub.seed_optimize_invest', 'Optimize active investment tiers');
+    if (item.id === 'itm-3') {
+      return t('notification_dispatch_hub.seed_optimize_invest', item.text);
     }
     return item.text;
   };

@@ -60,6 +60,8 @@ export const Transactions: React.FC<TransactionsProps> = ({
   // Custom filter states
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [focusedStart, setFocusedStart] = useState(false);
+  const [focusedEnd, setFocusedEnd] = useState(false);
   const [selectedAccountId, setSelectedAccountId] = useState('All');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [categories, setCategories] = useState<any[]>([]);
@@ -181,7 +183,22 @@ export const Transactions: React.FC<TransactionsProps> = ({
 
   const groupTransactionsByDate = (list: Transaction[]) => {
     const groups: { [key: string]: Transaction[] } = {};
-    const sorted = [...list].sort((a, b) => b.date.localeCompare(a.date));
+    const sorted = [...list].sort((a, b) => {
+      const dateA = new Date(a.date).getTime();
+      const dateB = new Date(b.date).getTime();
+      if (dateA !== dateB) return dateB - dateA;
+      
+      const parseTime = (t: string | undefined) => {
+        if (!t) return 0;
+        const [time, modifier] = t.split(' ');
+        if (!time) return 0;
+        let [hours, minutes] = time.split(':').map(Number);
+        if (modifier === 'PM' && hours !== 12) hours += 12;
+        if (modifier === 'AM' && hours === 12) hours = 0;
+        return hours * 60 + minutes;
+      };
+      return parseTime(b.time) - parseTime(a.time);
+    });
     sorted.forEach(tx => {
       if (!groups[tx.date]) groups[tx.date] = [];
       groups[tx.date].push(tx);
@@ -337,14 +354,20 @@ export const Transactions: React.FC<TransactionsProps> = ({
                 </label>
                 <div className="flex items-center gap-1">
                   <input
-                    type="date"
+                    type={(focusedStart || startDate) ? 'date' : 'text'}
+                    placeholder={t('activity.date_placeholder', 'mm/dd/yyyy')}
+                    onFocus={() => setFocusedStart(true)}
+                    onBlur={() => setFocusedStart(false)}
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
                     className="w-full bg-white border border-[#E5E7EB] rounded-xl py-1.5 px-2 text-xs text-[#111C2D] focus:border-[#A6DDB1] outline-none transition-all font-normal"
                   />
                   <span className="text-gray-400 text-xs font-normal">{t('activity.to', 'to')}</span>
                   <input
-                    type="date"
+                    type={(focusedEnd || endDate) ? 'date' : 'text'}
+                    placeholder={t('activity.date_placeholder', 'mm/dd/yyyy')}
+                    onFocus={() => setFocusedEnd(true)}
+                    onBlur={() => setFocusedEnd(false)}
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
                     className="w-full bg-white border border-[#E5E7EB] rounded-xl py-1.5 px-2 text-xs text-[#111C2D] focus:border-[#A6DDB1] outline-none transition-all font-normal"
@@ -379,12 +402,12 @@ export const Transactions: React.FC<TransactionsProps> = ({
         {viewMode === 'future' ? (
            <div className="flex flex-col gap-8">
              {filteredUpcoming.length > 0 ? (
-                Object.entries(groupedUpcoming).map(([date, items]) => (
-                  <div key={date} className="flex flex-col gap-4">
+                Object.entries(groupedUpcoming).map(([date, items], dateIdx) => (
+                  <div key={`upcoming-${date}-${dateIdx}`} className="flex flex-col gap-4">
                     <h3 className="text-xl font-bold text-[#111c2d] pl-1 font-sans">{formatDateHeader(date)}</h3>
                     <div className="bg-[#FFFFFF] border border-[#F2F4F7] rounded-[24px] overflow-hidden">
                       {items.map((tx, idx) => (
-                        <React.Fragment key={tx.id}>
+                        <React.Fragment key={`${tx.id}-${idx}`}>
                           <TransactionRow tx={tx} accounts={accounts} onClick={() => setSelectedTx(tx)} />
                           {idx < items.length - 1 && <div className="mx-6 border-b border-neutral-100" />}
                         </React.Fragment>
@@ -410,12 +433,12 @@ export const Transactions: React.FC<TransactionsProps> = ({
                 <span className="text-neutral-400 font-bold text-base">{t('activity.no_recorded_logs')}</span>
               </div>
             ) : (
-              Object.entries(groupedHistorical).map(([date, items]) => (
-                <div key={date} className="flex flex-col gap-4">
+              Object.entries(groupedHistorical).map(([date, items], dateIdx) => (
+                <div key={`historical-${date}-${dateIdx}`} className="flex flex-col gap-4">
                   <h3 className="text-xl font-bold text-[#111c2d] pl-1 font-sans">{formatDateHeader(date)}</h3>
                   <div className="bg-[#FFFFFF] border border-[#F2F4F7] rounded-[24px] overflow-hidden">
                     {items.map((tx, idx) => (
-                      <React.Fragment key={tx.id}>
+                      <React.Fragment key={`${tx.id}-${idx}`}>
                         <TransactionRow tx={tx} accounts={accounts} onClick={() => setSelectedTx(tx)} />
                         {idx < items.length - 1 && <div className="mx-6 border-b border-[#F9FAFB]" />}
                       </React.Fragment>
@@ -430,10 +453,10 @@ export const Transactions: React.FC<TransactionsProps> = ({
 
       <AnimatePresence>
         {selectedTx && (
-          <TransactionDetailModal tx={selectedTx} uid={uid} isOpen={!!selectedTx} onClose={() => setSelectedTx(null)} />
+          <TransactionDetailModal key="tx-detail-modal" tx={selectedTx} uid={uid} isOpen={!!selectedTx} onClose={() => setSelectedTx(null)} />
         )}
         {isAddModalOpen && (
-          <AddTransactionModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} uid={uid} accounts={accounts} onSuccess={() => {}} />
+          <AddTransactionModal key="tx-add-modal" isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} uid={uid} accounts={accounts} onSuccess={() => {}} />
         )}
       </AnimatePresence>
     </div>
@@ -448,10 +471,14 @@ const TransactionRow: React.FC<{ tx: Transaction; accounts: any[]; onClick: () =
   const isInflow = ['Inflow', 'income'].includes(tx.type);
   const isOutflow = ['Outflow', 'expense'].includes(tx.type);
   const targetAccount = accounts.find(a => (a.accountId || a.id) === tx.accountId);
-  const rawCat = tx.subCategory || tx.subcategory || tx.category || t('common.general');
-  const displayCategory = formatLabel(rawCat.includes(' > ') ? rawCat.split(' > ').pop()! : rawCat);
+  const category = tx.category || 'Others';
+  const subcategory = tx.subCategory || tx.subcategory || 'General';
+  const displayCategory = subcategory === 'General' || subcategory === 'All' ? category : subcategory;
+  
+  const translatedCategory = translateCategoryOrSubcategory(category, t);
+  const translatedSubcategory = translateCategoryOrSubcategory(subcategory, t);
+  const displayLabel = subcategory === 'General' || subcategory === 'All' ? translatedCategory : translatedSubcategory;
 
-  const translatedCategory = t(`categories.${displayCategory}`, t(`subcategories.${displayCategory}`, displayCategory));
   const getCatIcon = () => {
     const name = displayCategory.toLowerCase();
     if (name.includes('transfer')) return <RefreshCw size={20} />;
@@ -487,7 +514,7 @@ const TransactionRow: React.FC<{ tx: Transaction; accounts: any[]; onClick: () =
         </div>
         <div className="flex flex-col min-w-0 flex-1">
           <span className="text-[14px] font-normal text-[#111C2D] truncate font-sans">
-            {tx.isUpcoming ? `${translatedCategory} — ${new Date(tx.date).toLocaleDateString(i18nextInstance.language, { month: 'short', day: 'numeric', year: 'numeric' })}` : translatedCategory}
+            {tx.isUpcoming ? `${displayLabel} — ${new Date(tx.date).toLocaleDateString(i18nextInstance.language, { month: 'short', day: 'numeric', year: 'numeric' })}` : displayLabel}
           </span>
           <div className="flex items-center gap-1.5 text-[14px] text-neutral-400 font-bold mt-0.5 font-sans">
             <span className="truncate">{targetAccount?.name || t('common.checking_account')}</span>

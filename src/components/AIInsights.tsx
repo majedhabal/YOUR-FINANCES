@@ -4,7 +4,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Sparkles, Brain, Zap, Target, TrendingDown, Lightbulb, MessageCircle, Send, Camera as CameraIcon, CheckCircle2, Lock as LockIcon, Crown } from 'lucide-react';
 import { executeVantageAITask } from '../lib/VantageAIRouter';
 import { PremiumModal } from './PremiumModal';
-import { auth } from '../lib/firebase';
+import { auth, db } from '../lib/firebase';
+import { doc, updateDoc } from 'firebase/firestore';
 import { PremiumMarketingCard } from './PremiumMarketingCard';
 import { AdContainer } from './AdContainer';
 
@@ -25,9 +26,17 @@ export const AIInsights: React.FC<AIInsightsProps> = ({ profile, onUpdateProfile
   const [forecastLoading, setForecastLoading] = useState(false);
   const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false);
 
-  const isPremium = !!(profile?.isPremium || (profile?.subscriptionTier && profile.subscriptionTier.toLowerCase() !== 'free'));
+  const isPremium = !!(profile?.isPremium || (profile?.subscriptionTier && profile.subscriptionTier.toLowerCase() !== 'free') || (profile?.vantageAiUnlockedUntil && new Date(profile.vantageAiUnlockedUntil).getTime() > Date.now()));
 
   const generateForecast = async () => {
+    const currentTokens = typeof profile?.vantageAiTokens === 'number' ? profile.vantageAiTokens : 0;
+    const tokenCost = 50; // Deep Financial Forecast and Pivot points
+
+    if (currentTokens < tokenCost) {
+      setForecast(`No Vantage AI tokens remaining! Deep forecasting requires ${tokenCost} tokens, but you only have ${currentTokens} remaining. Please upgrade your plan in settings or claim sandbox tokens.`);
+      return;
+    }
+
     setForecastLoading(true);
     try {
       const context = await getFinancialContext();
@@ -40,6 +49,13 @@ export const AIInsights: React.FC<AIInsightsProps> = ({ profile, onUpdateProfile
       
       const text = await executeVantageAITask('generate_financial_forecast', { prompt });
       setForecast(text || "Forecast unavailable.");
+
+      // Decrement tokens dynamically
+      if (profile?.uid) {
+        const userRef = doc(db, 'users', profile.uid);
+        const nextTokens = Math.max(0, currentTokens - tokenCost);
+        await updateDoc(userRef, { vantageAiTokens: nextTokens });
+      }
     } catch (err: any) {
       console.error('Forecast Error:', err);
       setForecast(err.message || "Strategic forecasting requires more historical data.");
@@ -89,6 +105,23 @@ export const AIInsights: React.FC<AIInsightsProps> = ({ profile, onUpdateProfile
     if (isGeneral) setInsightLoading(true);
     else setChatLoading(true);
 
+    const currentTokens = typeof profile?.vantageAiTokens === 'number' ? profile.vantageAiTokens : 0;
+    let tokenCost = 0;
+
+    if (!isGeneral && customPrompt) {
+      const lowerMessage = customPrompt.toLowerCase();
+      const keywords = ['trend', 'forecast', 'predict', 'analyze', 'analysis', 'spending', 'habit', 'chart', 'comprehensive', 'history', 'pattern', 'future', 'projection', 'growth', 'budget', 'health'];
+      const isTrendOrForecast = keywords.some(kw => lowerMessage.includes(kw));
+      tokenCost = isTrendOrForecast ? 50 : 10;
+
+      if (currentTokens < tokenCost) {
+        setInsight(`No Vantage AI tokens remaining! This request requires ${tokenCost} tokens, but you only have ${currentTokens} remaining. Please upgrade your plan in settings or claim sandbox tokens.`);
+        setInsightLoading(false);
+        setChatLoading(false);
+        return;
+      }
+    }
+
     try {
       const context = await getFinancialContext();
       const txContext = context.transactions.map(t => `${t.date} | ${t.category}: ${t.amount} (${t.notes || 'No notes'})`).join('; ');
@@ -102,6 +135,13 @@ export const AIInsights: React.FC<AIInsightsProps> = ({ profile, onUpdateProfile
       
       const text = await executeVantageAITask('summarize_document', { prompt });
       setInsight(text || "Insight unavailable.");
+
+      // Decrement tokens dynamically if user-initiated manual question
+      if (!isGeneral && customPrompt && profile?.uid) {
+        const userRef = doc(db, 'users', profile.uid);
+        const nextTokens = Math.max(0, currentTokens - tokenCost);
+        await updateDoc(userRef, { vantageAiTokens: nextTokens });
+      }
     } catch (err: any) {
       console.error('AI Insight Error:', err);
       setInsight(err.message || "Our AI advisors are currently busy with high-profile consultations. Please try again shortly.");
@@ -122,6 +162,14 @@ export const AIInsights: React.FC<AIInsightsProps> = ({ profile, onUpdateProfile
     const file = e.target.files?.[0];
     if (!file) return;
 
+    const currentTokens = typeof profile?.vantageAiTokens === 'number' ? profile.vantageAiTokens : 0;
+    const tokenCost = 100; // Receipt scanning is 100 tokens
+
+    if (currentTokens < tokenCost) {
+      alert(`No Vantage AI tokens remaining! Receipt scanning requires ${tokenCost} tokens, but you only have ${currentTokens} remaining.`);
+      return;
+    }
+
     const reader = new FileReader();
     reader.onload = async () => {
       setScanLoading(true);
@@ -135,7 +183,14 @@ export const AIInsights: React.FC<AIInsightsProps> = ({ profile, onUpdateProfile
         });
         const cleanJson = text?.replace(/```json|```/g, "").trim();
         if (cleanJson) {
-           setScanResult(JSON.parse(cleanJson));
+          setScanResult(JSON.parse(cleanJson));
+
+          // Decrement tokens dynamically on successful scan
+          if (profile?.uid) {
+            const userRef = doc(db, 'users', profile.uid);
+            const nextTokens = Math.max(0, currentTokens - tokenCost);
+            await updateDoc(userRef, { vantageAiTokens: nextTokens });
+          }
         }
       } catch (err) {
         console.error('Scan Error:', err);

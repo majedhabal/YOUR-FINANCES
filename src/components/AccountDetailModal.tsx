@@ -854,19 +854,6 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                   <div className="flex flex-col gap-2.5 mt-1" id="edit-management-actions">
                     <button
                       type="button"
-                      onClick={handleSyncNow}
-                      disabled={isSyncing}
-                      className="w-full border border-[#366945] text-[#366945] hover:bg-[#366945]/5 active:scale-98 transition-all h-10 rounded-xl font-normal text-xs flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70"
-                      style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
-                    >
-                      <svg className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H16.5m-5.32 15a8 8 0 0113.54-5.228m-13.54 5.228l-3.3-3.088m3.3 3.088v-5H6" />
-                      </svg>
-                      {isSyncing ? t('account_detail.syncing') : t('account_detail.sync_now')}
-                    </button>
-
-                    <button
-                      type="button"
                       onClick={() => {
                         if (account.isArchived) {
                           handleArchiveAccount();
@@ -1450,7 +1437,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                                 className="text-[#1F2937]/75 uppercase tracking-wider pl-1"
                                 style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: 'clamp(10px, 2.5vw, 12px)' }}
                               >
-                                Starting Balance
+                                {t('add_account.starting_balance')}
                               </label>
                               <input 
                                 type="number"
@@ -1808,7 +1795,9 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                  style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
                  id="confirm-modal-title"
                >
-                 {confirmModalConfig.type === 'delete' ? 'DELETE ACCOUNT' : 'ARCHIVE ACCOUNT'}
+                 {confirmModalConfig.type === 'delete' 
+                    ? t('account_detail.delete_confirm_title', 'Delete Account') 
+                    : t('account_detail.archive_confirm_title', 'Archive Account')}
                </h3>
 
                {/* Bounding inner canvas prompt text - font weight 400 Google Sans */}
@@ -1818,8 +1807,8 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                  id="confirm-modal-warning-text"
                >
                  {confirmModalConfig.type === 'delete' 
-                   ? 'Are you sure you want to delete this account?' 
-                   : 'Are you sure you want to archive this account?'
+                   ? t('account_detail.delete_confirm_message', 'Are you sure you want to delete this account?') 
+                   : t('account_detail.archive_confirm_message', 'Are you sure you want to archive this account?')
                  }
                </p>
 
@@ -1844,7 +1833,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                    className="w-full h-[38px] md:h-[42px] bg-[#A6DDB1] hover:bg-[#86CA93] active:scale-95 text-neutral-800 transition-all rounded-xl uppercase tracking-wider flex items-center justify-center cursor-pointer disabled:opacity-50"
                    id="confirm-modal-proceed-button"
                  >
-                   {isLoading ? 'Processing...' : 'PROCEED'}
+                   {isLoading ? t('common.processing', 'Processing...') : t('account_detail.proceed_button', 'Proceed')}
                  </button>
 
                  <button 
@@ -1858,7 +1847,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                    className="w-full text-neutral-400 hover:text-neutral-600 transition-colors uppercase tracking-wider text-center cursor-pointer py-1 disabled:opacity-50"
                    id="confirm-modal-cancel-button"
                  >
-                   CANCEL
+                   {t('account_detail.cancel_button', 'Cancel')}
                  </button>
                </div>
              </motion.div>
@@ -2030,21 +2019,6 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
         tx={selectedTx}
         uid={profile.uid}
       />
-
-     {/* 🔍 THEME UNIFIED RE-ROUTED DETAILED TRANSACTION INTERCEPT HOOK PANEL */}
-      <AnimatePresence>
-        {selectedTx && (
-          <TransactionDetailModal 
-            isOpen={selectedTx !== null}
-            onClose={() => setSelectedTx(null)}
-            tx={selectedTx}
-            uid={profile.uid}
-            onDelete={async (txId) => {
-              setTxToDelete(selectedTx);
-            }}
-          />
-        )}
-      </AnimatePresence>
 
       <ConfirmationModal 
         isOpen={txToDelete !== null}

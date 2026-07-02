@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'motion/react';
 import { User, Shield, Bell, CreditCard, LogOut, ChevronRight, Moon, Globe, Sparkles, Zap, PackageOpen, RotateCcw, LayoutGrid, RefreshCw, Calendar, CheckSquare, Brain, Lock, Fingerprint, MessageSquare, Zap as ZapIcon, Type, ZoomIn, ArrowLeftRight, Wand2 } from 'lucide-react';
@@ -47,6 +47,15 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
   const { t } = useTranslation();
   const { deleteProfile } = useVantageActions(profile?.uid);
   const [activeView, setActiveView] = useState<'main' | 'categories' | 'recurring' | 'privacy' | 'terms' | 'ai_conversations' | 'referrals'>('main');
+  
+  useEffect(() => {
+    const isSubView = activeView !== 'main';
+    window.dispatchEvent(new CustomEvent('settings-subview-toggled', { detail: { isOpen: isSubView } }));
+    return () => {
+      window.dispatchEvent(new CustomEvent('settings-subview-toggled', { detail: { isOpen: false } }));
+    };
+  }, [activeView]);
+
   const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -237,12 +246,12 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
 
   const subscriptionTierDisplay = (() => {
     const tier = profile?.subscriptionTier;
-    if (!tier) return 'Free Starter';
+    if (!tier) return t('settings.free_starter');
     const lower = tier.toLowerCase().replace(' ', '');
-    if (lower === 'free') return 'Free Starter';
-    if (lower === 'tier1') return 'Tier 1';
-    if (lower === 'tier2') return 'Tier 2';
-    if (lower === 'tier3') return 'Tier 3';
+    if (lower === 'free') return t('settings.free_starter');
+    if (lower === 'tier1') return t('settings.tier1');
+    if (lower === 'tier2') return t('settings.tier2');
+    if (lower === 'tier3') return t('settings.tier3');
     return tier.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
   })();
 
@@ -406,14 +415,14 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
         { 
           icon: MessageSquare, 
           label: t('settings.previous_ai_conversations'), 
-          value: 'History logs',
+          value: t('settings.history_logs'),
           action: () => {
             setActiveView('ai_conversations');
           },
         },
         { 
           icon: Gift, 
-          label: 'Referrals & Rewards', 
+          label: t('settings.referrals_rewards'), 
           value: profile?.referralCode || 'Generate Code',
           action: () => {
             setActiveView('referrals');
@@ -422,7 +431,7 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
         { 
           icon: RotateCcw, 
           label: t('settings.restore_purchase_history'), 
-          value: isRestoring ? 'Querying Dashboard...' : 'Restore',
+          value: isRestoring ? t('settings.querying_dashboard') : t('settings.restore'),
           action: handleRestorePurchases,
         },
       ]
@@ -433,19 +442,19 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
         { 
           icon: LayoutGrid, 
           label: t('settings.manage_categories'), 
-          value: 'Hierarchical Matrix',
+          value: t('settings.hierarchical_matrix'),
           action: () => setActiveView('categories')
         },
         { 
           icon: ArrowLeftRight, 
           label: t('settings.recurring_protocols'), 
-          value: 'Automation Rules',
+          value: t('settings.automation_rules'),
           action: () => setActiveView('recurring')
         },
         { 
           icon: Wand2, 
           label: t('settings.fix_transaction_types'), 
-          value: isSaving ? 'Migrating...' : 'Run Migration',
+          value: isSaving ? t('settings.migrating') : t('settings.run_migration'),
           action: runMigration
         },
       ]
@@ -456,7 +465,7 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
         { 
           icon: User, 
           label: t('settings.full_name'), 
-          value: profile?.fullName || 'Not Set',
+          value: profile?.fullName || t('settings.not_set'),
           isInput: true,
           type: 'text',
           currentValue: fullName,
@@ -466,7 +475,7 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
         { 
           icon: Zap, 
           label: t('settings.date_of_birth'), 
-          value: profile?.dob || 'Not Set',
+          value: profile?.dob || t('settings.not_set'),
           isInput: true,
           type: 'date',
           currentValue: dob,
@@ -475,17 +484,22 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
         { 
           icon: Globe, 
           label: t('settings.marital_status'), 
-          value: profile?.maritalStatus || 'Single',
+          value: profile?.maritalStatus ? t('marital_status_options.' + profile.maritalStatus.toLowerCase()) : t('marital_status_options.single'),
           isInput: true,
           type: 'select',
-          options: ['Single', 'Married', 'Divorced', 'Widowed'],
+          options: [
+            { label: t('marital_status_options.single'), value: 'Single' },
+            { label: t('marital_status_options.married'), value: 'Married' },
+            { label: t('marital_status_options.divorced'), value: 'Divorced' },
+            { label: t('marital_status_options.widowed'), value: 'Widowed' },
+          ],
           currentValue: maritalStatus,
           setter: setMaritalStatus
         },
         { 
           icon: PackageOpen, 
           label: t('settings.dependents'), 
-          value: hasKids ? 'With Kids' : 'No Kids',
+          value: hasKids ? t('settings.with_kids') : t('settings.no_kids'),
           isInput: true,
           type: 'toggle',
           currentValue: hasKids,
@@ -494,7 +508,7 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
         { 
           icon: Sparkles, 
           label: t('settings.north_star_goal'), 
-          value: profile?.financialGoals ? 'Set' : 'Not Set',
+          value: profile?.financialGoals ? t('settings.set') : t('settings.not_set'),
           isInput: true,
           type: 'textarea',
           currentValue: financialGoals,
@@ -509,10 +523,15 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
         { 
           icon: Bell, 
           label: t('settings.notifications'), 
-          value: notificationPref,
+          value: notificationPref ? t('settings.' + notificationPref.toLowerCase().replace(' ', '_')) : notificationPref,
           isInput: true,
           type: 'select',
-          options: ['Stealth', 'Audible Only', 'Vibration Match', 'Muted Archive'],
+          options: [
+            { label: t('settings.stealth'), value: 'Stealth' },
+            { label: t('settings.audible_only'), value: 'Audible Only' },
+            { label: t('settings.vibration_match'), value: 'Vibration Match' },
+            { label: t('settings.muted_archive'), value: 'Muted Archive' },
+          ],
           currentValue: notificationPref,
           setter: setNotificationPref
         },
@@ -529,10 +548,15 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
         { 
           icon: Globe, 
           label: t('settings.data_region'), 
-          value: dataRegion,
+          value: dataRegion ? t('settings.' + dataRegion.toLowerCase().replace(' ', '_')) : dataRegion,
           isInput: true,
           type: 'select',
-          options: ['Globalized', 'EU West Private', 'US East Standard', 'Middle East Edge'],
+          options: [
+            { label: t('settings.globalized'), value: 'Globalized' },
+            { label: t('settings.eu_west_private'), value: 'EU West Private' },
+            { label: t('settings.us_east_standard'), value: 'US East Standard' },
+            { label: t('settings.middle_east_edge'), value: 'Middle East Edge' },
+          ],
           currentValue: dataRegion,
           setter: setDataRegion
         },
@@ -544,7 +568,7 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
         { 
           icon: Moon, 
           label: t('settings.visual_interface'), 
-          value: theme === 'system' ? 'System Sync' : theme === 'dark' ? 'Midnight Gold' : 'Pristine Arctic',
+          value: theme === 'system' ? t('settings.theme_system_sync') : theme === 'dark' ? t('settings.theme_midnight') : t('settings.theme_arctic'),
           isInput: true,
           type: 'select',
           options: [
@@ -558,14 +582,14 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
         {
           icon: ZoomIn,
           label: t('settings.app_font_size'),
-          value: fontSize === 'small' ? 'Small' : fontSize === 'normal' ? 'Normal' : fontSize === 'large' ? 'Large' : 'Extra Large',
+          value: fontSize === 'small' ? t('settings.font_size_small') : fontSize === 'normal' ? t('settings.font_size_normal') : fontSize === 'large' ? t('settings.font_size_large') : t('settings.font_size_xlarge'),
           isInput: true,
           type: 'select',
           options: [
-            { label: 'Small', value: 'small' },
-            { label: 'Normal (Default)', value: 'normal' },
-            { label: 'Large', value: 'large' },
-            { label: 'Extra Large', value: 'xlarge' }
+            { label: t('settings.font_size_small'), value: 'small' },
+            { label: t('settings.font_size_normal'), value: 'normal' },
+            { label: t('settings.font_size_large'), value: 'large' },
+            { label: t('settings.font_size_xlarge'), value: 'xlarge' }
           ],
           currentValue: fontSize,
           setter: (v: any) => {
@@ -617,7 +641,7 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
     {
       title: t('settings.integrations_ai_sync'),
       items: [
-        { icon: CreditCard, label: t('settings.linked_accounts'), value: '3 Sources' },
+        { icon: CreditCard, label: t('settings.linked_accounts'), value: t('settings.sources_count', { count: 3 }) },
         {
           icon: Calendar,
           label: t('settings.google_calendar_sync'),
@@ -644,7 +668,7 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
         },
         {
           icon: Mail,
-          label: 'AI Monthly Statement Email',
+          label: t('settings.ai_monthly_statement'),
           isInlineToggle: true,
           toggleValue: monthlyStatementEnabled,
           action: () => handleToggleFeature('monthlyStatementEnabled', monthlyStatementEnabled),
@@ -652,8 +676,8 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
         },
         {
           icon: FileText,
-          label: 'Secure Statement Vault',
-          value: 'Statements Archive',
+          label: t('settings.secure_statement_vault'),
+          value: t('settings.statements_archive'),
           action: () => {
             if (isPremium) {
               setIsStatementVaultOpen(true);
@@ -670,13 +694,13 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
         { 
           icon: Shield, 
           label: t('settings.privacy_policy'), 
-          value: 'View Protocol', 
+          value: t('settings.view_protocol'), 
           action: () => window.open('https://www.yourfinances.me/privacy', '_blank')
         },
         { 
           icon: Globe, 
           label: t('settings.terms_of_engagement'), 
-          value: profile?.hasAcceptedTerms ? 'Agreed & Signed' : 'Review & Sign', 
+          value: profile?.hasAcceptedTerms ? t('settings.agreed_signed') : t('settings.review_sign'), 
           action: () => window.open('https://www.yourfinances.me/terms-of-engagement', '_blank'),
           highlight: !profile?.hasAcceptedTerms
         },
@@ -744,13 +768,9 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
           margin-left: 20px !important;
         }
         
+
         div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1),
         div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1) {
-          font-size: 14px !important;
-        }
-
-        div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(3) > div:nth-of-type(1) > span:nth-of-type(1),
-        div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(3) > div:nth-of-type(1) > button:nth-of-type(1) {
           font-size: 14px !important;
         }
 
@@ -886,7 +906,7 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
                   style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
                   className="flex-1 h-[38px] md:h-[42px] bg-neutral-100 hover:bg-neutral-200 text-neutral-600 tracking-wider rounded-xl text-[clamp(11px,2.8vw,13px)] transition-all active:scale-95 flex items-center justify-center cursor-pointer border border-transparent outline-none select-none"
                 >
-                  Decline
+                  {t('settings.decline')}
                 </button>
                 <button
                   type="button"
@@ -902,7 +922,7 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
                   }}
                   className="flex-1 h-[38px] md:h-[42px] hover:brightness-95 text-[#1E293B] tracking-wider rounded-xl text-[clamp(11px,2.8vw,13px)] transition-all active:scale-95 flex items-center justify-center cursor-pointer border border-transparent outline-none select-none shadow-sm"
                 >
-                  Allow
+                  {t('settings.allow')}
                 </button>
               </div>
             </motion.div>
@@ -939,23 +959,29 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
 
       <div className="flex flex-col gap-1.5 md:grid md:grid-cols-2 md:grid-flow-row-dense md:gap-4 w-full">
         {sections.map((section, idx) => {
+          const sectionId = 
+            idx === 2 ? 'profile' :
+            idx === 3 ? 'aesthetic' :
+            idx === 4 ? 'graphics' :
+            'other';
+
           const isEditing = 
-            section.title === 'Strategic Profile' ? isEditingProfile :
-            section.title === 'Aesthetic & System' ? isEditingAesthetic :
-            section.title === 'Graphics' ? isEditingGraphics :
+            sectionId === 'profile' ? isEditingProfile :
+            sectionId === 'aesthetic' ? isEditingAesthetic :
+            sectionId === 'graphics' ? isEditingGraphics :
             false;
 
           return (
             <div key={section.title} className="flex flex-col gap-1.5">
-              <div className="flex items-center justify-between px-3 mt-1">
+              <div className="flex items-center justify-between px-4 mt-1">
                 <span 
-                  style={{ fontSize: '14px' }}
-                  className="items-center font-bold text-vantage-muted tracking-wide shrink-0"
+                  style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: '16px' }}
+                  className="items-center text-[#1E293B] dark:text-neutral-100 shrink-0"
                 >
                   {section.title}
                 </span>
                 
-                {section.title === 'Strategic Profile' && (
+                {sectionId === 'profile' && (
                   <button 
                     type="button"
                     onClick={() => {
@@ -963,14 +989,14 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
                       else setIsEditingProfile(true);
                     }}
                     disabled={isSaving}
-                    className="font-bold text-[#065F46] dark:text-vantage-green tracking-wide hover:opacity-80 transition-opacity active:scale-95 shrink-0"
-                    style={{ fontSize: '14px' }}
+                    className="text-[#065F46] dark:text-vantage-green hover:opacity-80 transition-opacity active:scale-95 shrink-0"
+                    style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: '15px' }}
                   >
-                    {isSaving ? 'Syncing...' : isEditingProfile ? 'Commit' : 'Edit profile'}
+                    {isSaving ? t('settings.syncing') : isEditingProfile ? t('settings.commit') : t('settings.edit_profile')}
                   </button>
                 )}
 
-                {section.title === 'Aesthetic & System' && (
+                {sectionId === 'aesthetic' && (
                   <button 
                     type="button"
                     onClick={async () => {
@@ -996,14 +1022,14 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
                       }
                     }}
                     disabled={isSaving}
-                    className="font-bold text-[#065F46] dark:text-vantage-green tracking-wide hover:opacity-80 transition-opacity active:scale-95 shrink-0"
-                    style={{ fontSize: '14px' }}
+                    className="text-[#065F46] dark:text-vantage-green hover:opacity-80 transition-opacity active:scale-95 shrink-0"
+                    style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: '15px' }}
                   >
-                    {isSaving ? 'Syncing...' : isEditingAesthetic ? 'Commit' : 'Edit system'}
+                    {isSaving ? t('settings.syncing') : isEditingAesthetic ? t('settings.commit') : t('settings.edit_aesthetic')}
                   </button>
                 )}
 
-                {section.title === 'Graphics' && (
+                {sectionId === 'graphics' && (
                   <button 
                     type="button"
                     onClick={async () => {
@@ -1030,22 +1056,35 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
                       }
                     }}
                     disabled={isSaving}
-                    className="font-bold text-[#065F46] dark:text-vantage-green tracking-wide hover:opacity-80 transition-opacity active:scale-95 shrink-0"
-                    style={{ fontSize: '14px' }}
+                    className="text-[#065F46] dark:text-vantage-green hover:opacity-80 transition-opacity active:scale-95 shrink-0"
+                    style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: '15px' }}
                   >
-                    {isSaving ? 'Syncing...' : isEditingGraphics ? 'Commit' : 'Edit graphics'}
+                    {isSaving ? t('settings.syncing') : isEditingGraphics ? t('settings.commit') : t('settings.edit_graphics')}
                   </button>
                 )}
               </div>
 
-              <div className="mx-4 bg-white dark:bg-[#111215] rounded-2xl border border-neutral-200 dark:border-white/5 overflow-hidden shadow-sm flex flex-col">
+              <div className="mx-4 bg-white dark:bg-[#111215] rounded-2xl border border-neutral-100 dark:border-white/5 overflow-hidden shadow-sm flex flex-col">
                 {section.items.map((item: any, itemIdx: any) => {
-                  const isClickableRow = item.action && !item.isInlineToggle && !item.isLanguageSelector && (!isEditing || !item.isInput);
+                  const isClickableRow = (item.action || (!isEditing && item.isInput)) && !item.isInlineToggle && !item.isLanguageSelector;
+                  const isRowEditing = isEditing && item.isInput;
                   return (
                     <div 
                       key={itemIdx}
-                      onClick={isClickableRow ? item.action : undefined}
-                      className={`w-full flex flex-col px-5 h-[59.5px] justify-center transition-colors ${itemIdx !== section.items.length - 1 ? 'border-b border-neutral-100 dark:border-white/5' : ''} ${isClickableRow ? 'cursor-pointer hover:bg-neutral-50 dark:hover:bg-white/5 active:opacity-90 select-none' : ''}`}
+                      onClick={isClickableRow ? () => {
+                        if (item.action) {
+                          item.action();
+                        } else if (!isEditing && item.isInput) {
+                          if (sectionId === 'profile') {
+                            setIsEditingProfile(true);
+                          } else if (sectionId === 'aesthetic') {
+                            setIsEditingAesthetic(true);
+                          } else if (sectionId === 'graphics') {
+                            setIsEditingGraphics(true);
+                          }
+                        }
+                      } : undefined}
+                      className={`w-full flex flex-col px-5 ${isRowEditing ? 'min-h-[59.5px] py-4.5 h-auto justify-start' : 'h-[59.5px] justify-center'} transition-all duration-200 ${itemIdx !== section.items.length - 1 ? 'border-b border-neutral-100 dark:border-white/5' : ''} ${isClickableRow ? 'cursor-pointer hover:bg-neutral-50 dark:hover:bg-white/5 active:opacity-90 select-none' : ''}`}
                     >
                       <div className="flex items-center justify-between w-full gap-4">
                         <div className="flex items-center gap-5 min-w-0">
@@ -1065,7 +1104,7 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
                             {item.value && (
                               <span 
                                 style={{ fontFamily: "'Google Sans', sans-serif", fontSize: '15px', fontWeight: 400 }}
-                                className={`truncate max-w-[140px] text-right ${item.highlight ? 'text-[#065F46] dark:text-vantage-green' : 'text-[#8E9AAF] dark:text-neutral-500'}`}
+                                className={`truncate max-w-[140px] text-right ${item.highlight ? 'text-[#065F46] dark:text-vantage-green' : 'text-[#94A3B8] dark:text-neutral-500'}`}
                               >
                                 {item.value}
                               </span>
@@ -1088,7 +1127,7 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
                             ) : item.isLanguageSelector ? (
                               <LanguageSelector onLanguageChange={(lng) => item.action(lng)} />
                             ) : (
-                              (item.action || item.isInput) && (
+                              (item.action || item.isInput) && !['profile', 'aesthetic', 'graphics'].includes(sectionId) && (
                                 <ChevronRight size={16} className="text-[#8E9AAF]/40 shrink-0" />
                               )
                             )}
@@ -1097,14 +1136,15 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
                       </div>
 
                     {isEditing && item.isInput && (
-                    <div className="mt-2 animate-in fade-in slide-in-from-top-1 duration-200">
+                    <div className="mt-3.5 w-full animate-in fade-in slide-in-from-top-1 duration-200">
                       {item.type === 'text' && (
                         <input 
                           type="text"
                           value={item.currentValue}
                           onChange={(e) => item.setter(e.target.value)}
                           placeholder={item.placeholder}
-                          className="w-full bg-vantage-text/5 border border-vantage-text/10 dark:border-white/10 rounded-xl p-2.5 text-xs text-vantage-text outline-none focus:border-vantage-green transition-all font-semibold"
+                          style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
+                          className="w-full bg-white dark:bg-[#1A1B1F] border border-neutral-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm text-vantage-text dark:text-neutral-200 outline-none focus:border-vantage-green focus:ring-1 focus:ring-vantage-green/20 transition-all"
                         />
                       )}
                       {item.type === 'date' && (
@@ -1112,14 +1152,16 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
                           type="date"
                           value={item.currentValue}
                           onChange={(e) => item.setter(e.target.value)}
-                          className="w-full bg-vantage-text/5 border border-vantage-text/10 dark:border-white/10 rounded-xl p-2.5 text-xs text-vantage-text outline-none focus:border-vantage-green transition-all font-semibold"
+                          style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
+                          className="w-full bg-white dark:bg-[#1A1B1F] border border-neutral-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm text-vantage-text dark:text-neutral-200 outline-none focus:border-vantage-green focus:ring-1 focus:ring-vantage-green/20 transition-all"
                         />
                       )}
                       {item.type === 'select' && (
                         <select 
                           value={item.currentValue}
                           onChange={(e) => item.setter(e.target.value)}
-                          className="w-full bg-vantage-text/5 border border-vantage-text/10 dark:border-white/10 rounded-xl p-2.5 text-xs text-vantage-text outline-none focus:border-vantage-green transition-all font-semibold appearance-none"
+                          style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
+                          className="w-full bg-white dark:bg-[#1A1B1F] border border-neutral-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm text-vantage-text dark:text-neutral-200 outline-none focus:border-vantage-green focus:ring-1 focus:ring-vantage-green/20 transition-all appearance-none cursor-pointer"
                         >
                           {item.options.map((opt: any) => (
                             <option key={typeof opt === 'string' ? opt : opt.value} value={typeof opt === 'string' ? opt : opt.value}>
@@ -1132,10 +1174,11 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
                         <button 
                           type="button"
                           onClick={() => item.setter(!item.currentValue)}
-                          className={`w-full flex items-center justify-between p-2 rounded-xl border transition-all ${item.currentValue ? 'bg-vantage-green/10 border-vantage-green/30' : 'bg-vantage-text/5 border-vantage-text/10'}`}
+                          style={{ fontFamily: "'Google Sans', sans-serif', sans-serif", fontWeight: 400 }}
+                          className={`w-full flex items-center justify-between px-3 py-2 rounded-xl border transition-all ${item.currentValue ? 'bg-vantage-green/10 border-vantage-green/30 text-[#065F46]' : 'bg-white dark:bg-[#1A1B1F] border-neutral-200 dark:border-white/10 text-neutral-500'}`}
                         >
-                          <span className="font-bold tracking-wide text-neutral-400" style={{ fontSize: 'clamp(8px, 1.8vw, 10px)' }}>
-                            {item.currentValue ? 'Active status' : 'Inactive status'}
+                          <span className="text-sm">
+                            {item.currentValue ? t('settings.active_status') : t('settings.inactive_status')}
                           </span>
                           <div className={`w-8 h-4 rounded-full relative transition-all ${item.currentValue ? 'bg-[#065F46] dark:bg-vantage-green' : 'bg-vantage-text/20'}`}>
                             <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all ${item.currentValue ? 'right-0.5 shadow-sm' : 'left-0.5'}`}></div>
@@ -1147,12 +1190,12 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
                           value={item.currentValue}
                           onChange={(e) => item.setter(e.target.value)}
                           placeholder={item.placeholder}
-                          className="w-full bg-vantage-text/5 border border-vantage-text/10 dark:border-white/10 rounded-xl p-2.5 text-xs text-vantage-text outline-none focus:border-vantage-green transition-all h-20 resize-none font-semibold leading-normal"
+                          style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
+                          className="w-full bg-white dark:bg-[#1A1B1F] border border-neutral-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm text-vantage-text dark:text-neutral-200 outline-none focus:border-vantage-green focus:ring-1 focus:ring-vantage-green/20 transition-all h-20 resize-none leading-normal"
                         />
                       )}
                     </div>
                   )}
-
                 </div>
               );
             })}
@@ -1165,22 +1208,22 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
         <div className="flex flex-col gap-1.5 md:col-span-2 w-full mt-2">
           <div className="flex items-center justify-between px-3">
             <span 
-              style={{ fontSize: 'clamp(11px, 3.2vw, 13px)' }}
+               style={{ fontSize: 'clamp(11px, 3.2vw, 13px)' }}
               className="font-bold text-vantage-muted tracking-wide"
             >
-              Currency configuration
+              {t('settings.currency_config')}
             </span>
           </div>
           
           <div className="mx-4 bg-neutral-950 text-[#F8F9FA] rounded-2xl border border-white/10 p-3.5 sm:p-5 shadow-2xl flex flex-col gap-4">
             <div className="flex flex-col gap-0.5 pb-1 border-b border-white/5">
-              <h3 className="font-bold tracking-tight text-white" style={{ fontSize: 'clamp(12px, 3.2vw, 14px)' }}>System currencies</h3>
-              <p className="text-[#999999] tracking-wide leading-none font-medium" style={{ fontSize: 'clamp(8px, 1.8vw, 9px)' }}>Preference protocols</p>
+              <h3 className="font-bold tracking-tight text-white" style={{ fontSize: 'clamp(12px, 3.2vw, 14px)' }}>{t('settings.system_currencies')}</h3>
+              <p className="text-[#999999] tracking-wide leading-none font-medium" style={{ fontSize: 'clamp(8px, 1.8vw, 9px)' }}>{t('settings.preference_protocols')}</p>
             </div>
 
             {/* Base Currency Selector */}
             <div className="flex flex-col gap-1">
-              <label className="font-bold text-neutral-400 tracking-wide px-1" style={{ fontSize: 'clamp(9px, 2.2vw, 11px)' }}>Base reporting currency</label>
+              <label className="font-bold text-neutral-400 tracking-wide px-1" style={{ fontSize: 'clamp(9px, 2.2vw, 11px)' }}>{t('settings.base_reporting_currency')}</label>
               <div className="relative">
                 <select
                   value={baseCurrency}
@@ -1195,21 +1238,21 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
                   <ChevronRight size={12} className="rotate-90" />
                 </div>
               </div>
-              <p className="text-neutral-500 tracking-wide px-1 font-medium" style={{ fontSize: 'clamp(8px, 1.8vw, 9px)' }}>Sets the reporting standard across all calculated net worth dashboards.</p>
+              <p className="text-neutral-500 tracking-wide px-1 font-medium" style={{ fontSize: 'clamp(8px, 1.8vw, 9px)' }}>{t('settings.reporting_standard_desc')}</p>
             </div>
 
             {/* Enable Currencies */}
             <div className="flex flex-col gap-2">
                <div className="flex items-center justify-between px-1">
-                  <label className="font-bold text-neutral-400 tracking-wide" style={{ fontSize: 'clamp(9px, 2.2vw, 11px)' }}>Enabled portfolios</label>
+                  <label className="font-bold text-neutral-400 tracking-wide" style={{ fontSize: 'clamp(9px, 2.2vw, 11px)' }}>{t('settings.enabled_portfolios')}</label>
                   <span className="text-vantage-green font-bold tracking-wide" style={{ fontSize: 'clamp(8px, 1.8vw, 9px)' }}>
-                     {enabledCurrencies.length || 1} Active
+                     {enabledCurrencies.length || 1} {t('settings.active')}
                   </span>
                </div>
 
                <input
                  type="text"
-                 placeholder="Filter Currencies (e.g. USD, EUR, PHP)..."
+                 placeholder={t('settings.currency_filter_placeholder')}
                  value={currencySearch}
                  onChange={(e) => setCurrencySearch(e.target.value.toUpperCase())}
                  className="w-full bg-neutral-900 border border-white/10 rounded-xl p-2.5 text-xs font-mono text-white focus:border-vantage-green outline-none transition-all placeholder:text-neutral-600"
@@ -1243,11 +1286,11 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
                         })}
                      </div>
                      {filteredCurrencies.length === 0 && (
-                       <span className="text-[10px] text-neutral-400 italic text-center py-4 block font-sans">No matching currency code found.</span>
+                       <span className="text-[10px] text-neutral-400 italic text-center py-4 block font-sans">{t('settings.no_matching_currency')}</span>
                      )}
                   </div>
                </div>
-               <p className="text-neutral-500 tracking-wide px-1 font-medium" style={{ fontSize: 'clamp(8px, 1.8vw, 9px)' }}>Selected currencies will appear in the account creation protocols.</p>
+               <p className="text-neutral-500 tracking-wide px-1 font-medium" style={{ fontSize: 'clamp(8px, 1.8vw, 9px)' }}>{t('settings.currency_usage_desc')}</p>
             </div>
           </div>
         </div>
@@ -1259,13 +1302,13 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
           style={{ fontFamily: "'Google Sans', sans-serif", fontSize: '10px', fontWeight: 400 }}
           className="text-neutral-400 dark:text-neutral-500 tracking-wide"
         >
-          YOUR FINANCES by ME Vantage v1.0.0
+          {t('settings.vantage_version')}
         </div>
         <div 
           style={{ fontFamily: "'Google Sans', sans-serif", fontSize: '9px', fontWeight: 400 }}
           className="text-neutral-400/50 dark:text-neutral-500/50 tracking-wide text-center max-w-[250px]"
         >
-          Designed for high-performance financial management
+          {t('settings.vantage_designed_for')}
         </div>
       </div>
 
@@ -1286,7 +1329,7 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
           style={{ fontSize: 'clamp(10px, 2.8vw, 12px)' }}
         >
           <LogOut size={14} className="shrink-0" />
-          <span className="truncate">Sign Out from Vantage AI</span>
+          <span className="truncate">{t('settings.sign_out_vantage')}</span>
         </button>
 
         <button 
@@ -1298,7 +1341,7 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
           style={{ fontSize: 'clamp(10px, 2.8vw, 12px)', fontFamily: "'Google Sans', sans-serif" }}
         >
           <ZapIcon size={14} className="shrink-0" />
-          <span className="truncate font-bold">Delete profile</span>
+          <span className="truncate font-bold">{t('settings.delete_profile')}</span>
         </button>
 
       <AnimatePresence>
@@ -1330,7 +1373,7 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
                     <ZapIcon size={18} className="text-red-500 fill-red-100 animate-pulse" />
                   </div>
                   <div>
-                    <h3 className="text-base font-bold text-neutral-900 leading-tight font-bold">Delete your profile</h3>
+                    <h3 className="text-base font-bold text-neutral-900 leading-tight font-bold">{t('settings.delete_profile')}</h3>
                     <p className="text-[10px] text-red-500 font-normal">This action is permanent and irreversible</p>
                   </div>
                 </div>
@@ -1401,10 +1444,10 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
                     {isDeletingProfile ? (
                       <div className="flex items-center gap-2">
                         <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        Deleting...
+                        {t('settings.deleting')}
                       </div>
                     ) : (
-                      "Delete completely"
+                      t('settings.delete_completely')
                     )}
                   </button>
                 </div>

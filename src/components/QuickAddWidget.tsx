@@ -312,11 +312,7 @@ export const QuickAddWidget: React.FC<QuickAddWidgetProps> = ({ uid }) => {
         });
 
         // Step 2: Increment mini-budget spent accumulation
-        trans.update(budgetRef, {
-          spentAmount: currentSpent + txAmount,
-          spent: currentSpent + txAmount, // legacy fallback Compatibility
-          updatedAt: serverTimestamp()
-        });
+        // (Removed spentAmount update: relying on ledger re-calculation)
 
         // Step 3: Insert the actual transaction ledger document
         trans.set(transactionRef, {
@@ -333,7 +329,8 @@ export const QuickAddWidget: React.FC<QuickAddWidgetProps> = ({ uid }) => {
           date: new Date().toISOString().split('T')[0],
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
-          emoji: getCategoryEmoji(budget.category)
+          emoji: getCategoryEmoji(budget.category),
+          budgetId: budget.id
         });
       });
 

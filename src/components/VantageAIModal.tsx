@@ -1,6 +1,6 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Send, Sparkles, MessageSquare, Crown } from 'lucide-react';
+import { X, Send, Sparkles, MessageSquare, Crown, Mic, Camera } from 'lucide-react';
 import { executeVantageAITask } from '../lib/VantageAIRouter';
 import { PremiumMarketingCard } from './PremiumMarketingCard';
 import { useTranslation } from 'react-i18next';
@@ -24,8 +24,51 @@ export const VantageAIModal: React.FC<VantageAIModalProps> = ({ isOpen, onClose,
   const [queryInput, setQueryInput] = useState('');
   const [activeQuery, setActiveQuery] = useState('');
   const [response, setResponse] = useState<string | null>(null);
+  const [responseHeader, setResponseHeader] = useState<string | null>(null);
+  const [responseFooter, setResponseFooter] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [isListening, setIsListening] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const recognitionRef = useRef<any>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+
+  const handleCameraChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      console.log("Photo captured:", e.target.files[0]);
+      // Placeholder for future receipt scanning integration in chat
+      setQueryInput(t('vantage_ai_modal.photo_attached', 'Photo attached: ') + e.target.files[0].name);
+    }
+  };
+
+  useEffect(() => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      recognitionRef.current = new SpeechRecognition();
+      recognitionRef.current.continuous = false;
+      recognitionRef.current.lang = 'en-US'; // Defaulting to English, could be adjusted to locale
+      recognitionRef.current.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        setQueryInput(transcript);
+        setIsListening(false);
+      };
+      recognitionRef.current.onerror = () => {
+        setIsListening(false);
+      };
+      recognitionRef.current.onend = () => {
+        setIsListening(false);
+      };
+    }
+  }, []);
+
+  const toggleListening = () => {
+    if (!recognitionRef.current) return;
+    if (isListening) {
+      recognitionRef.current.stop();
+    } else {
+      recognitionRef.current.start();
+      setIsListening(true);
+    }
+  };
 
   const suggestions = [
     t('vantage_ai_modal.q1'),
@@ -51,8 +94,10 @@ export const VantageAIModal: React.FC<VantageAIModalProps> = ({ isOpen, onClose,
     if (!text.trim()) return;
 
     const currentTokens = typeof profile?.vantageAiTokens === 'number' ? profile.vantageAiTokens : 0;
-    if (currentTokens <= 0) {
-      setResponse("No Vantage AI tokens remaining! Please upgrade your plan in settings to Tier 2 or Tier 3 to receive more tokens.");
+    const tokenCost = 50; // Comprehensive record reading and trend analysis advisor
+
+    if (currentTokens < tokenCost) {
+      setResponse(`No Vantage AI tokens remaining! This request requires ${tokenCost} tokens, but you only have ${currentTokens} remaining. Please upgrade your plan in settings to Tier 2 or Tier 3 to receive more tokens.`);
       return;
     }
 
@@ -97,6 +142,8 @@ export const VantageAIModal: React.FC<VantageAIModalProps> = ({ isOpen, onClose,
         Your goal is to provide precise, helpful, and clear financial insights based on the user's data and financial profile.
         Be helpful, professional, and maintain a premium tone. Use standard financial terminology.
         CRITICAL RULE: You must NEVER give direct recommendations or tips. You must ALWAYS phrase any advice, tips, suggestions, or insights as "Based on research...", "Online sources suggest...", "General industry research indicates...", or "According to financial research and online resources...". Never state recommendations or tips directly or as personal instructions.
+        CRITICAL SAFETY RESTRICTION: If the user asks for financial advice, investment advice, asset selection, or 'Should I' financial choices, you MUST prepend the following text to your response: '[ADVICE_HEADER]I cannot provide financial or investment advice.\n\n' AND append the following text to the end of your response block: '\n\n[ADVICE_FOOTER]DISCLAIMER: YOUR FINANCES IS AN AUTOMATED ANALYTICAL UTILITY OPERATED BY ME VANTAGE FZE LLC. INSIGHTS ARE SCALED DATA SUMMARIES GENERATED COMPLETELY FOR EDUCATIONAL AND ORGANIZATIONAL MANAGEMENT INTERFACES AND DO NOT CONSTITUTE REGISTERED FINANCIAL PLANNING, INVESTMENT ADVICE, OR TAX ASSURANCES. MANUALLY VERIFY ALL METRICS BEFORE UNDERTAKING ECONOMIC DEBT ALTERATIONS.'
+        If the user is NOT asking for financial advice, do NOT include these markers.
         Prioritize optimization strategies.
         If asked about affordability, correlate total liquidity vs average spending rate.
         Format your response in plain text.
@@ -105,12 +152,35 @@ export const VantageAIModal: React.FC<VantageAIModalProps> = ({ isOpen, onClose,
       const textResponse = await executeVantageAITask('portfolio_optimization', {
         prompt: `${context}\n\nUser Query: ${text}`
       });
-      setResponse(textResponse || t('vantage_ai_modal.neural_fail'));
+      
+      if (textResponse) {
+        const headerMatch = textResponse.match(/\[ADVICE_HEADER\]([\s\S]*?)(?=\[ADVICE_FOOTER\]|$)/);
+        const footerMatch = textResponse.match(/\[ADVICE_FOOTER\]([\s\S]*)/);
+        
+        let cleanedResponse = textResponse;
+        if (headerMatch) {
+           setResponseHeader(headerMatch[1].trim());
+           cleanedResponse = cleanedResponse.replace(headerMatch[0], '');
+        } else {
+           setResponseHeader(null);
+        }
+        
+        if (footerMatch) {
+           setResponseFooter(footerMatch[1].trim());
+           cleanedResponse = cleanedResponse.replace(footerMatch[0], '');
+        } else {
+           setResponseFooter(null);
+        }
+        
+        setResponse(cleanedResponse.trim() || t('vantage_ai_modal.neural_fail'));
+      } else {
+        setResponse(t('vantage_ai_modal.neural_fail'));
+      }
 
       // Decrement AI tokens dynamically
       if (profile?.uid) {
         const userRef = doc(db, 'users', profile.uid);
-        const nextTokens = Math.max(0, currentTokens - 100);
+        const nextTokens = Math.max(0, currentTokens - tokenCost);
         await updateDoc(userRef, { vantageAiTokens: nextTokens });
       }
     } catch (error: any) {
@@ -152,14 +222,14 @@ export const VantageAIModal: React.FC<VantageAIModalProps> = ({ isOpen, onClose,
                     </h2>
                     <div className="flex items-center gap-3 mt-1 flex-wrap">
                       <span className="text-[2vw] text-vantage-muted font-normal" style={{ fontFamily: "'Google Sans', sans-serif" }}>
-                        {hasAIAccess ? `Tokens remaining: ${typeof profile?.vantageAiTokens === 'number' ? profile.vantageAiTokens.toLocaleString() : '0'}` : t('vantage_ai_modal.premium_interface', 'Premium Assistant Interface')}
+                        {hasAIAccess ? t('vantage_ai_modal.tokens_remaining', { count: typeof profile?.vantageAiTokens === 'number' ? profile.vantageAiTokens.toLocaleString() : '0' }) : t('vantage_ai_modal.premium_interface', 'Premium Assistant Interface')}
                       </span>
                       <button
                         onClick={handleClaimSandboxTokens}
                         className="px-2.5 py-0.5 text-[1.5vw] md:text-xs font-bold text-vantage-green bg-vantage-green/10 border border-vantage-green/25 rounded-full hover:bg-vantage-green/20 transition-colors cursor-pointer"
                         style={{ fontFamily: "'Google Sans', sans-serif" }}
                       >
-                        Claim Sandbox Tokens
+                        {t('vantage_ai.claim_sandbox_tokens')}
                       </button>
                     </div>
                  </div>
@@ -248,7 +318,9 @@ export const VantageAIModal: React.FC<VantageAIModalProps> = ({ isOpen, onClose,
                           className="p-8 bg-vantage-text/5 border border-vantage-text/10 rounded-[1.5rem] relative shadow-sm overflow-hidden"
                         >
                            <div className="text-[3.5vw] text-vantage-text leading-relaxed font-medium whitespace-pre-wrap selection:bg-vantage-green/20 relative z-10 tracking-tight" style={{ fontFamily: "'Google Sans', sans-serif" }}>
-                              {response}
+                              {responseHeader && <div className="font-bold text-red-600 mb-4">{responseHeader}</div>}
+                               {response}
+                               {responseFooter && <div className="mt-4 text-xs text-vantage-muted italic">{responseFooter}</div>}
                            </div>
                            <div className="mt-10 pt-8 border-t border-vantage-text/10 flex justify-center relative z-10">
                               <button 
@@ -269,25 +341,45 @@ export const VantageAIModal: React.FC<VantageAIModalProps> = ({ isOpen, onClose,
             {/* Search Input Bar */}
             {!loading && hasAIAccess && (
               <div className="p-6 pt-4 bg-vantage-card border-t border-[#E1E8ED]">
-                <div className="relative group">
-                  <div className="relative flex items-center">
+                <div className="relative w-full">
                     <input 
                       type="text"
                       value={queryInput}
                       onChange={(e) => setQueryInput(e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && handleQuery(queryInput)}
                       placeholder={t('vantage_ai_modal.placeholder', 'Ask a question...')}
-                      className="w-full bg-white border border-vantage-text/10 rounded-[1.5rem] py-5 pl-7 pr-16 text-[3.5vw] text-vantage-text focus:border-vantage-green outline-none transition-all placeholder:text-vantage-muted font-bold shadow-sm"
+                      className="w-full bg-white border border-vantage-text/10 rounded-[1.5rem] py-5 pl-7 pr-52 text-[3.5vw] text-vantage-text focus:border-vantage-green outline-none transition-all placeholder:text-vantage-muted font-bold shadow-sm"
                       style={{ fontFamily: "'Google Sans', sans-serif" }}
                     />
-                    <button 
-                      onClick={() => handleQuery(queryInput)}
-                      disabled={!queryInput.trim()}
-                      className="absolute right-3.5 w-11 h-11 bg-vantage-green text-white rounded-xl hover:scale-105 active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center shadow-lg"
-                    >
-                      <Send size={22} strokeWidth={3} />
-                    </button>
-                  </div>
+                    <input
+                      ref={cameraInputRef}
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      onChange={handleCameraChange}
+                      className="hidden"
+                    />
+                    <div className="absolute right-2 top-1.5 flex items-center gap-1">
+                         <button
+                            onClick={() => cameraInputRef.current?.click()}
+                            className="w-11 h-11 bg-neutral-100 hover:bg-neutral-200 rounded-xl transition-all flex items-center justify-center"
+                         >
+                            <Camera size={22} className="text-vantage-muted" />
+                         </button>
+                         <button
+                            onClick={toggleListening}
+                            className={`w-11 h-11 rounded-xl transition-all flex items-center justify-center ${isListening ? 'bg-red-500 animate-pulse' : 'bg-neutral-100 hover:bg-neutral-200'}`}
+                         >
+                            <Mic size={22} className={isListening ? 'text-white' : 'text-vantage-muted'} />
+                         </button>
+                         <button 
+                          onClick={() => handleQuery(queryInput)}
+                          disabled={!queryInput.trim()}
+                          className="w-11 h-11 bg-vantage-green text-white rounded-xl hover:scale-105 active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center shadow-lg"
+                        >
+                          <Send size={22} strokeWidth={3} />
+                        </button>
+                    </div>
                 </div>
               </div>
             )}

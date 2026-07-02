@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { doc, onSnapshot, collection } from 'firebase/firestore';
+import { doc, onSnapshot, collection, updateDoc, getDoc } from 'firebase/firestore';
 import { auth, db } from './lib/firebase';
 import { Layout } from './components/Layout';
 import { Settings } from './components/Settings';
@@ -21,6 +21,7 @@ import { VantageAI } from './components/VantageAI';
 import { Transactions } from './components/Transactions';
 import { Analytics } from './components/Analytics';
 import { SalaryBreakdownModal } from './components/SalaryBreakdownModal';
+import { StreakAnimation } from './components/StreakAnimation';
 import { DEFAULT_RATES, syncExchangeRates } from './lib/exchangeRates';
 import { calculateAccountBalances } from './lib/trendUtils';
 
@@ -39,6 +40,10 @@ function AppContent() {
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<Tab>('essentials');
+  const [streakUpdated, setStreakUpdated] = useState(false);
+  const [showStreakAnimation, setShowStreakAnimation] = useState(false);
+  const [animatingStreak, setAnimatingStreak] = useState(0);
+  const [isBonusStreak, setIsBonusStreak] = useState(false);
   
   // Feature Modal Interface Toggles
   const [isAIModalOpen, setIsAIModalOpen] = useState(false);
@@ -122,15 +127,53 @@ function AppContent() {
   }, [isDebtMilestoneModalOpen]);
 
   useEffect(() => {
-    const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
+    const unsubscribeAuth = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
         
         // Establish real-time persistent data pipe to flat root profile schema
         const profileRef = doc(db, 'users', currentUser.uid);
-        const unsubProfile = onSnapshot(profileRef, (docSnap) => {
+
+        const unsubProfile = onSnapshot(profileRef, async (docSnap) => {
           if (docSnap.exists()) {
             const profileData = docSnap.data();
+            
+            // Streak Calculation Logic
+            const today = new Date().toISOString().split('T')[0];
+            const lastLoginDate = profileData.lastLoginDate || "";
+            
+            console.log("Streak check:", { today, lastLoginDate, dailyStreak: profileData.dailyStreak });
+            
+            if (lastLoginDate !== today) {
+              const yesterday = new Date();
+              yesterday.setDate(yesterday.getDate() - 1);
+              const yesterdayStr = yesterday.toISOString().split('T')[0];
+              
+              let newStreak = 1;
+              if (lastLoginDate === yesterdayStr) {
+                newStreak = (profileData.dailyStreak || 0) + 1;
+              }
+              
+              console.log("Updating streak:", newStreak);
+              const updateData: any = {
+                dailyStreak: newStreak,
+                lastLoginDate: today
+              };
+
+              if (newStreak % 30 === 0) {
+                updateData.aiTokens = (profileData.aiTokens || 0) + 500;
+                setIsBonusStreak(true);
+              } else {
+                setIsBonusStreak(false);
+              }
+
+              await updateDoc(profileRef, updateData);
+              setStreakUpdated(true);
+              setAnimatingStreak(newStreak);
+              setShowStreakAnimation(true);
+              setTimeout(() => setStreakUpdated(false), 3000);
+            }
+
             setProfile({ uid: currentUser.uid, ...profileData });
             
             // Sync saved language if available
@@ -217,7 +260,7 @@ function AppContent() {
     <Layout
       activeTab={activeTab}
       setActiveTab={setActiveTab}
-      isPremium={!!(profile.isPremium || (profile.subscriptionTier && profile.subscriptionTier.toLowerCase() !== 'free'))}
+      isPremium={!!(profile.isPremium || (profile.subscriptionTier && profile.subscriptionTier.toLowerCase() !== 'free') || (profile.vantageAiUnlockedUntil && new Date(profile.vantageAiUnlockedUntil).getTime() > Date.now()))}
       isAIModalOpen={isAIModalOpen}
       setIsAIModalOpen={setIsAIModalOpen}
       isTxModalOpen={isTxModalOpen}
@@ -228,7 +271,15 @@ function AppContent() {
       accounts={accounts}
       transactions={transactions}
       accountBalances={accountBalances}
+      streakUpdated={streakUpdated}
     >
+      {showStreakAnimation && (
+        <StreakAnimation 
+          streak={animatingStreak} 
+          isBonusStreak={isBonusStreak}
+          onComplete={() => setShowStreakAnimation(false)} 
+        />
+      )}
      <AnimatePresence mode="wait">
   {activeTab === 'essentials' && (
     <motion.div key="essentials" {...animation}>
@@ -267,6 +318,7 @@ function AppContent() {
 {activeTab === 'analytics' && (
   <motion.div key="analytics" {...animation}>
     <Analytics 
+      onNavigateToTransactions={() => setActiveTab('activity')}
       profile={profile} 
       allTransactions={transactions || []} // This must be exactly 'allTransactions'
       accounts={accounts || []} 

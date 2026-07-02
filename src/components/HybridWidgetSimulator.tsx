@@ -75,8 +75,7 @@ export const HybridWidgetSimulator: React.FC<HybridWidgetSimulatorProps> = ({ ui
         });
 
         trans.update(budgetRef, {
-          spentAmount: currentSpent + txAmount,
-          spent: currentSpent + txAmount,
+          // (Removed spentAmount update: relying on ledger re-calculation)
           updatedAt: serverTimestamp()
         });
 
@@ -93,7 +92,8 @@ export const HybridWidgetSimulator: React.FC<HybridWidgetSimulatorProps> = ({ ui
           notes: `Hybrid Widget: ${budget.categoryTitle}`,
           date: new Date().toISOString().split('T')[0],
           createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp()
+          updatedAt: serverTimestamp(),
+          budgetId: budget.id
         });
       });
 

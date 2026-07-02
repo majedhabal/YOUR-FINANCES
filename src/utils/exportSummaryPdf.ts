@@ -7,6 +7,8 @@ interface ExportSummaryPdfParams {
   allTransactions: any[];
   accountBalances: Record<string, number>;
   exchangeRates: Record<string, number>;
+  t: (key: string, options?: any) => string;
+  language?: string;
 }
 
 export const exportSummaryPdf = ({
@@ -14,9 +16,16 @@ export const exportSummaryPdf = ({
   accounts,
   allTransactions,
   accountBalances,
-  exchangeRates
+  exchangeRates,
+  t,
+  language = 'en'
 }: ExportSummaryPdfParams) => {
   const doc = new jsPDF('p', 'mm', 'a4');
+  
+  // Basic font setup - helvetica is default but we try to be safe
+  // Note: For non-latin characters (Arabic, Russian), we ideally need to embed a font.
+  // For now we use the standard ones.
+  doc.setFont("helvetica", "normal");
   let y = 20;
   const leftMargin = 15;
   const pageWidth = 210;
@@ -35,7 +44,7 @@ export const exportSummaryPdf = ({
   const baseRateToAED = getRateToAED(primaryCurrency);
 
   const formatCurrency = (amount: number, currencyCode: string = primaryCurrency) => {
-    return new Intl.NumberFormat(undefined, {
+    return new Intl.NumberFormat(language, {
       style: 'currency',
       currency: currencyCode,
       minimumFractionDigits: 2,
@@ -57,7 +66,7 @@ export const exportSummaryPdf = ({
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
     doc.setTextColor(120, 130, 140);
-    doc.text("YOUR FINANCES by ME Vantage - Executive Summary", leftMargin, 12);
+    doc.text(`YOUR FINANCES by ME Vantage - ${t('analytics.pdf.executive_summary')}`, leftMargin, 12);
     doc.setDrawColor(225, 230, 235);
     doc.setLineWidth(0.25);
     doc.line(leftMargin, 14, rightMargin, 14);
@@ -76,8 +85,37 @@ export const exportSummaryPdf = ({
       doc.line(leftMargin, 282, rightMargin, 282);
       
       doc.text("yourfinances.me", leftMargin, 287);
-      doc.text(`Page ${i} of ${pageCount}`, rightMargin - 15, 287, { align: 'right' });
+      doc.text(`${t('analytics.pdf.page')} ${i} ${t('analytics.pdf.of')} ${pageCount}`, rightMargin - 15, 287, { align: 'right' });
     }
+  };
+
+  const translateAccountType = (type: string, bankType?: string) => {
+    const tMap: Record<string, string> = {
+      'bank': 'bank',
+      'Bank': 'bank',
+      'cash': 'cash',
+      'Cash': 'cash',
+      'investment': 'investment',
+      'Investment': 'investment',
+      'credit': 'credit',
+      'Credit Card': 'credit',
+      'loan': 'loan',
+      'Personal Loan': 'loan',
+      'mortgage': 'mortgage',
+      'Mortgage': 'mortgage',
+      'Checking': 'checking',
+      'Savings': 'savings'
+    };
+    const key = tMap[type] || tMap[bankType || ''] || 'bank';
+    return t(`account_detail.${key}`, { defaultValue: type || bankType || "Bank" });
+  };
+
+  const translateTxType = (type: string) => {
+    const lowType = type?.toLowerCase();
+    if (lowType === 'income') return t('analytics.income');
+    if (lowType === 'expense') return t('budget_modal.expense');
+    if (lowType === 'transfer') return t('budget_modal.transfer');
+    return type;
   };
 
   // --- PAGE 1: HEADER & MASTER OVERVIEW ---
@@ -92,7 +130,7 @@ export const exportSummaryPdf = ({
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
   doc.setTextColor(74, 85, 104);
-  doc.text("Your Future Financial Freedom starts with YOUR FINANCES", leftMargin, y);
+  doc.text(t('analytics.pdf.tagline'), leftMargin, y);
   y += 10;
 
   // Thin separator
@@ -105,7 +143,7 @@ export const exportSummaryPdf = ({
   doc.setFont("helvetica", "bold");
   doc.setFontSize(13);
   doc.setTextColor(30, 41, 59);
-  doc.text("Personal Monthly Financial & Spending Summary", leftMargin, y);
+  doc.text(t('analytics.pdf.title'), leftMargin, y);
   y += 6;
 
   doc.setFont("helvetica", "normal");
@@ -113,10 +151,10 @@ export const exportSummaryPdf = ({
   doc.setTextColor(115, 125, 135);
   const userName = profile?.fullName || profile?.displayName || "John Doe";
   const userEmail = profile?.email || "john@vantage.ae";
-  const formattedDate = new Date().toLocaleDateString(undefined, { dateStyle: 'long' });
-  doc.text(`Investor Profile: ${userName} (${userEmail})`, leftMargin, y);
+  const formattedDate = new Date().toLocaleDateString(language, { dateStyle: 'long' });
+  doc.text(`${t('analytics.pdf.investor_profile')}: ${userName} (${userEmail})`, leftMargin, y);
   y += 5;
-  doc.text(`Statement Period: Last 30 Days | Generated on: ${formattedDate}`, leftMargin, y);
+  doc.text(`${t('analytics.pdf.statement_period')}: ${t('analytics.pdf.last_30_days')} | ${t('analytics.pdf.generated_on')}: ${formattedDate}`, leftMargin, y);
   y += 10;
 
   // -- CALCULATING CORE STATS --
@@ -160,7 +198,7 @@ export const exportSummaryPdf = ({
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
   doc.setTextColor(30, 41, 59);
-  doc.text("Financial Situation Dashboard", leftMargin, y);
+  doc.text(t('analytics.pdf.financial_situation'), leftMargin, y);
   y += 6;
 
   // Background box for situation cards
@@ -173,7 +211,7 @@ export const exportSummaryPdf = ({
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
   doc.setTextColor(115, 125, 135);
-  doc.text("Net Worth", leftMargin + 8, y + 8);
+  doc.text(t('analytics.pdf.net_worth'), leftMargin + 8, y + 8);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(14);
   doc.setTextColor(30, 41, 59);
@@ -182,7 +220,7 @@ export const exportSummaryPdf = ({
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
   doc.setTextColor(115, 125, 135);
-  doc.text("Cash on Hand / Liquidity", leftMargin + 8, y + 26);
+  doc.text(t('analytics.pdf.cash_on_hand'), leftMargin + 8, y + 26);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(14);
   doc.setTextColor(30, 41, 59);
@@ -193,7 +231,7 @@ export const exportSummaryPdf = ({
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
   doc.setTextColor(115, 125, 135);
-  doc.text("Total Core Investments", rightColX, y + 8);
+  doc.text(t('analytics.pdf.total_investments'), rightColX, y + 8);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(14);
   doc.setTextColor(30, 41, 59);
@@ -202,7 +240,7 @@ export const exportSummaryPdf = ({
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9);
   doc.setTextColor(115, 125, 135);
-  doc.text("Outstanding Debt Liabilities", rightColX, y + 26);
+  doc.text(t('analytics.pdf.outstanding_debt'), rightColX, y + 26);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(14);
   doc.setTextColor(totalOutstandingLiabilitiesVal > 0 ? 220 : 30, totalOutstandingLiabilitiesVal > 0 ? 38 : 41, totalOutstandingLiabilitiesVal > 0 ? 38 : 59);
@@ -215,7 +253,7 @@ export const exportSummaryPdf = ({
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
   doc.setTextColor(30, 41, 59);
-  doc.text("Asset & Liability Accounts Breakdown", leftMargin, y);
+  doc.text(t('analytics.pdf.accounts_breakdown'), leftMargin, y);
   y += 6;
 
   // Table Headers
@@ -225,10 +263,10 @@ export const exportSummaryPdf = ({
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9);
   doc.setTextColor(74, 85, 104);
-  doc.text("Account name", leftMargin + 4, y + 5.5);
-  doc.text("Classification", leftMargin + 65, y + 5.5);
-  doc.text("Currency", leftMargin + 105, y + 5.5);
-  doc.text("Current Balance", rightMargin - 4, y + 5.5, { align: 'right' });
+  doc.text(t('analytics.pdf.account_name'), leftMargin + 4, y + 5.5);
+  doc.text(t('analytics.pdf.classification'), leftMargin + 65, y + 5.5);
+  doc.text(t('analytics.pdf.currency'), leftMargin + 105, y + 5.5);
+  doc.text(t('analytics.pdf.current_balance'), rightMargin - 4, y + 5.5, { align: 'right' });
   
   y += 8;
 
@@ -247,7 +285,7 @@ export const exportSummaryPdf = ({
     // Safety truncation for account names
     const truncateName = nameStr.length > 28 ? nameStr.substring(0, 26) + "..." : nameStr;
     doc.text(truncateName, leftMargin + 4, y + 5.5);
-    doc.text(typeStr, leftMargin + 65, y + 5.5);
+    doc.text(translateAccountType(typeStr, acc.bankAccountType), leftMargin + 65, y + 5.5);
     doc.text(currencyStr, leftMargin + 105, y + 5.5);
 
     // Dynamic coloring for numbers: liability is highlighted slightly, balance numbers bolded
@@ -308,7 +346,7 @@ export const exportSummaryPdf = ({
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
   doc.setTextColor(30, 41, 59);
-  doc.text("30-Day Cash Flow Realized Performance", leftMargin, y);
+  doc.text(t('analytics.pdf.cash_flow_performance'), leftMargin, y);
   y += 6;
 
   // Mini Cash Flow Grid Indicator
@@ -319,7 +357,7 @@ export const exportSummaryPdf = ({
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
   doc.setTextColor(115, 125, 135);
-  doc.text("Total Month Realized Income", leftMargin + 6, y + 7);
+  doc.text(t('analytics.pdf.total_income'), leftMargin + 6, y + 7);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
   doc.setTextColor(21, 128, 61);
@@ -328,7 +366,7 @@ export const exportSummaryPdf = ({
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
   doc.setTextColor(115, 125, 135);
-  doc.text("Total Month Realized Expenses", leftMargin + 68, y + 7);
+  doc.text(t('analytics.pdf.total_expenses'), leftMargin + 68, y + 7);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
   doc.setTextColor(185, 28, 28);
@@ -337,7 +375,7 @@ export const exportSummaryPdf = ({
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
   doc.setTextColor(115, 125, 135);
-  doc.text("Net Balance Savings", leftMargin + 130, y + 7);
+  doc.text(t('analytics.pdf.net_savings'), leftMargin + 130, y + 7);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
   doc.setTextColor(netSavingsBase >= 0 ? 21 : 185, netSavingsBase >= 0 ? 128 : 28, netSavingsBase >= 0 ? 61 : 28);
@@ -358,14 +396,14 @@ export const exportSummaryPdf = ({
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
   doc.setTextColor(30, 41, 59);
-  doc.text("Categorized Spending Analytics (Last 30 Days)", leftMargin, y);
+  doc.text(t('analytics.pdf.spending_analytics'), leftMargin, y);
   y += 6;
 
   if (sortedSpending.length === 0) {
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
     doc.setTextColor(120, 130, 140);
-    doc.text("No realized expenses recorded in active statement window.", leftMargin + 4, y + 5);
+    doc.text(t('analytics.pdf.no_expenses'), leftMargin + 4, y + 5);
     y += 12;
   } else {
     // Table Headers
@@ -375,9 +413,9 @@ export const exportSummaryPdf = ({
     doc.setFont("helvetica", "bold");
     doc.setFontSize(9);
     doc.setTextColor(74, 85, 104);
-    doc.text("Category / Target Group", leftMargin + 4, y + 5.5);
-    doc.text("Percentage of Outflow", leftMargin + 85, y + 5.5);
-    doc.text("Total Value Outflow", rightMargin - 4, y + 5.5, { align: 'right' });
+    doc.text(t('analytics.pdf.category_group'), leftMargin + 4, y + 5.5);
+    doc.text(t('analytics.pdf.percentage_outflow'), leftMargin + 85, y + 5.5);
+    doc.text(t('analytics.pdf.total_outflow'), rightMargin - 4, y + 5.5, { align: 'right' });
     
     y += 8;
 
@@ -409,7 +447,7 @@ export const exportSummaryPdf = ({
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
   doc.setTextColor(30, 41, 59);
-  doc.text("Recent Transaction History (Statement List)", leftMargin, y);
+  doc.text(t('analytics.pdf.transaction_history'), leftMargin, y);
   y += 6;
 
   const sortedRecentTxs = [...allTransactions]
@@ -421,7 +459,7 @@ export const exportSummaryPdf = ({
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
     doc.setTextColor(120, 130, 140);
-    doc.text("No transactions recorded in the journal registry.", leftMargin + 4, y + 5);
+    doc.text(t('analytics.pdf.no_transactions'), leftMargin + 4, y + 5);
     y += 12;
   } else {
     // Table Headers
@@ -431,19 +469,19 @@ export const exportSummaryPdf = ({
     doc.setFont("helvetica", "bold");
     doc.setFontSize(9);
     doc.setTextColor(74, 85, 104);
-    doc.text("Date", leftMargin + 4, y + 5.5);
-    doc.text("Type", leftMargin + 26, y + 5.5);
-    doc.text("Category (Sub)", leftMargin + 50, y + 5.5);
-    doc.text("Matching Notes / Payee", leftMargin + 105, y + 5.5);
-    doc.text("Amount Match", rightMargin - 4, y + 5.5, { align: 'right' });
+    doc.text(t('analytics.pdf.date'), leftMargin + 4, y + 5.5);
+    doc.text(t('analytics.pdf.type'), leftMargin + 26, y + 5.5);
+    doc.text(t('analytics.pdf.category_sub'), leftMargin + 50, y + 5.5);
+    doc.text(t('analytics.pdf.notes_payee'), leftMargin + 105, y + 5.5);
+    doc.text(t('analytics.pdf.amount_match'), rightMargin - 4, y + 5.5, { align: 'right' });
     
     y += 8;
 
     sortedRecentTxs.forEach(tx => {
       checkPageBreak(12);
       
-      const txDateStr = new Date(tx.date).toLocaleDateString(undefined, { month: 'short', day: '2-digit' });
-      const txTypeStr = tx.type ? (tx.type.charAt(0).toUpperCase() + tx.type.slice(1)) : "Expense";
+      const txDateStr = new Date(tx.date).toLocaleDateString(language, { month: 'short', day: '2-digit' });
+      const txTypeStr = translateTxType(tx.type);
       const txCatField = tx.category || "General";
       const txSubCat = tx.subCategory || tx.subcategory || "";
       const catSubStr = txSubCat ? `${txCatField} (${txSubCat})` : txCatField;
@@ -494,7 +532,7 @@ export const exportSummaryPdf = ({
   doc.setFontSize(8);
   doc.setTextColor(120, 130, 140);
   
-  const disclosureText = "Confidential financial intelligence file. Prepared by YOUR FINANCES analytics gateway. This report compiles ledger-backed active bank balances, dynamic cash updates, and investment values. For full predictive models and real-time alerts, access your active web dashboard at yourfinances.me.";
+  const disclosureText = t('analytics.pdf.disclosure');
   doc.text(disclosureText, leftMargin, y + 4, { maxWidth: printableWidth, align: 'justify' });
 
   // Draw footer text and page numbers across all pages

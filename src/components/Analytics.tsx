@@ -38,7 +38,8 @@ import {
   ShoppingCart,
   Car,
   Heart,
-  ShieldAlert
+  ShieldAlert,
+  ReceiptText
 } from 'lucide-react';
 import { 
   LineChart, 
@@ -116,7 +117,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
   allTransactions,
   accountBalances
 }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   // Navigation stream state ('now' = Current Situation, 'past' = Historical Analysis, 'future' = Forecast Predictions)
   const [activeTimeline, setActiveTimeline] = useState<'now' | 'past' | 'future'>('now');
 
@@ -160,7 +161,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
   const [aiForecastLoading, setAiForecastLoading] = useState(false);
   const [expandedTypes, setExpandedTypes] = useState<Record<string, boolean>>({});
 
-  const isPremium = !!(profile?.isPremium || (profile?.subscriptionTier && profile.subscriptionTier.toLowerCase() !== 'free'));
+  const isPremium = !!(profile?.isPremium || (profile?.subscriptionTier && profile.subscriptionTier.toLowerCase() !== 'free') || (profile?.vantageAiUnlockedUntil && new Date(profile.vantageAiUnlockedUntil).getTime() > Date.now()));
   const now = useMemo(() => new Date(), []);
 
   // Fetch sub-collections
@@ -384,7 +385,8 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
     for (let i = 6; i >= 0; i--) {
       const d = new Date();
       d.setDate(tempNow.getDate() - i);
-      const label = d.toLocaleDateString(undefined, { weekday: 'short' });
+      const dayKey = d.toLocaleDateString('en-US', { weekday: 'short' }).toLowerCase();
+      const label = t(`common.weekdays.${dayKey}`);
       const entry: any = { name: label };
       
       activeCurrenciesList.forEach(curr => {
@@ -677,7 +679,9 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
       } else if (grouping === 'interval') {
         const txDate = new Date(tx.date);
         if (timeHorizon === '7d') {
-          key = txDate.toLocaleDateString(undefined, { weekday: 'short', month: 'numeric', day: 'numeric' });
+          const dayKey = txDate.toLocaleDateString('en-US', { weekday: 'short' }).toLowerCase();
+          const dayName = t(`common.weekdays.${dayKey}`);
+          key = `${dayName}, ${txDate.toLocaleDateString(undefined, { month: 'numeric', day: 'numeric' })}`;
         } else if (timeHorizon === '30d') {
           key = `Wk ${Math.ceil(txDate.getDate() / 7)} (${txDate.toLocaleString(undefined, { month: 'short' })})`;
         } else {
@@ -1109,12 +1113,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
      });
 
      if (results.length === 0) {
-       return [
-         { category: 'Groceries', amount: 2450.00, changePct: -4.2, icon: 'shopping_cart', subText: 'Supermarkets & Dining' },
-         { category: 'Transport', amount: 890.00, changePct: 12.5, icon: 'directions_car', subText: 'Fuel & Public Transport' },
-         { category: 'Rent & Utilities', amount: 4200.00, changePct: 0.0, icon: 'home', subText: 'Fixed monthly costs' },
-         { category: 'Health & Wellness', amount: 320.00, changePct: -8.1, icon: 'fitness_center', subText: 'Gym & Insurance' }
-       ];
+       return [];
      }
 
      return results.sort((a, b) => b.amount - a.amount);
@@ -1142,7 +1141,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
             style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
             className="text-2xl text-[#111c2d] tracking-tight"
           >
-            Your Analytics
+            {t('analytics.your_analytics')}
           </h1>
           <div className="flex bg-[#f0f3ff] p-1 rounded-xl border border-[#c1c9bf]/35 self-start">
             {(['1M', '3M', '6M', '1Y', 'All'] as const).map(range => (
@@ -1156,7 +1155,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
                     : 'text-gray-500 hover:text-gray-800 hover:bg-[#f0f3ff]'
                 }`}
               >
-                {range}
+                {t(`analytics.time_ranges.${range}`)}
               </button>
             ))}
             {/* Added a placeholder for the timeline switcher buttons translation in the component - user intent is translate all labels */}
@@ -1309,7 +1308,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
                     style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
                     className="text-xs text-on-surface-variant transition-colors group-hover:text-black mt-1 block whitespace-nowrap font-normal"
                   >
-                    {d.month}
+                    {t('months_short.' + d.month, d.month)}
                   </span>
 
                   {/* Interactive Custom Bar Tooltip */}
@@ -1319,7 +1318,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
                         style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
                         className="text-[11px] text-slate-400 border-b border-slate-800 pb-1 mb-1 font-bold"
                       >
-                        {d.month} {t('analytics.performance')}
+                        {t('months_short.' + d.month, d.month)} {t('analytics.performance')}
                       </p>
                       <div className="flex items-center justify-between gap-3 text-[10px]">
                         <span className="flex items-center gap-1 font-sans text-slate-300">
@@ -1367,65 +1366,78 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
             <button 
               style={{ fontFamily: "'Google Sans', sans-serif" }}
               className="text-[#366945] text-xs font-bold hover:underline"
+              onClick={() => onNavigateToTransactions?.()}
             >
               {t('analytics.view_details')}
             </button>
           </div>
 
           <div className="bg-white border border-[#c1c9bf]/30 rounded-2xl overflow-hidden shadow-sm divide-y divide-[#c1c9bf]/10">
-            {historicalCategorySpending.map((item, idx) => (
-              <div 
-                key={idx}
-                className="flex items-center justify-between p-5 hover:bg-[#f0f3ff]/50 transition-colors"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-full bg-[#e8eeff] flex items-center justify-center text-[#414941] shrink-0">
-                    {item.icon === 'shopping_cart' && <ShoppingCart size={18} />}
-                    {item.icon === 'directions_car' && <Car size={18} />}
-                    {item.icon === 'home' && <Home size={18} />}
-                    {item.icon === 'fitness_center' && <Heart size={18} />}
-                    {item.icon === 'trending_up' && <TrendingUp size={18} />}
-                  </div>
-                  <div>
-                    <span 
-                      style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
-                      className="text-sm text-[#111c2d] block font-normal"
-                    >
-                      {item.category}
-                    </span>
-                    <span 
-                      style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
-                      className="text-xs text-gray-500 block mt-0.5 font-normal"
-                    >
-                      {item.subText}
-                    </span>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <span 
-                    style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
-                    className="text-sm text-[#111c2d] block font-bold"
-                  >
-                    {formatCurrency(item.amount)}
-                  </span>
-                  <span 
-                    style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
-                    className={`text-xs flex items-center justify-end gap-0.5 mt-0.5 font-normal ${
-                      item.changePct <= 0 ? 'text-[#366945]' : 'text-[#ba1a1a]'
-                    }`}
-                  >
-                    {item.changePct <= 0 ? (
-                      <TrendingDown size={14} />
-                    ) : (
-                      <TrendingUp size={14} />
-                    )}
-                    <span>
-                      {item.changePct !== 0 ? Math.abs(item.changePct).toFixed(1) : '0.0'}%
-                    </span>
-                  </span>
-                </div>
+            {historicalCategorySpending.length === 0 ? (
+              <div className="p-8 text-center flex flex-col items-center gap-3">
+                <ReceiptText size={32} className="text-gray-300" />
+                <p 
+                  style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
+                  className="text-sm text-gray-500 font-normal"
+                >
+                  {t('analytics.no_data')}
+                </p>
               </div>
-            ))}
+            ) : (
+              historicalCategorySpending.map((item, idx) => (
+                <div 
+                  key={`${item.category}-${item.amount}-${idx}`}
+                  className="flex items-center justify-between p-5 hover:bg-[#f0f3ff]/50 transition-colors"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-full bg-[#e8eeff] flex items-center justify-center text-[#414941] shrink-0">
+                      {item.icon === 'shopping_cart' && <ShoppingCart size={18} />}
+                      {item.icon === 'directions_car' && <Car size={18} />}
+                      {item.icon === 'home' && <Home size={18} />}
+                      {item.icon === 'fitness_center' && <Heart size={18} />}
+                      {item.icon === 'trending_up' && <TrendingUp size={18} />}
+                    </div>
+                    <div>
+                      <span 
+                        style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
+                        className="text-sm text-[#111c2d] block font-normal"
+                      >
+                        {item.category}
+                      </span>
+                      <span 
+                        style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
+                        className="text-xs text-gray-500 block mt-0.5 font-normal"
+                      >
+                        {item.subText}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span 
+                      style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
+                      className="text-sm text-[#111c2d] block font-bold"
+                    >
+                      {formatCurrency(item.amount)}
+                    </span>
+                    <span 
+                      style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
+                      className={`text-xs flex items-center justify-end gap-0.5 mt-0.5 font-normal ${
+                        item.changePct <= 0 ? 'text-[#366945]' : 'text-[#ba1a1a]'
+                      }`}
+                    >
+                      {item.changePct <= 0 ? (
+                        <TrendingDown size={14} />
+                      ) : (
+                        <TrendingUp size={14} />
+                      )}
+                      <span>
+                        {item.changePct !== 0 ? Math.abs(item.changePct).toFixed(1) : '0.0'}%
+                      </span>
+                    </span>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </motion.div>
@@ -1760,6 +1772,18 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
 
   return (
     <div className="analytics-view mx-auto w-full md:w-[35%] md:max-w-[35%] lg:w-[35%] lg:max-w-[35%] xl:w-[35%] xl:max-w-[35%] px-4 flex flex-col gap-3.5 pb-24 md:pb-12 bg-[#FAFCFD] p-[5px]">
+      {/* Welcome Header */}
+      <header className="w-full flex justify-between items-center pt-8 px-4 md:px-6">
+         <div className="flex flex-col gap-1">
+           <h2 className="tracking-tight text-neutral-900 leading-none">
+             <span className="font-bold text-[28px] text-neutral-900" style={{ fontFamily: "'Google Sans', sans-serif" }}>{t('analytics.overview_title')}</span>
+           </h2>
+           <p className="text-[14px] text-neutral-500 font-normal" style={{ fontFamily: "'Google Sans', sans-serif" }}>
+             {t('analytics.overview_description')}
+           </p>
+         </div>
+       </header>
+
       {/* Dynamic styling overlays strictly obeying rules: Inter / Google Sans fonts without bold unless header */}
       <style>{`
         .analytics-view h1 {
@@ -2237,6 +2261,22 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
         }
 
         /* Direct selectors for user styling interaction requests */
+        div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2),
+        div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) {
+          background: none !important;
+          border: none !important;
+          box-shadow: none !important;
+          padding: 0 !important;
+        }
+        div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1),
+        div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1) {
+          display: none !important;
+        }
+        div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2),
+        div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) {
+          margin-right: 0px !important;
+          margin-left: -10px !important;
+        }
         div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(5) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(3) > button:nth-of-type(1),
         div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(5) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(3) > button:nth-of-type(1),
         div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(5) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(3) > button:nth-of-type(2),
@@ -2288,6 +2328,8 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
           padding-bottom: 10px !important;
           padding-top: 10px !important;
         }
+        div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(3) > div:nth-of-type(2) {
+        }
       `}</style>
       <div className="analytics-ambient-background">
         <div className="ambient-orb" style={{ top: '-10%', left: '-10%', width: '40%', height: '40%' }} />
@@ -2314,7 +2356,9 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
               accounts,
               allTransactions,
               accountBalances,
-              exchangeRates
+              exchangeRates,
+              t,
+              language: i18n.language
             })}
             style={{ fontFamily: "'Google Sans', sans-serif'" }}
             className="flex items-center gap-1.5 px-3.5 py-2 rounded-full border border-[#E1E8ED] bg-white text-slate-800 hover:bg-neutral-50 hover:border-neutral-300 active:scale-95 transition-all text-xs font-bold leading-none select-none cursor-pointer shadow-[0_1px_2px_rgba(0,0,0,0.05)] animate-fade-in"
@@ -2327,7 +2371,10 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
           {isPremium && (
             <button 
               id="analytics-gemini-advisory-btn"
-              onClick={() => setActiveTimeline('future')}
+              onClick={() => {
+                const prompt = "Please analyze and forecast my financial data based on my historical data, upcoming expenses, and income.";
+                window.dispatchEvent(new CustomEvent('open-vantage-ai-chat', { detail: { prompt } }));
+              }}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black text-white hover:bg-neutral-850 active:scale-95 transition-all text-xs font-normal tracking-wide"
             >
               <Sparkles size={11} className="text-vantage-gold" />
@@ -2734,7 +2781,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
                             style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
                             className="text-xs bg-[#a6ddb1] text-[#00210d] px-3 py-1 rounded-full whitespace-nowrap"
                           >
-                            +{formatCurrencyLocal(extraSavings)}/mo
+                            +{formatCurrencyLocal(extraSavings)}/{t('analytics.mo')}
                           </span>
                         </div>
                         <input 
@@ -2791,10 +2838,10 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
                     </div>
                   </section>
 
-                  {/* Future Cash Flow Chart Card - md:col-span-7 */}
+                  {/* Future Cash Flow Chart Card - md:col-span-12 */}
                   <section 
                     style={{ backgroundColor: '#FFFFFF' }}
-                    className="md:col-span-7 border border-neutral-200/60 rounded-2xl p-6 min-h-[380px] flex flex-col justify-between shadow-sm"
+                    className="md:col-span-12 border border-neutral-200/60 rounded-2xl p-6 min-h-[380px] flex flex-col justify-between shadow-sm"
                   >
                     <div>
                       <div className="flex justify-between items-start mb-4 select-none">
@@ -2901,7 +2948,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
                           style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
                           className="text-lg text-[#366945]"
                         >
-                          +{formatCurrencyLocal(displaySurplusVal)}/mo
+                          +{formatCurrencyLocal(displaySurplusVal)}/{t('analytics.mo')}
                         </p>
                       </div>
                       <div className="select-none">
@@ -2921,112 +2968,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
                     </div>
                   </section>
 
-                  {/* AI Predictions Section - md:col-span-5 */}
-                  <section className="md:col-span-5 flex flex-col gap-4">
-                    {/* Item 1: Vantage AI Prediction */}
-                    <div 
-                      style={{ backgroundColor: '#FFFFFF' }}
-                      className="border border-neutral-200/60 rounded-2xl p-5 flex items-start gap-4 shadow-sm"
-                    >
-                      <div className="w-10 h-10 rounded-full bg-[#366945]/10 flex items-center justify-center text-[#366945] shrink-0">
-                        <Sparkles size={18} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 
-                          style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
-                          className="text-xs text-gray-900"
-                        >
-                          {t('analytics.vantage_ai_prediction')}
-                        </h4>
-                        <p 
-                          style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
-                          className="text-xs text-gray-500 mt-1.5 leading-relaxed font-normal"
-                        >
-                          {t('analytics.emergency_fund_prediction', { 
-                            amount: <span className="font-bold text-[#366945]">{formatCurrencyLocal(targetAmount)}</span>, 
-                            date: <span className="font-bold text-gray-800">{targetDateStr}</span> 
-                          })}
-                        </p>
-                        <div className="mt-3.5 bg-neutral-100 h-1 w-full rounded-full overflow-hidden select-none">
-                          <div 
-                            style={{ width: `${emProgressPct}%` }}
-                            className="bg-[#366945] h-full rounded-full transition-all duration-300"
-                          />
-                        </div>
-                        <p 
-                          style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
-                          className="text-[10px] text-gray-400 mt-1.5 block font-normal"
-                        >
-                          {t('analytics.goal_reached', { percentage: emProgressPct })}
-                        </p>
-                      </div>
-                    </div>
 
-                    {/* Item 2: Optimization Insight */}
-                    <div 
-                      style={{ backgroundColor: '#FFFFFF' }}
-                      className="border border-neutral-200/60 rounded-2xl p-5 flex items-start gap-4 shadow-sm"
-                    >
-                      <div className="w-10 h-10 rounded-full bg-[#366945]/10 flex items-center justify-center text-[#366945] shrink-0">
-                        <Lightbulb size={18} />
-                      </div>
-                      <div>
-                        <h4 
-                          style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
-                          className="text-xs text-gray-900"
-                        >
-                          {t('analytics.optimization_insight')}
-                        </h4>
-                        <p 
-                          style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
-                          className="text-xs text-gray-500 mt-1.5 leading-relaxed font-normal"
-                        >
-                          {t('analytics.optimization_insight_description', {
-                            percentage: '15',
-                            amount: <span className="font-bold text-[#366945]">{formatCurrencyLocal(subSavingsReward)}</span>
-                          })}
-                        </p>
-                        <button 
-                          onClick={() => {
-                            setGrouping('category');
-                            setActiveTimeline('past');
-                          }}
-                          style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
-                          className="mt-3.5 text-xs text-[#366945] flex items-center hover:underline focus:outline-none font-normal"
-                        >
-                          <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}>{t('analytics.view_suggested_cuts')}</span>
-                          <ChevronRight size={14} className="ml-0.5" />
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Item 3: Risk Assessment */}
-                    <div 
-                      style={{ backgroundColor: '#FFFFFF' }}
-                      className="border border-neutral-200/60 rounded-2xl p-5 flex items-start gap-4 shadow-sm"
-                    >
-                      <div className="w-10 h-10 rounded-full bg-[#366945]/10 flex items-center justify-center text-[#366945] shrink-0">
-                        <AlertTriangle size={18} />
-                      </div>
-                      <div>
-                        <h4 
-                          style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
-                          className="text-xs text-gray-900"
-                        >
-                          {t('analytics.risk_assessment')}
-                        </h4>
-                        <p 
-                          style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
-                          className="text-xs text-gray-500 mt-1.5 leading-relaxed font-normal"
-                        >
-                          {t('analytics.risk_assessment_description', {
-                            risk_level: <span className="text-emerald-700 font-bold font-sans">{t('analytics.low_risk')}</span>,
-                            month: 'December'
-                          })}
-                        </p>
-                      </div>
-                    </div>
-                  </section>
 
                   {/* Footnote / Context disclaimer - md:col-span-12 */}
                   <div className="md:col-span-12 text-center mt-4">

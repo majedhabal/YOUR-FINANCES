@@ -85,6 +85,14 @@ export const BudgetCard: React.FC<BudgetCardProps> = ({
   const progress = Math.min(ratio * 100, 100);
   const isOver = spentVal > maxLimit;
   
+  const progressColor = isOver 
+    ? 'bg-rose-500' 
+    : progress >= 90 
+      ? 'bg-red-500' 
+      : progress >= 80 
+        ? 'bg-amber-400' 
+        : 'bg-[#A6DDB1]';
+  
   const rawTitle = budget.subcategory 
     ? budget.subcategory 
     : (budget.categoryTitle?.includes(' > ') 
@@ -163,7 +171,7 @@ export const BudgetCard: React.FC<BudgetCardProps> = ({
       <div className={uiOverrides?.progressBarContainer || "w-full h-1.5 bg-neutral-100 rounded-full overflow-hidden"}>
         <div 
           style={{ width: `${progress}%` }}
-          className={uiOverrides?.progressBarFill || `h-full ${isOver ? 'bg-rose-500' : 'bg-[#A6DDB1]'}`}
+          className={uiOverrides?.progressBarFill || `h-full ${progressColor}`}
         />
       </div>
     </motion.div>

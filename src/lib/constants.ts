@@ -70,7 +70,7 @@ export const MASTER_CATEGORIES: CategoryDef[] = [
     name: 'Others',
     nature: 'Want',
     emoji: '📁',
-    subcategories: ['Others', 'Missing']
+    subcategories: ['Others', 'Missing', 'Starting Balance']
   }
 ];
 

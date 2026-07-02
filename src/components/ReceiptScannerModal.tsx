@@ -138,6 +138,11 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
     setError(null);
 
     try {
+      const currentTokens = typeof profile?.vantageAiTokens === 'number' ? profile.vantageAiTokens : 0;
+      if (currentTokens < 100) {
+        throw new Error(t('receipt_scanner.insufficient_tokens', 'Insufficient Vantage AI tokens remaining. Receipt scanning requires 100 tokens. Please claim sandbox tokens or upgrade your subscription.'));
+      }
+
       const payload = getBase64DataAndType();
       if (!payload) throw new Error(t('receipt_scanner.invalid_image_data', 'Invalid image file data.'));
 
@@ -196,6 +201,13 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
           subcategory: matchedSubcategory,
           notes: extracted.notes || extracted.summary || ''
         });
+
+        // Decrement 100 tokens dynamically on successful scan
+        if (profile?.uid) {
+          const userRef = doc(db, 'users', profile.uid);
+          const nextTokens = Math.max(0, currentTokens - 100);
+          await updateDoc(userRef, { vantageAiTokens: nextTokens });
+        }
       } else {
         throw new Error(t('receipt_scanner.parsing_failed', 'Gemini AI was unable to parse this receipt format.'));
       }

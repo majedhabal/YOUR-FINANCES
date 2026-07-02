@@ -53,3 +53,13 @@ html, body, #root {
 .text-human-sentence::first-letter {
   text-transform: uppercase;
 }
+
+/* Ensure BudgetDetailView sits correctly at the top of the viewport when header/footer are hidden */
+div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) {
+  margin-top: 0px !important;
+}
+
+/* Hide the requested element */
+div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(6) > div:nth-of-type(2) > div:nth-of-type(1) {
+  display: none !important;
+}

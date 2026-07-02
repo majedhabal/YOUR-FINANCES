@@ -361,7 +361,7 @@ export const RecurringTransactionsView: React.FC<RecurringTransactionsViewProps>
                 className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-2 ${activeTab === 'income' ? 'bg-white text-emerald-600 shadow-sm' : 'text-neutral-500 hover:text-neutral-700'}`}
               >
                 <ArrowUpRight size={14} />
-                Income ({recurring.filter(r => {
+                {t('recurring_transactions_view.income', 'Income')} ({recurring.filter(r => {
                   const tLow = r.type?.toLowerCase();
                   const ttLow = r.transactionType?.toLowerCase();
                   return tLow === 'income' || tLow === 'inflow' || ttLow === 'income' || ttLow === 'inflow';
@@ -372,7 +372,7 @@ export const RecurringTransactionsView: React.FC<RecurringTransactionsViewProps>
                 className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-2 ${activeTab === 'expense' ? 'bg-white text-neutral-900 shadow-sm' : 'text-neutral-500 hover:text-neutral-700'}`}
               >
                 <ArrowDownLeft size={14} />
-                Expense ({recurring.filter(r => {
+                {t('recurring_transactions_view.expense', 'Expense')} ({recurring.filter(r => {
                   const tLow = r.type?.toLowerCase();
                   const ttLow = r.transactionType?.toLowerCase();
                   return tLow === 'expense' || tLow === 'outflow' || ttLow === 'expense' || ttLow === 'outflow' || tLow === 'outflow';
@@ -383,7 +383,7 @@ export const RecurringTransactionsView: React.FC<RecurringTransactionsViewProps>
                 className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-2 ${activeTab === 'transfer' ? 'bg-white text-blue-600 shadow-sm' : 'text-neutral-500 hover:text-neutral-700'}`}
               >
                 <ArrowRightLeft size={14} />
-                Transfer ({recurring.filter(r => {
+                {t('recurring_transactions_view.transfer', 'Transfer')} ({recurring.filter(r => {
                   const tLow = r.type?.toLowerCase();
                   const ttLow = r.transactionType?.toLowerCase();
                   return tLow === 'transfer' || ttLow === 'transfer';
@@ -573,14 +573,14 @@ export const RecurringTransactionsView: React.FC<RecurringTransactionsViewProps>
             <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
               <div className="flex items-center gap-2">
                 <Calendar size={14} className="text-neutral-500" />
-                <span className="text-xs font-bold text-neutral-800">Linked calendar live preview</span>
+                <span className="text-xs font-bold text-neutral-800">{t('recurring_transactions_view.live_preview_title')}</span>
               </div>
             </div>
 
             {fetchingEvents ? (
               <div className="py-12 flex flex-col items-center gap-3">
                 <RefreshCw className="text-neutral-400 animate-spin" size={16} />
-                <span className="text-[10px] text-neutral-400 font-normal">Accessing event stream...</span>
+                <span className="text-[10px] text-neutral-400 font-normal">{t('recurring_transactions_view.accessing_stream')}</span>
               </div>
             ) : !googleToken ? (
               <div className="py-8 flex flex-col items-center text-center gap-3">
@@ -588,23 +588,23 @@ export const RecurringTransactionsView: React.FC<RecurringTransactionsViewProps>
                   📅
                 </div>
                 <div className="flex flex-col gap-1 max-w-[200px]">
-                  <span className="text-xs font-bold text-neutral-700">Calendar view inactive</span>
+                  <span className="text-xs font-bold text-neutral-700">{t('recurring_transactions_view.calendar_inactive')}</span>
                   <p className="text-[10px] text-neutral-400 leading-normal font-normal">
-                    Connect your workspace above to fetch dynamic scheduled events live from your suite.
+                    {t('recurring_transactions_view.connect_workspace_desc')}
                   </p>
                 </div>
                 <button
                   onClick={handleLinkGoogle}
                   className="mt-2 py-1.5 px-3 bg-neutral-900 hover:bg-neutral-800 rounded-lg text-[10px] font-bold text-white transition-all min-h-[28px]"
                 >
-                  Authorize connection
+                  {t('recurring_transactions_view.sync_authorize')}
                 </button>
               </div>
             ) : previewEvents.length === 0 ? (
               <div className="py-8 flex flex-col items-center text-center gap-2">
-                <span className="text-[10px] font-bold text-neutral-500 italic">No events mapped</span>
+                <span className="text-[10px] font-bold text-neutral-500 italic">{t('recurring_transactions_view.no_events_mapped')}</span>
                 <p className="text-[10px] text-neutral-400 leading-relaxed max-w-[190px] font-normal">
-                  Your synchronized items will render here once schedule routines are active.
+                  {t('recurring_transactions_view.no_events_desc')}
                 </p>
               </div>
             ) : (

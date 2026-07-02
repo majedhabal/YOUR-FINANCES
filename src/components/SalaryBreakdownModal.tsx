@@ -1224,7 +1224,7 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
                     </div>
 
                     {/* SECTION HEADER: SELECT INCOME TRANSACTIONS */}
-                    <div className="bg-white border border-[#E1E8ED] rounded-[20px] p-4 space-y-3">
+                    <div className="space-y-3">
                       <div 
                         onClick={() => {
                           if (dbRecurringIncomes.length > 0) {
@@ -1391,7 +1391,7 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
                     
                     {/* Header with link button to manage active categories precisely */}
                     <div className="flex items-center justify-between px-0.5">
-                      <span className="text-[clamp(10px,2.5vw,12px)] text-neutral-400 font-normal">{t('budget_allocation', 'Budget Allocation')}</span>
+                      <span className="text-[clamp(10px,2.5vw,12px)] text-neutral-400 font-normal">{t('salary_breakdown_modal.budget_allocation', 'Budget Allocation')}</span>
                       <button
                         type="button"
                         onClick={() => setIsManageCategoriesOpen(true)}
@@ -1403,7 +1403,7 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
                     </div>
 
                     {/* Inner lists wrapper */}
-                    <div className="space-y-1.5 overflow-y-auto max-h-[220px] scrollbar-hide pr-1 border border-[#E1E8ED] rounded-[12px] p-2">
+                    <div className="space-y-1.5 pr-1 border border-[#E1E8ED] rounded-[12px] p-2">
                       {allAvailableEnvelopesCatalog
                         .filter((cat) => activeEnvelopes.includes(cat.key))
                         .map((cat, index) => {
@@ -1461,13 +1461,13 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
                   {/* Calculations Row Details */}
                   <div className="grid grid-cols-3 gap-2 py-4 text-center w-full bg-[#EAEDF5] rounded-xl mb-4">
                     <div className="flex flex-col gap-1">
-                      <span className="text-[10px] text-[#57606F] font-normal" style={{ fontFamily: "'Google Sans', sans-serif" }}>{t("salary_breakdown_modal.income")}</span>
+                      <span className="text-[10px] text-[#57606F] font-normal" style={{ fontFamily: "'Google Sans', sans-serif" }}>{t("salary_breakdown_modal.income", "Salary Breakdown")}</span>
                       <span className="text-[16px] text-[#1E2229] font-bold" style={{ fontFamily: "'Google Sans', sans-serif" }}>
                         {calculatedIncomeDrop.toLocaleString(undefined, { minimumFractionDigits: 0 })}
                       </span>
                     </div>
                     <div className="flex flex-col gap-1 border-l border-[#D1D5DB]">
-                      <span className="text-[10px] text-[#57606F] font-normal" style={{ fontFamily: "'Google Sans', sans-serif" }}>{t("salary_breakdown_modal.expenses")}</span>
+                      <span className="text-[10px] text-[#57606F] font-normal" style={{ fontFamily: "'Google Sans', sans-serif" }}>{t("salary_breakdown_modal.expenses", "Allocation")}</span>
                       <span className="text-[16px] text-[#1E2229] font-bold" style={{ fontFamily: "'Google Sans', sans-serif" }}>
                         {sumAllocated.toLocaleString(undefined, { minimumFractionDigits: 0 })}
                       </span>
@@ -1537,7 +1537,7 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
                           <span>{t("salary_breakdown_modal.applied")}</span>
                         </>
                       ) : (
-                        <span>{t("salary_breakdown_modal.confirm_allocation")}</span>
+                        <span>{t("salary_breakdown_modal.confirm_allocation", "Confirm")}</span>
                       )}
                     </button>
                   </div>
@@ -1595,14 +1595,14 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
                             style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 500 }}
                             className="text-[clamp(1rem,2.2vw,1.2rem)] text-[#1E2229]"
                           >
-                            Account Fund Transfers
+                            {t('salary_breakdown_modal.account_fund_transfers', 'Account Fund Transfers')}
                           </span>
                         </div>
                         <span 
                           style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
                           className="text-[clamp(0.8rem,1.8vw,0.95rem)] text-neutral-500"
                         >
-                          {expandedCategories.includes('ACCOUNT FUND TRANSFERS') ? 'Collapse' : 'Expand'}
+                          {expandedCategories.includes('ACCOUNT FUND TRANSFERS') ? t('common.collapse', 'Collapse') : t('common.expand', 'Expand')}
                         </span>
                       </div>
 
@@ -1610,7 +1610,7 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
                       {expandedCategories.includes('ACCOUNT FUND TRANSFERS') && (
                         <div className="p-4 border-t border-neutral-100 space-y-2.5">
                           <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[clamp(0.8rem,1.8vw,0.95rem)] text-[#1E2229] leading-relaxed">
-                            Select destination accounts for this transfer allocation:
+                            {t('salary_breakdown_modal.select_destination_accounts', 'Select destination accounts for this transfer allocation:')}
                           </p>
                           
                           <div className="grid grid-cols-1 gap-1.5">
@@ -1670,7 +1670,7 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
                                 style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 500 }}
                                 className="text-[clamp(1rem,2.2vw,1.2rem)] text-[#1E2229]"
                               >
-                                {t(`categories.${cat.name}`, displayCatName) as string}
+                                {t(`categories.${cat.name.replace(/ & /g, '_and_')}`, displayCatName) as string}
                               </span>
                             </div>
                             <span 
@@ -1764,7 +1764,7 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
                     style={{ backgroundColor: '#A6DDB1', color: '#1E293B', fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
                     className="px-4 py-2 text-[10px] rounded-xl font-normal hover:brightness-105 active:scale-95 transition-all cursor-pointer text-center w-full"
                   >
-                    Save Category Configuration (Active: {activeEnvelopes.length})
+                    {t('salary_breakdown_modal.save_category_configuration', 'Save Category Configuration (Active: {{count}})', { count: activeEnvelopes.length })}
                   </button>
                 </div>
               </motion.div>

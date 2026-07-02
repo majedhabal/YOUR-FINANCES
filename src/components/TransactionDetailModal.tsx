@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Edit3, Trash2, Save, Calendar, Tag, GitBranch, ArrowDownLeft, ArrowUpRight, ArrowRightLeft, Building2, Menu, Clock } from 'lucide-react';
-import { doc, updateDoc, deleteDoc, serverTimestamp, collection, getDocs, query, writeBatch, increment } from 'firebase/firestore';
+import { doc, updateDoc, deleteDoc, serverTimestamp, collection, getDocs, query, where, writeBatch, increment } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { MASTER_CATEGORIES } from '../lib/constants';
 import { ConfirmationModal } from './ConfirmationModal';
 import { useTranslation } from 'react-i18next';
-import { formatLabel } from '../lib/stringUtils';
+import { formatLabel, translateCategoryOrSubcategory } from '../lib/stringUtils';
 
 interface TransactionDetailModalProps {
   tx: any;
@@ -26,6 +26,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [accounts, setAccounts] = useState<any[]>([]);
+  const [budget, setBudget] = useState<any>(null);
 
   // Balanced Form Fields
   const [notes, setNotes] = useState(tx?.notes || '');
@@ -53,18 +54,34 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
   }, [uid]);
 
   useEffect(() => {
+    const fetchBudget = async () => {
+      if (!uid || !tx?.budgetId) return;
+      try {
+        const budgetRef = doc(db, 'users', uid, 'miniBudgets', tx.budgetId);
+        const snap = await getDocs(query(collection(db, 'users', uid, 'miniBudgets'), where('budgetId', '==', tx.budgetId)));
+        if (!snap.empty) {
+          setBudget(snap.docs[0].data());
+        }
+      } catch (e) {
+        console.error("Error fetching budget:", e);
+      }
+    };
+    fetchBudget();
+  }, [uid, tx?.budgetId]);
+
+  useEffect(() => {
     if (initialTx) {
       setTx(initialTx);
       setNotes(initialTx.notes || '');
-      setCategory(initialTx.category || '');
-      setSubCategory(initialTx.subCategory || initialTx.subcategory || '');
+      setCategory(initialTx.category || budget?.category || '');
+      setSubCategory(initialTx.subCategory || initialTx.subcategory || budget?.subcategory || '');
       setSelectedAccountId(initialTx.accountId || '');
       setTime(initialTx.time || '09:41 AM');
       setConfirmationDate(initialTx.confirmationDate || initialTx.date || '');
       setDate(initialTx.date || '');
       setAmount(initialTx.amount || 0);
     }
-  }, [initialTx]);
+  }, [initialTx, budget]);
 
   useEffect(() => {
     if (isOpen) {
@@ -153,24 +170,49 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
     if (!uid || !tx?.id) return;
     setLoading(true);
     try {
-      const isConfirmed = initialTx.status === 'confirmed';
+      const isConfirmed = initialTx.status?.toLowerCase() === 'confirmed';
+      const isTransfer = initialTx.type?.toLowerCase() === 'transfer';
       const batch = writeBatch(db);
 
       if (isConfirmed) {
-        const accRef = doc(db, 'users', uid, 'accounts', initialTx.accountId);
-        const isInflow = initialTx.type === 'Inflow' || initialTx.type === 'income';
-        const amountRevert = isInflow ? -Number(initialTx.amount || 0) : Number(initialTx.amount || 0);
-        batch.update(accRef, {
-          currentBalance: increment(amountRevert),
-          updatedAt: serverTimestamp()
+        // Revert balance for primary account
+        if (initialTx.accountId) {
+          const accRef = doc(db, 'users', uid, 'accounts', initialTx.accountId);
+          const isInflow = initialTx.type?.toLowerCase() === 'inflow' || initialTx.type?.toLowerCase() === 'income';
+          const amountRevert = isInflow ? -Number(initialTx.amount || 0) : Number(initialTx.amount || 0);
+          batch.update(accRef, {
+            currentBalance: increment(amountRevert),
+            updatedAt: serverTimestamp()
+          });
+        }
+
+        // Handle Transfer mirror revert
+        if (isTransfer) {
+          const toAccId = initialTx.toAccountId;
+          if (toAccId) {
+            const toAccRef = doc(db, 'users', uid, 'accounts', toAccId);
+            const amountRevert = -Number(initialTx.amount || 0); // Receiver always subtracts what it got
+            batch.update(toAccRef, {
+              currentBalance: increment(amountRevert),
+              updatedAt: serverTimestamp()
+            });
+          }
+        }
+      }
+
+      // Handle mirrors for transfers if any
+      if (isTransfer) {
+        const q = query(collection(db, 'users', uid, 'transactions'), where("transferId", "==", tx.id));
+        const mirrorSnap = await getDocs(q);
+        mirrorSnap.forEach(d => {
+          batch.delete(d.ref);
         });
       }
 
       if (onDelete) {
-        // If external onDelete provided, it might do its own logic, but we still want atomic revert above
-        // For safety, we commit the revert first if confirmed
-        if (isConfirmed) await batch.commit(); 
-        await onDelete(tx.id, tx.recurringId, tx.type === 'Transfer');
+        // Commit revert and mirror deletion first
+        await batch.commit(); 
+        await onDelete(tx.id, tx.recurringId, isTransfer);
       } else {
         batch.delete(doc(db, 'users', uid, 'transactions', tx.id));
         await batch.commit();
@@ -188,20 +230,32 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
   const isInflow = tx.type === 'Inflow' || tx.type === 'income';
   const isTransfer = tx.type === 'Transfer' || tx.type === 'transfer';
 
+  const translateValue = (val: string) => {
+    if (!val) return val;
+    const trimmed = val.trim();
+    const lower = trimmed.toLowerCase();
+    if (lower === 'starting balance' || lower === 'starting_balance') return t('transaction_detail_modal.starting_balance');
+    if (lower === 'salary account' || lower === 'salary_account') return t('transaction_detail_modal.salary_account');
+    if (lower === 'adjustment' || lower === 'adjustment') return t('transaction_detail_modal.adjustment');
+    return val;
+  };
+
   const formatCategoryLabel = (categoryKey: string) => {
-    const raw = (categoryKey || 'Discretionary');
+    const raw = (categoryKey || 'Others');
     const label = raw.includes('__') ? raw.split('__').pop()! : 
                  raw.includes(' — ') ? raw.split(' — ').pop()! :
                  raw.includes(' > ') ? raw.split(' > ').pop()! : raw;
-    return formatLabel(label);
+    
+    return translateCategoryOrSubcategory(label, t);
   };
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[9999] flex items-center justify-center p-[clamp(0.75rem,3vw,1.5rem)] box-border">
+      <div key="tx-detail-modal-wrapper" className="fixed inset-0 z-[9999] flex items-center justify-center p-[clamp(0.75rem,3vw,1.5rem)] box-border">
         
         {/* Soft blur backdrop overlay mask */}
         <motion.div 
+          key="tx-modal-backdrop"
           initial={{ opacity: 0 }} 
           animate={{ opacity: 1 }} 
           exit={{ opacity: 0 }} 
@@ -211,6 +265,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
 
         {/* High-Fidelity Professional Window Card Shell */}
         <motion.div
+          key="tx-modal-content"
           initial={{ opacity: 0, scale: 0.96, y: 15 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.96, y: 15 }}
@@ -251,7 +306,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
                 {isInflow ? '+' : '-'}{amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </h2>
             )}
-            <span className="text-[11px] font-bold text-[#414941] mt-3 font-sans opacity-60">VERIFIED STATEMENT VALUE VECTOR</span>
+            <span className="text-[11px] font-bold text-[#414941] mt-3 font-sans opacity-60">{t('transaction_detail_modal.verified_statement')}</span>
             <div className="w-full max-w-[280px] h-[1px] bg-gradient-to-r from-transparent via-neutral-100 to-transparent mt-6" />
           </div>
 
@@ -264,7 +319,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
                 {isEditing ? (
                   <input type="text" value={notes} onChange={(e) => setNotes(e.target.value)} className="w-full border-none outline-none font-sans font-bold py-1" />
                 ) : (
-                  <span className="truncate font-sans">{notes || 'Transaction Description'}</span>
+                  <span className="truncate font-sans">{translateValue(notes) || t('transaction_detail_modal.description_memo')}</span>
                 )}
               </div>
             </div>
@@ -273,7 +328,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
               <label className="text-[10px] font-bold text-[#414941] pl-1 font-sans opacity-70">{t('transaction_detail_modal.tracking_envelope')}</label>
               <div className="p-4 rounded-xl bg-white border border-[#F2F4F7] text-sm font-bold text-[#111c2d] flex items-center gap-3 shadow-[0_2px_8px_rgba(0,0,0,0.02)] min-h-[56px] box-border transition-all">
                 <Tag size={18} className="text-[#366945] shrink-0" />
-                {isEditing ? (
+                {isEditing && tx.classification !== 'starting_balance' ? (
                   <select 
                     value={category} 
                     onChange={(e) => {
@@ -283,12 +338,14 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
                       const def = MASTER_CATEGORIES.find(c => c.name === newCat);
                       if (def && def.subcategories.length > 0) {
                         setSubCategory(def.subcategories[0]);
+                      } else {
+                        setSubCategory('General');
                       }
                     }} 
                     className="w-full bg-white border-none text-sm font-bold text-[#111c2d] outline-none cursor-pointer p-0 font-sans"
                   >
                     {MASTER_CATEGORIES.map((def) => (
-                      <option key={def.name} value={def.name}>{def.name}</option>
+                      <option key={def.name} value={def.name}>{translateCategoryOrSubcategory(def.name, t)}</option>
                     ))}
                   </select>
                 ) : (
@@ -298,27 +355,27 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className="text-[10px] font-bold text-[#414941] pl-1 font-sans opacity-70">Sub-Category</label>
+              <label className="text-[10px] font-bold text-[#414941] pl-1 font-sans opacity-70">{t('transaction_detail_modal.sub_category')}</label>
               <div className="p-4 rounded-xl bg-white border border-[#F2F4F7] text-sm font-bold text-[#111c2d] flex items-center gap-3 shadow-[0_2px_8px_rgba(0,0,0,0.02)] min-h-[56px] box-border">
                 <Menu size={18} className="text-[#366945] shrink-0" />
-                {isEditing ? (
+                {isEditing && tx.classification !== 'starting_balance' ? (
                   <select 
                     value={subCategory} 
                     onChange={(e) => setSubCategory(e.target.value)} 
                     className="w-full bg-white border-none text-sm font-bold text-[#111c2d] outline-none cursor-pointer p-0 font-sans"
                   >
-                    {(MASTER_CATEGORIES.find(c => c.name === category)?.subcategories || []).map((sub) => (
-                      <option key={sub} value={sub}>{sub}</option>
+                    {(MASTER_CATEGORIES.find(c => c.name === category)?.subcategories || ['General']).map((sub) => (
+                      <option key={sub} value={sub}>{translateCategoryOrSubcategory(sub, t)}</option>
                     ))}
                   </select>
                 ) : (
-                  <span className="font-sans">{formatLabel(subCategory || 'Groceries')}</span>
+                  <span className="font-sans">{translateCategoryOrSubcategory(subCategory || 'General', t)}</span>
                 )}
               </div>
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className="text-[10px] font-bold text-[#414941] pl-1 font-sans opacity-70">Account</label>
+              <label className="text-[10px] font-bold text-[#414941] pl-1 font-sans opacity-70">{t('transaction_detail_modal.salary_account')}</label>
               <div className="p-4 rounded-xl bg-white border border-[#F2F4F7] text-sm font-bold text-[#111c2d] flex items-center gap-3 shadow-[0_2px_8px_rgba(0,0,0,0.02)] min-h-[56px] box-border">
                 <Building2 size={18} className="text-[#366945] shrink-0" />
                 {isEditing ? (
@@ -337,14 +394,14 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
                   </select>
                 ) : (
                   <span className="font-sans">
-                    {accounts.find(a => (a.accountId || a.id) === selectedAccountId)?.name || tx.accountName || 'Checking Account'}
+                    {translateValue(accounts.find(a => (a.accountId || a.id) === selectedAccountId)?.name || tx.accountName || t('common.checking_account'))}
                   </span>
                 )}
               </div>
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className="text-[10px] font-bold text-[#414941] pl-1 font-sans opacity-70">Date</label>
+              <label className="text-[10px] font-bold text-[#414941] pl-1 font-sans opacity-70">{t('transaction_detail_modal.date', 'Date')}</label>
               <div className="p-4 rounded-xl bg-white border border-[#F2F4F7] text-sm font-bold text-[#111c2d] flex items-center gap-3 shadow-[0_2px_8px_rgba(0,0,0,0.02)] min-h-[56px] box-border">
                 <Calendar size={18} className="text-[#366945] shrink-0" />
                 {isEditing ? (
@@ -356,7 +413,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className="text-[10px] font-bold text-[#414941] pl-1 font-sans opacity-70">Time</label>
+              <label className="text-[10px] font-bold text-[#414941] pl-1 font-sans opacity-70">{t('transaction_detail_modal.time', 'Time')}</label>
               <div className="p-4 rounded-xl bg-white border border-[#F2F4F7] text-sm font-bold text-[#111c2d] flex items-center gap-3 shadow-[0_2px_8px_rgba(0,0,0,0.02)] min-h-[56px] box-border">
                 <Clock size={18} className="text-[#366945] shrink-0" />
                 {isEditing ? (
@@ -368,7 +425,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className="text-[10px] font-bold text-[#414941] pl-1 font-sans opacity-70">Confirmation Date</label>
+              <label className="text-[10px] font-bold text-[#414941] pl-1 font-sans opacity-70">{t('transaction_detail_modal.confirmation_date')}</label>
               <div className="p-4 rounded-xl bg-white border border-[#F2F4F7] text-sm font-bold text-[#111c2d] flex items-center gap-3 shadow-[0_2px_8_rgba(0,0,0,0.02)] min-h-[56px] box-border">
                 <Calendar size={18} className="text-[#366945] shrink-0" />
                 {isEditing ? (
@@ -377,12 +434,6 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
                   <span className="font-sans">{confirmationDate || tx.date}</span>
                 )}
               </div>
-            </div>
-
-            <div className="p-5 rounded-xl bg-[#f0f3ff] border border-[#dce4ff] mt-4 shadow-sm">
-              <p className="text-[13px] leading-relaxed text-[#414941] m-0 italic font-medium font-sans">
-                This entry has been validated against the primary vector ledger. No further manual verification is required for this cycle.
-              </p>
             </div>
           </div>
 
@@ -395,15 +446,15 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
               </>
             ) : (
               <>
-                <button type="button" onClick={() => setIsEditing(true)} className="flex-1 py-4 border-2 border-[#366945] rounded-xl bg-white text-[#366945] text-sm font-bold hover:bg-[#366945]/5 transition-colors cursor-pointer font-sans">Edit Transaction</button>
-                <button type="button" onClick={() => setIsDeleteConfirmOpen(true)} className="flex-1 py-4 rounded-xl border-2 border-[#ba1a1a] bg-white text-[#ba1a1a] text-sm font-bold hover:bg-[#ba1a1a]/5 transition-colors cursor-pointer font-sans">Delete Transaction</button>
+                <button type="button" onClick={() => setIsEditing(true)} className="flex-1 py-4 border-2 border-[#366945] rounded-xl bg-white text-[#366945] text-sm font-bold hover:bg-[#366945]/5 transition-colors cursor-pointer font-sans">{t('transaction_detail_modal.edit_transaction')}</button>
+                <button type="button" onClick={() => setIsDeleteConfirmOpen(true)} className="flex-1 py-4 rounded-xl border-2 border-[#ba1a1a] bg-white text-[#ba1a1a] text-sm font-bold hover:bg-[#ba1a1a]/5 transition-colors cursor-pointer font-sans">{t('transaction_detail_modal.delete_transaction')}</button>
               </>
             )}
           </div>
         </motion.div>
       </div>
 
-      <ConfirmationModal isOpen={isDeleteConfirmOpen} onClose={() => setIsDeleteConfirmOpen(false)} onConfirm={handleDeleteTrigger} title={t('transaction_detail_modal.delete_title')} message={t('transaction_detail_modal.delete_message')} confirmLabel={t('transaction_detail_modal.delete_confirm')} isLoading={loading} />
+      <ConfirmationModal key="tx-delete-confirm" isOpen={isDeleteConfirmOpen} onClose={() => setIsDeleteConfirmOpen(false)} onConfirm={handleDeleteTrigger} title={t('transaction_detail_modal.delete_title')} message={t('transaction_detail_modal.delete_message')} confirmLabel={t('transaction_detail_modal.delete_confirm')} isLoading={loading} />
     </AnimatePresence>
   );
 };

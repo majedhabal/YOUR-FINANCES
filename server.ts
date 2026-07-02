@@ -264,7 +264,7 @@ async function startServer() {
       const aiClient = getAIClient(customApiKey);
 
       const tierClean = (userData?.subscriptionTier || 'free').toLowerCase().replace(' ', '');
-      const isPremiumTier = tierClean === 'tier2' || tierClean === 'tier3' || tierClean === 'premium';
+      const isPremiumTier = tierClean === 'tier2' || tierClean === 'tier3' || tierClean === 'premium' || !!(userData?.vantageAiUnlockedUntil && new Date(userData.vantageAiUnlockedUntil).getTime() > Date.now());
 
       if (!isPremiumTier && !customApiKey) {
         return res.status(403).json({ 
@@ -312,10 +312,27 @@ async function startServer() {
       const financialContext = `\n\n[REAL-TIME FINANCIAL CONTEXT FOR VANTAGE AI]\n${accountsData}\n\n${transactionsData}\n[END REAL-TIME FINANCIAL CONTEXT]\n`;
       const enrichedPromptWithData = `${prompt}${financialContext}`;
 
+      const lowerPrompt = prompt.toLowerCase();
+      const isAdviceRequest = 
+        lowerPrompt.includes("invest") || 
+        lowerPrompt.includes("asset selection") ||
+        lowerPrompt.includes("choose asset") ||
+        lowerPrompt.includes("stock") ||
+        lowerPrompt.includes("crypto") ||
+        lowerPrompt.includes("should i") ||
+        lowerPrompt.includes("should i buy") ||
+        lowerPrompt.includes("should i invest") ||
+        lowerPrompt.includes("should i pay") ||
+        lowerPrompt.includes("portfolio optimization");
+
       let result;
       try {
-        const strictSystemInstruction = "You are Vantage AI, a premium financial intelligence node. You must NEVER give direct recommendations or tips to users. Instead, you must ALWAYS phrase any advice, tips, suggestions, or insights using attribution prefixes such as 'Based on research...', 'Online sources suggest...', 'General industry research indicates...', or 'According to financial research and online resources...'. Never deliver tips or recommendations as direct, personal commands or un-attributed assertions.";
+        let strictSystemInstruction = "You are Vantage AI, a premium financial intelligence node. You must NEVER give direct recommendations or tips to users. Instead, you must ALWAYS phrase any advice, tips, suggestions, or insights using attribution prefixes such as 'Based on research...', 'Online sources suggest...', 'General industry research indicates...', or 'According to financial research and online resources...'. Never deliver tips or recommendations as direct, personal commands or un-attributed assertions. Additionally, you must ALWAYS structure your response with a proper Markdown structure containing: (1) An elegant header (using ###) such as '### Financial Insights', (2) A concise overview/summary paragraph at the very beginning, (3) Clean, descriptive bullet points to organize accounts, transactions, or metrics, and (4) Bold text (using **) for all monetary figures, account names, dates, and critical numbers. Never output a single continuous block of plain text; keep it clean and professionally formatted.";
         
+        if (isAdviceRequest) {
+          strictSystemInstruction += " CRITICAL RESTRICTION: The user is asking for investment opinions, asset selection, or 'Should I' financial choices/buying decisions. You MUST explicitly state in your very first sentence that you cannot provide financial or investment advice. Furthermore, you MUST append the following exact uppercase string to the end of your response block: 'DISCLAIMER: YOUR FINANCES IS AN AUTOMATED ANALYTICAL UTILITY OPERATED BY ME VANTAGE FZE LLC. INSIGHTS ARE SCALED DATA SUMMARIES GENERATED COMPLETELY FOR EDUCATIONAL AND ORGANIZATIONAL MANAGEMENT INTERFACES AND DO NOT CONSTITUTE REGISTERED FINANCIAL PLANNING, INVESTMENT ADVICE, OR TAX ASSURANCES. MANUALLY VERIFY ALL METRICS BEFORE UNDERTAKING ECONOMIC DEBT ALTERATIONS.'";
+        }
+
         if (isImage) {
           const { data, mimeType } = req.body.image;
           result = await aiClient.models.generateContent({
@@ -356,10 +373,23 @@ async function startServer() {
         throw aiError;
       }
       
-      const text = result.text;
+      let text = result.text;
       
       if (!text) {
         throw new Error("AI returned an empty response");
+      }
+
+      if (isAdviceRequest) {
+        const firstSentence = "I cannot provide financial or investment advice.";
+        const normalizedText = text.trim();
+        if (!normalizedText.startsWith(firstSentence)) {
+          text = `${firstSentence}\n\n${text}`;
+        }
+
+        const disclaimerText = "DISCLAIMER: YOUR FINANCES IS AN AUTOMATED ANALYTICAL UTILITY OPERATED BY ME VANTAGE FZE LLC. INSIGHTS ARE SCALED DATA SUMMARIES GENERATED COMPLETELY FOR EDUCATIONAL AND ORGANIZATIONAL MANAGEMENT INTERFACES AND DO NOT CONSTITUTE REGISTERED FINANCIAL PLANNING, INVESTMENT ADVICE, OR TAX ASSURANCES. MANUALLY VERIFY ALL METRICS BEFORE UNDERTAKING ECONOMIC DEBT ALTERATIONS.";
+        if (!text.includes(disclaimerText)) {
+          text = `${text.trim()}\n\n${disclaimerText}`;
+        }
       }
 
       res.json({ text });
@@ -424,7 +454,7 @@ async function startServer() {
 
       // Check Tier 2 and Tier 3 access
       const tierClean = (userData?.subscriptionTier || 'free').toLowerCase().replace(' ', '');
-      const hasAccess = tierClean === 'tier2' || tierClean === 'tier3' || tierClean === 'premium';
+      const hasAccess = tierClean === 'tier2' || tierClean === 'tier3' || tierClean === 'premium' || !!(userData?.vantageAiUnlockedUntil && new Date(userData.vantageAiUnlockedUntil).getTime() > Date.now());
 
       if (!hasAccess && !userConfig?.geminiKey) {
         return res.status(403).json({
@@ -636,7 +666,7 @@ Return a JSON object matching this schema exactly. Do not output markdown code b
       const aiClient = getAIClient(customApiKey);
 
       const tierClean = (userData?.subscriptionTier || 'free').toLowerCase().replace(' ', '');
-      const isPremiumTier = tierClean === 'tier2' || tierClean === 'tier3' || tierClean === 'premium';
+      const isPremiumTier = tierClean === 'tier2' || tierClean === 'tier3' || tierClean === 'premium' || !!(userData?.vantageAiUnlockedUntil && new Date(userData.vantageAiUnlockedUntil).getTime() > Date.now());
 
       if (!isPremiumTier && !customApiKey) {
         return res.status(403).json({ 
@@ -841,7 +871,7 @@ Schema:
 
       // 2. Validate Tier 2 & Tier 3 Premium permissions
       const tierClean = subscriptionTier.toLowerCase().replace(' ', '');
-      const hasAccess = tierClean === 'tier2' || tierClean === 'tier3' || tierClean === 'premium';
+      const hasAccess = tierClean === 'tier2' || tierClean === 'tier3' || tierClean === 'premium' || !!(userData?.vantageAiUnlockedUntil && new Date(userData.vantageAiUnlockedUntil).getTime() > Date.now());
       if (!hasAccess && !userData?.geminiKey) {
         return res.status(403).json({
           error: "Tier Restriction",

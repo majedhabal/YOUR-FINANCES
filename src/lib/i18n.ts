@@ -9,6 +9,7 @@ import es from '../locales/es.json';
 import hi from '../locales/hi.json';
 import ur from '../locales/ur.json';
 import ko from '../locales/ko.json';
+import ts from '../locales/ts.json';
 
 const resources = {
   en: { translation: en },
@@ -18,6 +19,7 @@ const resources = {
   hi: { translation: hi },
   ur: { translation: ur },
   ko: { translation: ko },
+  ts: { translation: ts },
 };
 
 i18n

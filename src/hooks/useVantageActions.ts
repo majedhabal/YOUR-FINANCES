@@ -1,5 +1,6 @@
 import { collection, addDoc, updateDoc, doc, deleteDoc, getDocs } from 'firebase/firestore';
-import { db } from '../lib/firebase';
+import { db, auth } from '../lib/firebase';
+import { deleteUser } from 'firebase/auth';
 
 export function useVantageActions(uid?: string) {
   const getUid = () => {
@@ -43,8 +44,8 @@ export function useVantageActions(uid?: string) {
         accountId: newDocRef.id,
         amount: Math.abs(initialFunds),
         type: initialFunds > 0 ? 'income' : 'expense',
-        category: 'Income',
-        subcategory: 'starting_balance',
+        category: 'Others',
+        subcategory: 'Starting Balance',
         notes: 'Initial Balance Setup',
         date: new Date().toISOString().split('T')[0],
         status: 'confirmed',
@@ -107,6 +108,11 @@ export function useVantageActions(uid?: string) {
     // 5. Delete root user profile
     const userRef = doc(db, 'users', userId);
     await deleteDoc(userRef);
+
+    // 6. Delete Firebase Auth user
+    if (auth.currentUser && auth.currentUser.uid === userId) {
+      await deleteUser(auth.currentUser);
+    }
   };
 
   return {

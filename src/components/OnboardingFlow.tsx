@@ -248,6 +248,8 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
           geminiInsightsEnabled: true,
           legalAcceptedAt: nowTs,
           appPrivacyVersion: 'Version 1.0.0',
+          lastLoginDate: new Date().toISOString().split('T')[0],
+          dailyStreak: 1,
         };
         await setDoc(userRef, newProfile);
         await seedUserCustomCategories(user.uid);
@@ -294,6 +296,8 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
           geminiInsightsEnabled: true,
           legalAcceptedAt: nowTs,
           appPrivacyVersion: 'Version 1.0.0',
+          lastLoginDate: new Date().toISOString().split('T')[0],
+          dailyStreak: 1,
         };
         await setDoc(userRef, newProfile);
         await seedUserCustomCategories(user.uid);
@@ -365,6 +369,8 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                 geminiInsightsEnabled: true,
                 legalAcceptedAt: nowTs,
                 appPrivacyVersion: 'Version 1.0.0',
+                lastLoginDate: new Date().toISOString().split('T')[0],
+                dailyStreak: 1,
               };
               await setDoc(userRef, newProfile);
               await seedUserCustomCategories(user.uid);
@@ -1198,7 +1204,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
             accountId: accSubRef.id,
             type: isExpense ? 'expense' : 'income',
             amount: Math.abs(originalStartingBalance),
-            category: 'Adjustment',
+            category: 'Others',
             subcategory: 'Starting Balance',
             classification: 'starting_balance',
             notes: 'Starting Balance',
@@ -1465,8 +1471,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
   ];
 
   const goalListString = financialGoals.map(gKey => {
-    const cfg = GOALS_CONFIG.find(g => g.key === gKey);
-    return cfg ? cfg.label : gKey;
+    return t(`onboarding.goals.${gKey}.label`, gKey);
   }).join(', ');
 
   return (
@@ -1768,7 +1773,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
           <div className="flex flex-col gap-1 self-end max-w-[85%] animate-fadeIn">
             <div className="bg-black text-white rounded-2xl rounded-tr-none p-2.5 shadow-sm text-right">
               <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: "clamp(11px, 3.2vw, 13px)" }} className="tracking-tight font-normal">
-                {t(`onboarding.status_${relationshipStatus.toLowerCase()}`, relationshipStatus)}
+                {t(`marital_status_options.${relationshipStatus.toLowerCase()}`, relationshipStatus)}
               </p>
             </div>
           </div>
@@ -2019,7 +2024,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
           <div className="flex flex-col gap-1 self-end max-w-[85%] animate-fadeIn">
             <div className="bg-black text-white rounded-2xl rounded-tr-none p-2.5 shadow-sm text-right">
               <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: "clamp(11px, 3.2vw, 13px)" }} className="tracking-tight font-normal">
-                {t("onboarding.base_currency_chosen", "Base Currency:")} {currency} ({GLOBAL_CURRENCIES.find(c => c.code === currency)?.name || currency})
+                {t("onboarding.base_currency_chosen", "Base Currency:")} {currency} ({t(`currencies.${currency.toLowerCase()}`, GLOBAL_CURRENCIES.find(c => c.code === currency)?.name || currency)})
               </p>
             </div>
           </div>
@@ -2520,7 +2525,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                 
                 {/* Header Information */}
                 {incomeTrackingType === 'payroll' ? (
-                  <div className="flex flex-col gap-1.5 pb-2.5 border-b border-neutral-100">
+                  <div className="flex flex-col gap-1.5 pb-2.5 border-b border-neutral-100 hidden">
                     <div className="flex justify-between items-center flex-wrap gap-2">
                       <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700, fontSize: "15px" }} className="text-sm text-black font-bold">
                         {t("onboarding.ideal_budget_heading", "The Ideal Budget")}
@@ -2575,7 +2580,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                     )}
                   </div>
                 ) : (
-                  <div className="flex flex-col gap-3 pb-1 border-b border-neutral-100">
+                  <div className="flex flex-col gap-3 pb-1 border-b border-neutral-100 hidden">
                     <div className="flex justify-between items-center">
                       <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700, fontSize: "15px" }} className="text-sm text-black font-bold">
                         {t("onboarding.ideal_budget_heading", "The Ideal Budget")}
@@ -2613,7 +2618,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                     </div>
 
                     {/* Tablet/Desktop: Centered full-width (100%) aggregation card on pure white above the row grid */}
-                    <div className="hidden md:block w-full">
+                    <div className="hidden md:block w-full hidden">
                       <div 
                         className="flex flex-col items-center justify-center text-center p-6 bg-white border border-[#E1E8ED] rounded-2xl w-full mx-auto animate-fadeIn gap-1.5 shadow-sm"
                         style={{ fontFamily: "'Google Sans', sans-serif" }}
@@ -2794,7 +2799,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                                             }}
                                             className="text-neutral-800"
                                           >
-                                            {cat.emoji} {cat.name}
+                                            {cat.emoji} {t(`categories.${cat.name.replace(/ /g, '_').replace(/&/g, 'and')}`, cat.name)}
                                           </span>
                                         </label>
                                         <button 
@@ -2834,7 +2839,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                                                     }}
                                                     className="text-neutral-600"
                                                   >
-                                                      {sub}
+                                                      {t(`subcategories.${sub.replace(/ /g, '_').replace(/-/g, '_')}`, sub)}
                                                   </span>
                                               </label>
                                             );
@@ -2943,7 +2948,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                                                     }}
                                                     className="text-neutral-800"
                                                   >
-                                                    {cat.name}
+                                                    {t(`categories.${cat.name.replace(/ /g, '_').replace(/&/g, 'and')}`, cat.name)}
                                                   </span>
                                                 </label>
                                                 <button 
@@ -2983,7 +2988,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                                                             }}
                                                             className="text-neutral-600"
                                                           >
-                                                              {sub}
+                                                            {t(`subcategories.${sub.replace(/ /g, '_').replace(/-/g, '_')}`, sub)}
                                                           </span>
                                                       </label>
                                                     );
@@ -3054,7 +3059,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                                   return (
                                     <div key={`sub-budget-${bp.id}-${sub}`} className="flex items-center justify-between gap-1.5 p-1 px-2 rounded-lg border border-[#E1E8ED] bg-[#F8FAFC]">
                                       <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: "10px" }} className="text-neutral-700 font-medium truncate">
-                                        {sub}
+                                        {t(`subcategories.${sub.replace(/ /g, '_').replace(/-/g, '_')}`, sub)}
                                       </span>
                                       <div className="relative flex items-center shrink-0 w-24">
                                         <input
@@ -3419,7 +3424,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                   {dependents.length > 0 && (
                     <div className="flex flex-col gap-1 max-h-[85px] overflow-y-auto bg-[#F8F9FA] rounded-xl p-1 border border-neutral-200">
                       {dependents.map((dep, index) => (
-                        <div key={`${dep.relationship}-${dep.age}-${index}`} className="flex gap-1 items-center bg-white border border-neutral-200 p-1 rounded-lg">
+                        <div key={index} className="flex gap-1 items-center bg-white border border-neutral-200 p-1 rounded-lg">
                           <div className="flex-1 relative">
                             <select 
                               value={dep.relationship || dep.relation || ""}
@@ -3428,12 +3433,12 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                               className="w-full bg-[#F8F9FA] border border-neutral-200 px-2 py-0.5 rounded text-[11px] text-black font-normal outline-none focus:border-black cursor-pointer appearance-none pr-6"
                             >
                               <option value="" disabled hidden>Select relationship</option>
-                              <option value="Father">Father</option>
-                              <option value="Mother">Mother</option>
-                              <option value="Son">Son</option>
-                              <option value="Daughter">Daughter</option>
-                              <option value="Friend">Friend</option>
-                              <option value="Others">Others</option>
+                              <option value="Father">{t("onboarding.relationships.father")}</option>
+                              <option value="Mother">{t("onboarding.relationships.mother")}</option>
+                              <option value="Son">{t("onboarding.relationships.son")}</option>
+                              <option value="Daughter">{t("onboarding.relationships.daughter")}</option>
+                              <option value="Friend">{t("onboarding.relationships.friend")}</option>
+                              <option value="Others">{t("onboarding.relationships.others")}</option>
                             </select>
                             <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2 text-neutral-400">
                               <ChevronDown size={10} />
@@ -3465,12 +3470,12 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                     {isAddDependentDropdownOpen && (
                       <div className="absolute bottom-[54px] left-0 w-full bg-white border border-neutral-200 rounded-xl shadow-lg p-1 z-50 flex flex-col gap-0.5 animate-fadeIn">
                         {[
-                          { relationship: 'Father', label: 'Father', icon: 'User', color: 'text-blue-500' },
-                          { relationship: 'Mother', label: 'Mother', icon: 'User', color: 'text-pink-500' },
-                          { relationship: 'Son', label: 'Son', icon: 'Baby', color: 'text-teal-500' },
-                          { relationship: 'Daughter', label: 'Daughter', icon: 'Baby', color: 'text-purple-500' },
-                          { relationship: 'Friend', label: 'Friend', icon: 'Users', color: 'text-neutral-500' },
-                          { relationship: 'Others', label: 'Others', icon: 'HelpCircle', color: 'text-gray-400' }
+                          { relationship: 'Father', label: t("onboarding.relationships.father"), icon: 'User', color: 'text-blue-500' },
+                          { relationship: 'Mother', label: t("onboarding.relationships.mother"), icon: 'User', color: 'text-pink-500' },
+                          { relationship: 'Son', label: t("onboarding.relationships.son"), icon: 'Baby', color: 'text-teal-500' },
+                          { relationship: 'Daughter', label: t("onboarding.relationships.daughter"), icon: 'Baby', color: 'text-purple-500' },
+                          { relationship: 'Friend', label: t("onboarding.relationships.friend"), icon: 'Users', color: 'text-neutral-500' },
+                          { relationship: 'Others', label: t("onboarding.relationships.others"), icon: 'HelpCircle', color: 'text-gray-400' }
                         ].map((option) => {
                           return (
                             <button
@@ -3514,7 +3519,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                       style={{ fontFamily: "'Google Sans', sans-serif", backgroundColor: "#A6DDB1" }}
                       className="px-4 h-full text-black text-[11px] rounded-xl hover:scale-[1.01] transition-all cursor-pointer flex items-center gap-1 font-bold"
                     >
-                      {dependents.length === 0 ? t("no_dependents", "No dependents") : t("confirmation_modal.confirm", "Confirm")}
+                      {dependents.length === 0 ? t("onboarding.no_dependents", "No dependents") : t("confirmation_modal.confirm", "Confirm")}
                       <ChevronRight size={11} className="stroke-[3]" />
                     </button>
                   </div>
@@ -3581,7 +3586,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                       </button>
 
                       {isGoalDropdownOpen && (
-                        <div className="absolute top-[48px] left-0 w-full bg-white border border-neutral-200 rounded-xl shadow-lg p-1 z-50 flex flex-col gap-0.5 animate-fadeIn max-h-[160px] md:max-h-[200px] overflow-y-auto scrollbar-thin">
+                        <div className="absolute top-[48px] left-0 w-full bg-white border border-neutral-200 rounded-xl shadow-lg p-1 z-50 flex flex-col gap-0.5 animate-fadeIn max-h-[300px] overflow-y-auto scrollbar-thin">
                           {GOALS_CONFIG.map((goal) => {
                             const isSelected = primaryGoal === goal.key;
                             return (
@@ -3624,21 +3629,6 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
 
                       return (
                         <div className="flex flex-col gap-4 mt-2.5 animate-fadeIn">
-                          {/* Inline option container reset handler */}
-                          <div className="flex justify-start">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setPrimaryGoal('');
-                                setGoalAmount('');
-                              }}
-                              style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 500 }}
-                              className="text-[11px] text-neutral-500 hover:text-black font-medium border border-neutral-200 hover:border-neutral-300 px-3 py-1.5 rounded-lg bg-neutral-50 transition-all flex items-center gap-1"
-                            >
-                              Change your goal.
-                            </button>
-                          </div>
-
                           {/* CSS clamp fluid styling explicitly over white canvas interfaces */}
                           <label 
                             style={{ 
@@ -3648,7 +3638,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                             }}
                             className="text-black leading-tight block text-left"
                           >
-                            {config.question}
+                            {t(`onboarding.goals.${primaryGoal}.question`, config.question)}
                           </label>
 
                           {/* Input and suffix base currency container element */}
@@ -3693,7 +3683,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                               : 'opacity-50 cursor-not-allowed bg-neutral-300'
                           }`}
                         >
-                          Confirm Goal
+                          {t("onboarding.confirm_goal", "Confirm Goal")}
                           <ChevronRight size={11} className="stroke-[3]" />
                         </button>
                       </div>
@@ -3744,7 +3734,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
               </h2>
               
               <p className="text-[14.5px] font-black text-[#000000] leading-relaxed mb-4 font-sans">
-                Welcome aboard! Your secure financial vault is now live.
+                {t("onboarding.celebration_message", "Welcome aboard! Your secure financial vault is now live.")}
               </p>
 
               {payrollDestination === 'dedicated' && (

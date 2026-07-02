@@ -4,37 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'motion/react';
 import { AreaChart, Area, Tooltip, ResponsiveContainer, XAxis } from 'recharts';
 import { BudgetCard } from './BudgetCard';
-
-const isTxMatchingBudget = (tx: any, budget: any) => {
-  if (!tx) return false;
-  if (tx.type === 'transfer') {
-    if (budget.category === 'ACCOUNT FUND TRANSFERS') {
-      const matchId = budget.accountId && tx.toAccountId === budget.accountId;
-      const matchSub = budget.subcategory && tx.notes?.toLowerCase().includes(budget.subcategory.toLowerCase());
-      return tx.transferSide === 'sender' && (matchId || matchSub);
-    }
-    return false;
-  }
-  if (tx.budgetId === budget.id) return true;
-
-  if (budget.mappedCategories && Array.isArray(budget.mappedCategories) && budget.mappedCategories.length > 0) {
-    if (budget.mappedCategories.includes(tx.category)) {
-      if (budget.mappedSubCategories && Array.isArray(budget.mappedSubCategories) && budget.mappedSubCategories.length > 0) {
-        return budget.mappedSubCategories.includes(tx.subcategory);
-      }
-      return true;
-    }
-    return false;
-  }
-
-  if (tx.category === (budget.category || budget.categoryTitle)) {
-    if (!budget.subcategory || budget.subcategory === 'All' || budget.subcategory === '') {
-      return true;
-    }
-    return tx.subcategory === budget.subcategory;
-  }
-  return false;
-};
+import { isTxMatchingBudget } from '../lib/transactionUtils';
 
 const getGraphData = (budget: any, transactions: any[], locale: string) => {
   const data = [];
@@ -178,7 +148,6 @@ export const BudgetSection: React.FC<{
             usage: "text-xs text-neutral-400",
             actionButtons: "flex flex-col gap-1",
             progressBarContainer: "w-full bg-neutral-100 rounded-full h-1",
-            progressBarFill: "bg-[#A6DDB1] h-1 rounded-full",
           }}
         />
         <AnimatePresence>

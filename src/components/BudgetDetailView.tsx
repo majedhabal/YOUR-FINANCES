@@ -14,12 +14,13 @@ import { TransactionDetailModal } from './TransactionDetailModal';
 import { ConfirmationModal } from './ConfirmationModal';
 import { doc, deleteDoc, writeBatch, query, collection, where, getDocs } from 'firebase/firestore';
 import { db } from '../lib/firebase';
-import { handleFirestoreError, OperationType } from '../lib/firebaseUtils';
+import { isTxMatchingBudget } from '../lib/transactionUtils';
 
 interface Transaction {
   id: string;
   amount: number;
   date: string;
+  time?: string;
   category: string;
   subcategory?: string;
   subCategory?: string;
@@ -78,6 +79,13 @@ export const BudgetDetailView: React.FC<BudgetDetailViewProps> = ({
   const [selectedTx, setSelectedTx] = React.useState<Transaction | null>(null);
   const [txToDelete, setTxToDelete] = React.useState<any | null>(null);
 
+  React.useEffect(() => {
+    window.dispatchEvent(new CustomEvent('budget-detail-toggled', { detail: { isOpen: true } }));
+    return () => {
+      window.dispatchEvent(new CustomEvent('budget-detail-toggled', { detail: { isOpen: false } }));
+    };
+  }, []);
+
   const activeCurrency = budget.currency || 'AED';
 
   const rawTitle = budget.subcategory 
@@ -100,7 +108,6 @@ export const BudgetDetailView: React.FC<BudgetDetailViewProps> = ({
   }, [budget.period, i18n.language, t]);
   
   const filterBudgetTransactions = (txs: Transaction[]) => {
-    const activeAccountIds = new Set(accounts.filter(a => !a.isArchived).map(a => a.id));
     const nowDate = new Date();
 
     return txs.filter(tx => {
@@ -108,30 +115,25 @@ export const BudgetDetailView: React.FC<BudgetDetailViewProps> = ({
       if (tx.type !== 'expense') return false;
       if (new Date(tx.date) > nowDate) return false;
       
-      // Filter by accounts selection + archive status
-      if (budget.accountIds && budget.accountIds.length > 0) {
-        const selectedActiveIds = budget.accountIds.filter(id => activeAccountIds.has(id));
-        if (selectedActiveIds.length === 0) return false;
-        if (!selectedActiveIds.includes(tx.accountId)) return false;
-      } else {
-        if (!activeAccountIds.has(tx.accountId)) return false;
-      }
-      
-      // Filter by category
-      if (budget.categories && budget.categories.length > 0) {
-        if (!budget.categories.includes(tx.category)) return false;
-      }
-      
-      // Filter by subcategory
-      if (budget.subcategories && budget.subcategories.length > 0) {
-        if (!budget.subcategories.includes(tx.subcategory || tx.subCategory || '')) return false;
-      }
-      
-      return true;
+      return isTxMatchingBudget(tx, budget);
     });
   };
 
-  const budgetTxs = useMemo(() => filterBudgetTransactions(transactions).sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()), [transactions, budget]);
+  const budgetTxs = useMemo(() => filterBudgetTransactions(transactions).sort((a,b) => {
+    const dateA = new Date(a.date).getTime();
+    const dateB = new Date(b.date).getTime();
+    if (dateA !== dateB) return dateB - dateA;
+    
+    const parseTime = (t: string | undefined) => {
+      if (!t) return 0;
+      const [time, modifier] = t.split(' ');
+      let [hours, minutes] = time.split(':').map(Number);
+      if (modifier === 'PM' && hours !== 12) hours += 12;
+      if (modifier === 'AM' && hours === 12) hours = 0;
+      return hours * 60 + minutes;
+    };
+    return parseTime(b.time) - parseTime(a.time);
+  }), [transactions, budget]);
   
   const now = new Date();
   const currentMonth = now.getMonth();
@@ -147,7 +149,7 @@ export const BudgetDetailView: React.FC<BudgetDetailViewProps> = ({
   const spentUsage = limit > 0 ? (spentThisMonth / limit) * 100 : 0;
 
   return (
-    <div className="bg-surface min-h-screen flex flex-col font-sans mt-[80px]" style={{ fontFamily: "'Google Sans', sans-serif" }}>
+    <div className="bg-surface min-h-screen flex flex-col font-sans mt-0" style={{ fontFamily: "'Google Sans', sans-serif" }}>
       {/* Navigation Bar */}
       <div className="flex items-center justify-between px-6 pt-6 pb-2">
         <button onClick={onBack} aria-label="Go back" className="p-2 rounded-full hover:bg-black/5 transition-colors text-[#111c2d]">
@@ -211,19 +213,18 @@ export const BudgetDetailView: React.FC<BudgetDetailViewProps> = ({
         </div>
         <div className="space-y-md">
           {currentMonthTxs.map((tx) => {
-            const txCategoryText = t(`categories.${tx.category}`, formatLabel(tx.category));
             const txSubcategory = tx.subcategory || tx.subCategory;
-            const txSubcategoryText = txSubcategory ? t(`subcategories.${txSubcategory}`, formatLabel(txSubcategory)) : txCategoryText;
-
+            const txSubcategoryText = txSubcategory ? t(`subcategories.${txSubcategory}`, formatLabel(txSubcategory)) : "";
+            
             return (
               <div key={tx.id} className="flex items-center gap-md">
                 <div className="w-12 h-12 rounded-xl bg-surface-container-low flex items-center justify-center border border-outline-variant/20">
                   {renderIcon(tx.emoji)}
                 </div>
                 <div className="flex-1">
-                  <p className="text-base font-bold text-on-surface">{tx.notes || txSubcategoryText}</p>
+                  <p className="text-base font-bold text-on-surface">{tx.notes || txSubcategoryText || t(`categories.${tx.category}`, formatLabel(tx.category))}</p>
                   <p className="text-xs text-on-surface-variant">
-                    {new Date(tx.date).toLocaleDateString(i18n.language, { month: 'short', day: 'numeric' })} • {txSubcategoryText}
+                    {new Date(tx.date).toLocaleDateString(i18n.language, { month: 'short', day: 'numeric' })}{txSubcategoryText ? ` • ${txSubcategoryText}` : ''}
                   </p>
                 </div>
                 <div className="text-right">

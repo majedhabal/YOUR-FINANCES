@@ -10,6 +10,7 @@ const languages = [
   { code: 'hi', label: 'हिन्दी', flag: '🇮🇳' },
   { code: 'ur', label: 'اردو', flag: '🇵🇰' },
   { code: 'ko', label: '한국어', flag: '🇰🇷' },
+  { code: 'ts', label: 'Türkçe', flag: '🇹🇷' },
 ];
 
 interface LanguageSelectorProps {

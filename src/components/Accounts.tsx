@@ -741,9 +741,9 @@ export const Accounts: React.FC<AccountsProps> = ({ profile, onNavigateToTransac
             <Plus size={20} />
           </div>
           <div>
-            <h4 className="text-[14px] font-bold text-neutral-800 font-g-sans leading-tight">Connect New Account</h4>
+            <h4 className="text-[14px] font-bold text-neutral-800 font-g-sans leading-tight">{t('accounts.connect_new_account')}</h4>
             <p className="text-[12px] text-neutral-500 font-normal mt-1 font-g-sans leading-normal">
-              Securely link or log another financial asset or liability.
+              {t('accounts.connect_new_account_description')}
             </p>
           </div>
         </motion.div>
@@ -763,9 +763,9 @@ export const Accounts: React.FC<AccountsProps> = ({ profile, onNavigateToTransac
             <TrendingUp size={20} />
           </div>
           <div>
-            <h4 className="text-[14px] font-bold text-neutral-800 font-g-sans leading-tight font-bold">Monthly Insights</h4>
+            <h4 className="text-[14px] font-bold text-neutral-800 font-g-sans leading-tight font-bold">{t('accounts.monthly_insights')}</h4>
             <p className="text-[12px] text-neutral-500 font-normal mt-1 font-g-sans leading-normal">
-              See how your combined balances and net worth change dynamically.
+              {t('accounts.see_how_balances_change')}
             </p>
           </div>
         </motion.div>

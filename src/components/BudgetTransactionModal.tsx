@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { RefreshCw } from 'lucide-react';
-import { collection, doc, serverTimestamp, setDoc } from 'firebase/firestore';
+import { collection, doc, serverTimestamp, setDoc, runTransaction } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { evaluateMathExpression } from '../lib/constants';
 import { handleFirestoreError, OperationType } from '../lib/firebaseUtils';
 import { useTranslation } from 'react-i18next';
+import { translateCategoryOrSubcategory } from '../lib/stringUtils';
 
 export const BudgetTransactionModal: React.FC<{ 
   isOpen: boolean; 
@@ -23,7 +24,16 @@ export const BudgetTransactionModal: React.FC<{
   const [note, setNote] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  const rawTitle = budget?.categoryTitle?.includes(' > ') 
+    ? budget.categoryTitle.split(' > ').pop()?.trim() 
+    : (budget?.categoryTitle || budget?.name || budget?.category);
+
+  const titleText = rawTitle 
+    ? translateCategoryOrSubcategory(rawTitle, t) 
+    : '';
+
   useEffect(() => {
+    window.dispatchEvent(new CustomEvent('budget-tx-modal-toggled', { detail: { isOpen } }));
     if (isOpen) {
       document.body.style.overflow = 'hidden';
     } else {
@@ -31,6 +41,7 @@ export const BudgetTransactionModal: React.FC<{
     }
     return () => {
       document.body.style.overflow = 'unset';
+      window.dispatchEvent(new CustomEvent('budget-tx-modal-toggled', { detail: { isOpen: false } }));
     };
   }, [isOpen]);
 
@@ -48,25 +59,62 @@ export const BudgetTransactionModal: React.FC<{
     setIsLoading(true);
 
     try {
-      const txRef = doc(collection(db, `users/${profile.uid}/transactions`));
-      const today = new Date().toLocaleDateString('en-CA');
+      await runTransaction(db, async (transaction) => {
+        const txRef = doc(collection(db, `users/${profile.uid}/transactions`));
+        const txAmount = parseFloat(evaluateMathExpression(amount));
+        
+        // --- READS ---
+        const sourceAccountRef = doc(db, `users/${profile.uid}/accounts`, sourceAccountId);
+        const sourceAccountSnap = await transaction.get(sourceAccountRef);
+        if (!sourceAccountSnap.exists()) throw new Error("Source account does not exist");
+        
+        let budgetSnap = null;
+        if (type === 'expense') {
+          const budgetRef = doc(db, `users/${profile.uid}/miniBudgets`, budget.id);
+          budgetSnap = await transaction.get(budgetRef);
+        }
 
-      const txData = {
-        id: txRef.id,
-        userId: profile.uid,
-        accountId: sourceAccountId,
-        amount: parseFloat(evaluateMathExpression(amount)),
-        type: type === 'transfer' ? 'transfer' : 'expense',
-        category: 'Budget',
-        subcategory: budget.categoryTitle || budget.name,
-        destinationAccountId: type === 'transfer' ? destinationAccountId : null,
-        notes: note || `${type === 'transfer' ? t("budget_modal.default_transfer_note", "Budget transfer") : t("budget_modal.default_expense_note", "Budget expense")}: ${budget.categoryTitle || budget.name}`,
-        date: today,
-        createdAt: serverTimestamp(),
-        budgetId: budget.id
-      };
+        let destAccountSnap = null;
+        if (type === 'transfer' && destinationAccountId) {
+          const destAccountRef = doc(db, `users/${profile.uid}/accounts`, destinationAccountId);
+          destAccountSnap = await transaction.get(destAccountRef);
+          if (!destAccountSnap.exists()) throw new Error("Destination account does not exist");
+        }
 
-      await setDoc(txRef, txData);
+        // --- WRITES ---
+        const txData: any = {
+          id: txRef.id,
+          userId: profile.uid,
+          accountId: sourceAccountId,
+          amount: txAmount,
+          type: type === 'transfer' ? 'transfer' : 'expense',
+          category: budget.categoryTitle?.includes('Groceries') ? 'Food & Drinks' : (budget.category || 'General'),
+          subcategory: budget.categoryTitle?.includes('Groceries') ? 'Groceries' : (budget.subcategory || budget.categoryTitle || budget.name || 'General'),
+          destinationAccountId: type === 'transfer' ? destinationAccountId : null,
+          notes: note || `${type === 'transfer' ? t("budget_modal.default_transfer_note", "Budget transfer") : t("budget_modal.default_expense_note", "Budget expense")}: ${titleText}`,
+          date: new Date().toLocaleDateString('en-CA'),
+          time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+          createdAt: serverTimestamp(),
+          status: 'confirmed',
+          isRecurring: false,
+          budgetId: budget.id
+        };
+
+        transaction.set(txRef, txData);
+
+        const sourceBalance = sourceAccountSnap.data().currentBalance || 0;
+        transaction.update(sourceAccountRef, { currentBalance: sourceBalance - txAmount, updatedAt: serverTimestamp() });
+
+        if (type === 'expense' && budgetSnap?.exists()) {
+             // (Removed spentAmount update: relying on ledger re-calculation)
+        }
+
+        if (type === 'transfer' && destinationAccountId && destAccountSnap?.exists()) {
+          const destBalance = destAccountSnap.data().currentBalance || 0;
+          const destAccountRef = doc(db, `users/${profile.uid}/accounts`, destinationAccountId);
+          transaction.update(destAccountRef, { currentBalance: destBalance + txAmount, updatedAt: serverTimestamp() });
+        }
+      });
 
       onSuccess?.();
       onClose();
@@ -84,7 +132,7 @@ export const BudgetTransactionModal: React.FC<{
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0" />
           <motion.div initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} className="relative w-full max-w-[400px] mt-8 mb-24 bg-white border border-[#E1E8ED] rounded-[1.5rem] p-6 pb-12 shadow-2xl">
             <h4 className="font-bold text-lg mb-4 text-[#111c2d]" style={{ fontFamily: "'Google Sans', sans-serif" }}>
-              {t("budget_modal.add_transaction_title", "Add Transaction")}: {budget.categoryTitle || budget.name}
+              {t("budget_modal.add_transaction_title", "Add Transaction")}: {titleText}
             </h4>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="flex flex-col gap-1">

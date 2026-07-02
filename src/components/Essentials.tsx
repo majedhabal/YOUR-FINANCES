@@ -39,6 +39,7 @@ import { db } from '../lib/firebase';
 import { triggerHaptic, hapticPresets } from '../lib/haptics';
 import { handleFirestoreError, OperationType } from '../lib/firebaseUtils';
 import { ConfirmationModal } from './ConfirmationModal';
+import { TransactionDetailModal } from './TransactionDetailModal';
 import { BudgetCard } from './BudgetCard';
 import { MASTER_CATEGORIES, evaluateMathExpression } from '../lib/constants';
 import { formatLabel } from '../lib/stringUtils';
@@ -147,6 +148,7 @@ export const Essentials: React.FC<DailyLogProps> = ({ profile }) => {
   }, [isMilestoneModalOpen]);
   const [editingMilestone, setEditingMilestone] = useState<any | null>(null);
   const [milestoneToDelete, setMilestoneToDelete] = useState<any | null>(null);
+  const [selectedTx, setSelectedTx] = useState<any | null>(null);
   const [showArchivedGoals, setShowArchivedGoals] = useState(false);
   const [savingsGoalAction, setSavingsGoalAction] = useState<{ type: 'archive' | 'delete', ms: any } | null>(null);
 
@@ -721,20 +723,18 @@ useEffect(() => {
             assocTx.map((tx, idx) => {
               const formattedAmount = `- ${tx.amount?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${tx.currency || budget.currency || 'AED'}`;
               return (
-                <div key={`tx-${budget.id}-${tx.id || idx}`} className="py-2.5 flex items-center justify-between gap-3 text-left">
+                <div 
+                  key={`tx-${budget.id}-${tx.id || idx}`} 
+                  className="py-2.5 flex items-center justify-between gap-3 text-left hover:bg-neutral-50/50 cursor-pointer rounded-lg transition-all"
+                  onClick={() => setSelectedTx(tx)}
+                >
                   <div className="flex items-center gap-2 min-w-0 flex-1">
                     {/* Mini clear circular action badge */}
                     <button
                       type="button"
-                      onClick={async (e) => {
+                      onClick={(e) => {
                         e.stopPropagation();
-                        if (confirm(t('essentials.confirm_delete_tx_budget_ledger', "Are you sure you want to delete this transaction from your budget sub-ledger?"))) {
-                          try {
-                            await deleteDoc(doc(db, `users/${profile.uid}/transactions`, tx.id));
-                          } catch (err) {
-                            console.error("Failed to delete transaction", err);
-                          }
-                        }
+                        setSelectedTx(tx);
                       }}
                       className="w-[20px] h-[20px] rounded-full border border-neutral-200 hover:border-rose-300 hover:bg-rose-50 flex items-center justify-center text-neutral-400 hover:text-rose-500 transition-all shrink-0 cursor-pointer"
                       title="Delete Transaction"
@@ -977,6 +977,7 @@ useEffect(() => {
       )}
 
       <ConfirmationModal 
+        key="budget-delete-confirm"
         isOpen={budgetToDelete !== null}
         onClose={() => setBudgetToDelete(null)}
         onConfirm={handleDeleteBudget}
@@ -1243,8 +1244,16 @@ useEffect(() => {
         exchangeRates={exchangeRates}
       />
 
+      <TransactionDetailModal 
+        isOpen={selectedTx !== null}
+        onClose={() => setSelectedTx(null)}
+        tx={selectedTx}
+        uid={profile?.uid}
+      />
+
       {/* Debt Milestone Deletion Confirmation */}
       <ConfirmationModal 
+        key="debt-milestone-delete-confirm"
         isOpen={debtMilestoneToDelete !== null && !showManageLinkedModal}
         onClose={() => setDebtMilestoneToDelete(null)}
         onConfirm={handleConfirmMilestoneDeleteClick}
@@ -1860,22 +1869,45 @@ export const QuickTransactionModal: React.FC<{
     setIsLoading(true);
 
     try {
-      const txRef = doc(collection(db, `users/${profile.uid}/transactions`));
-      const today = new Date().toLocaleDateString('en-CA');
+      await runTransaction(db, async (transaction) => {
+        const txRef = doc(collection(db, `users/${profile.uid}/transactions`));
+        const accountRef = doc(db, `users/${profile.uid}/accounts`, sourceAccountId);
+        const budgetRef = doc(db, `users/${profile.uid}/miniBudgets`, budget.id);
 
-      await setDoc(txRef, {
-        id: txRef.id,
-        userId: profile.uid,
-        accountId: sourceAccountId,
-        amount: parseFloat(evaluateMathExpression(amount)),
-        type: 'expense',
-        category: selectedCategory || budget.category,
-        subcategory: selectedSubcategory || null,
-        notes: note || `Interaction: ${budget.title}`,
-        emoji: budget.emoji,
-        date: today,
-        budgetId: budget.id, // Linked to specific budget card
-        createdAt: serverTimestamp()
+        // --- READS ---
+        const accountSnap = await transaction.get(accountRef);
+        if (!accountSnap.exists()) throw new Error("Account does not exist");
+        const accountData = accountSnap.data();
+
+        const budgetSnap = await transaction.get(budgetRef);
+
+        // --- WRITES ---
+        const txAmount = parseFloat(evaluateMathExpression(amount));
+        const newBalance = accountData.currentBalance - txAmount;
+        
+        transaction.set(txRef, {
+          id: txRef.id,
+          userId: profile.uid,
+          accountId: sourceAccountId,
+          amount: txAmount,
+          type: 'expense',
+          category: selectedCategory,
+          subcategory: selectedSubcategory || null,
+          notes: note || `Budget: ${budget.title}`,
+          emoji: budget.emoji,
+          date: new Date().toLocaleDateString('en-CA'),
+          budgetId: budget.id,
+          createdAt: serverTimestamp()
+        });
+        
+        transaction.update(accountRef, {
+          currentBalance: newBalance,
+          updatedAt: serverTimestamp()
+        });
+
+        if (budgetSnap.exists()) {
+            // (Removed spentAmount update: relying on ledger re-calculation)
+        }
       });
 
       onSuccess?.();
@@ -2012,6 +2044,7 @@ export const MilestoneConfigModal: React.FC<{
   allTransactions: any[];
   exchangeRates: any;
 }> = ({ isOpen, onClose, profile, editingMilestone, accounts, allTransactions, exchangeRates }) => {
+  const { t } = useTranslation();
   const [name, setName] = useState('');
   const [targetAmount, setTargetAmount] = useState('');
   const [monthsToTarget, setMonthsToTarget] = useState(12);
@@ -2117,11 +2150,11 @@ export const MilestoneConfigModal: React.FC<{
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-white" />
           <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="relative w-full max-w-[375px] bg-white border border-[#E1E8ED] rounded-[2rem] shadow-2xl flex flex-col max-h-[85vh]">
             <div className="flex flex-col items-center gap-1.5 p-6 pb-2 flex-shrink-0">
-              <h4 style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-gray-900 uppercase tracking-tight text-center leading-tight text-lg">
-                {editingMilestone ? 'REFILLING MILESTONE GOAL' : 'CONFIGURE MILESTONE GOAL'}
+              <h4 style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-gray-900 tracking-tight text-center leading-tight text-lg">
+                {editingMilestone ? t('essentials.refilling_milestone_goal', 'Refilling Milestone Goal') : t('essentials.configure_milestone_goal', 'Configure Milestone Goal')}
               </h4>
-              <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-gray-400 uppercase tracking-[0.2em] text-[10px]">
-                Savings Target Setup
+              <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-gray-400 tracking-[0.2em] text-[10px]">
+                {t('essentials.savings_target_setup', 'Savings Target Setup')}
               </p>
             </div>
 
@@ -2129,15 +2162,15 @@ export const MilestoneConfigModal: React.FC<{
 
               {/* Goal name */}
               <div className="space-y-2">
-                <label style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[10px] text-gray-500 uppercase tracking-widest px-1 block">
-                  GOAL NAME / LABEL
+                <label style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[10px] text-gray-500 tracking-widest px-1 block">
+                  {t('essentials.goal_name_label', 'Goal Name / Label')}
                 </label>
                 <input 
                   type="text"
                   required
                   value={name}
                   onChange={e => setName(e.target.value)}
-                  placeholder="E.G., BUYING A CAR, EMERGENCY SHIELD"
+                  placeholder={t('essentials.goal_name_placeholder', 'E.g., Buying a car, emergency shield')}
                   style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 500 }}
                   className="w-full bg-[#f1f5f9] border-none rounded-[0.5rem] px-4 py-3 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-[#A6DDB1] outline-none transition-all text-xs"
                 />
@@ -2145,8 +2178,8 @@ export const MilestoneConfigModal: React.FC<{
 
               {/* Selection categories / accounts linked */}
               <div className="space-y-2">
-                <label style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[10px] text-gray-500 uppercase tracking-widest px-1 block leading-relaxed">
-                  SELECT QUANTUM LEDGER SOURCES <br/> (CASH, BANK & SAVINGS)
+                <label style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[10px] text-gray-500 tracking-widest px-1 block leading-relaxed">
+                  {t('essentials.select_ledger_sources', 'Select Quantum Ledger Sources (Cash, Bank & Savings)')}
                 </label>
                 <div className="max-h-[140px] overflow-y-auto border border-gray-100 rounded-[0.5rem] p-2 space-y-1.5 bg-[#f1f5f9]/50">
                   {savingsAccounts.length === 0 ? (
@@ -2185,21 +2218,21 @@ export const MilestoneConfigModal: React.FC<{
 
               {/* Target amount */}
               <div className="space-y-2">
-                <label style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[10px] text-gray-500 uppercase tracking-widest px-1 block">
-                  TARGET AMOUNT
+                <label style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[10px] text-gray-500 tracking-widest px-1 block">
+                  {t('essentials.target_amount', 'Target Amount')}
                 </label>
                 <div className="relative">
                   <input 
                     type="text"
                     required
-                    placeholder="0 or e.g., 7000*6"
+                    placeholder={t('essentials.target_amount_placeholder', '0 or e.g., 7000*6')}
                     value={targetAmount}
                     onChange={e => setTargetAmount(e.target.value.replace(/[^0-9+\-*/.()]/g, ''))}
                     onBlur={() => setTargetAmount(prev => evaluateMathExpression(prev))}
                     style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 500 }}
                     className="w-full bg-[#f1f5f9] border-none rounded-[0.5rem] py-3 px-4 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-[#A6DDB1] outline-none transition-all text-xs"
                   />
-                  <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-[10px] uppercase tracking-widest pointer-events-none">
+                  <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-[10px] tracking-widest pointer-events-none">
                     {activeBaseCurr}
                   </span>
                 </div>
@@ -2208,10 +2241,10 @@ export const MilestoneConfigModal: React.FC<{
               {/* Slider target months */}
               <section className="mb-8" data-purpose="deadline-section">
                 <div className="flex justify-between items-center mb-4">
-                  <label style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[10px] text-gray-500 uppercase tracking-widest">
-                    DEADLINE (MONTHS REMAINING)
+                  <label style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[10px] text-gray-500 tracking-widest">
+                    {t('essentials.deadline_months_remaining', 'Deadline (Months Remaining)')}
                   </label>
-                  <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-xs text-gray-900">{monthsToTarget} MONTHS</span>
+                  <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-xs text-gray-900">{monthsToTarget} {t('essentials.months', 'Months')}</span>
                 </div>
                 <div className="flex items-center gap-4">
                   <input 
@@ -2231,11 +2264,13 @@ export const MilestoneConfigModal: React.FC<{
 
               {/* Recommendation indicator card */}
               <section className="bg-[#f1f5f9]/80 rounded-[0.5rem] p-4 border border-[#e2e8f0]" data-purpose="allocation-card">
-                <h3 style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[10px] text-gray-500 uppercase tracking-widest mb-2">VANTAGE RECOMMENDED ALLOCATION:</h3>
+                <h3 style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[10px] text-gray-500 mb-2">
+                  {t('essentials.vantage_recommended_allocation', 'Vantage Recommended Allocation:')}
+                </h3>
                 <div className="flex justify-between items-baseline mt-1 block">
                   {parsedTarget <= linkedBalancesSum ? (
                     <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700, color: '#366945' }} className="text-xs">
-                      Pooled Funding Status: {parsedTarget > 0 ? Math.round((linkedBalancesSum / parsedTarget) * 100) : 100}% Secured
+                      {t('essentials.pooled_funding_status', 'Pooled Funding Status: {{percentage}}% Secured', { percentage: parsedTarget > 0 ? Math.round((linkedBalancesSum / parsedTarget) * 100) : 100 })}
                     </span>
                   ) : (
                     <div className="flex flex-col gap-1 w-full">
@@ -2243,18 +2278,18 @@ export const MilestoneConfigModal: React.FC<{
                         <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-gray-900 text-sm leading-none">
                           {activeBaseCurr} {recommendedVal < 0 ? '-' : ''}{Math.abs(recommendedVal).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
                         </span>
-                        <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[10px] text-gray-500 uppercase">
-                          per month
+                        <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[10px] text-gray-500">
+                          {t('essentials.per_month', 'per month')}
                         </span>
                       </div>
                       <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700, color: '#366945' }} className="text-[10px] mt-1 block">
-                        Pooled Funding Status: {parsedTarget > 0 ? Math.round((linkedBalancesSum / parsedTarget) * 100) : 0}% Secured
+                        {t('essentials.pooled_funding_status', 'Pooled Funding Status: {{percentage}}% Secured', { percentage: parsedTarget > 0 ? Math.round((linkedBalancesSum / parsedTarget) * 100) : 0 })}
                       </span>
                     </div>
                   )}
                 </div>
-                <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[9px] text-gray-400 uppercase tracking-widest mt-2 block">
-                  BASED ON {activeBaseCurr} {linkedBalancesSum < 0 ? '-' : ''}{Math.abs(linkedBalancesSum).toLocaleString('en-US', { maximumFractionDigits: 0 })} CURRENTLY LINKED
+                <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[9px] text-gray-400 mt-2 block">
+                  {t('essentials.based_on_currently_linked', 'Based on {{currency}} {{amount}} currently linked', { currency: activeBaseCurr, amount: Math.abs(linkedBalancesSum).toLocaleString('en-US', { maximumFractionDigits: 0 }) })}
                 </span>
               </section>
 
@@ -2263,17 +2298,17 @@ export const MilestoneConfigModal: React.FC<{
                   type="button" 
                   onClick={onClose}
                   style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
-                  className="flex-1 h-[42px] bg-gray-100 hover:bg-gray-200 rounded-[0.5rem] text-gray-900 uppercase tracking-[0.1em] text-[10px] transition-all cursor-pointer border-none"
+                  className="flex-1 h-[42px] bg-gray-100 hover:bg-gray-200 rounded-[0.5rem] text-gray-900 text-[10px] transition-all cursor-pointer border-none"
                 >
-                  Cancel
+                  {t('essentials.cancel', 'Cancel')}
                 </button>
                 <button 
                   type="submit" 
                   disabled={isLoading || !name || !targetAmount || linkedAccountIds.length === 0}
                   style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
-                  className="flex-1 h-[42px] bg-[#A6DDB1] text-gray-900 rounded-[0.5rem] uppercase tracking-[0.1em] text-[10px] shadow-sm transition-all disabled:opacity-50 cursor-pointer border-none"
+                  className="flex-1 h-[42px] bg-[#A6DDB1] text-gray-900 rounded-[0.5rem] text-[10px] shadow-sm transition-all disabled:opacity-50 cursor-pointer border-none"
                 >
-                  {isLoading ? 'Saving...' : 'Save Updates'}
+                  {isLoading ? t('essentials.saving', 'Saving...') : t('essentials.save_updates', 'Save Updates')}
                 </button>
               </div>
             </form>

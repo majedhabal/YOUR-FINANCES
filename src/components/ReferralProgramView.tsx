@@ -4,7 +4,6 @@ import { ChevronLeft, Gift, Copy, Check, Sparkles, UserPlus, AlertCircle } from 
 import { doc, updateDoc, collection, query, where, getDocs, getDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useTranslation } from 'react-i18next';
-import { LanguageSelector } from './LanguageSelector';
 
 interface ReferralProgramViewProps {
   profile: any;
@@ -77,12 +76,12 @@ export const ReferralProgramView: React.FC<ReferralProgramViewProps> = ({
     setSuccessMsg('');
     
     if (!entered) {
-      setErrorMsg('Please enter a referral code.');
+      setErrorMsg(t('referral_program.enter_code_error'));
       return;
     }
 
     if (profile?.referralCode && profile.referralCode.toUpperCase() === entered) {
-      setErrorMsg('You cannot redeem your own referral code.');
+      setErrorMsg(t('referral_program.own_code_error'));
       return;
     }
 
@@ -94,7 +93,7 @@ export const ReferralProgramView: React.FC<ReferralProgramViewProps> = ({
       const querySnapshot = await getDocs(q);
 
       if (querySnapshot.empty) {
-        setErrorMsg('Invalid referral code. No matching user profile found.');
+        setErrorMsg(t('referral_program.invalid_code_error'));
         setIsSubmitting(false);
         return;
       }
@@ -103,7 +102,7 @@ export const ReferralProgramView: React.FC<ReferralProgramViewProps> = ({
       const referrerId = referrerDoc.id;
       const referrerData = referrerDoc.data();
 
-      // 2. Update Referrer Profile: Extend Vantage AI unlock for 7 days + add 2000 tokens
+      // 2. Update Referrer Profile: Extend Vantage AI unlock for 7 days + add 1000 tokens
       const referrerRef = doc(db, 'users', referrerId);
       const currentUnlocked = referrerData.vantageAiUnlockedUntil 
         ? new Date(referrerData.vantageAiUnlockedUntil).getTime() 
@@ -111,7 +110,7 @@ export const ReferralProgramView: React.FC<ReferralProgramViewProps> = ({
       
       const newUnlocked = Math.max(currentUnlocked, Date.now()) + (7 * 24 * 60 * 60 * 1000);
       const currentTokens = typeof referrerData.vantageAiTokens === 'number' ? referrerData.vantageAiTokens : 0;
-      const nextTokens = currentTokens + 2000;
+      const nextTokens = currentTokens + 1000;
 
       await updateDoc(referrerRef, {
         vantageAiUnlockedUntil: new Date(newUnlocked).toISOString(),
@@ -130,11 +129,11 @@ export const ReferralProgramView: React.FC<ReferralProgramViewProps> = ({
         referredBy: entered
       });
 
-      setSuccessMsg(`Successfully redeemed! Vantage AI tokens and premium access have been unlocked for ${referrerData.displayName || referrerData.fullName || 'your friend'}.`);
+      setSuccessMsg(t('referral_program.redeem_success', { name: referrerData.displayName || referrerData.fullName || 'your friend' }));
       setReferralInput('');
     } catch (err: any) {
       console.error("Referral redemption error:", err);
-      setErrorMsg('Failed to process referral. Please check your network and try again.');
+      setErrorMsg(t('referral_program.process_error'));
     } finally {
       setIsSubmitting(false);
     }
@@ -151,29 +150,15 @@ export const ReferralProgramView: React.FC<ReferralProgramViewProps> = ({
           >
             <ChevronLeft size={20} />
           </button>
-          <span className="text-[10px] sm:text-xs font-normal text-vantage-muted">Referrals & Rewards</span>
+          <span className="text-[10px] sm:text-xs font-normal text-vantage-muted">{t('settings.referrals_rewards')}</span>
         </div>
-        <LanguageSelector 
-          className="border border-[#E1E8ED] bg-[#F8F9FA] px-2.5 py-1 rounded-xl text-xs"
-          onLanguageChange={async (lng) => {
-            if (profile?.uid) {
-              try {
-                const userRef = doc(db, 'users', profile.uid);
-                await updateDoc(userRef, { language: lng });
-                onUpdateProfile({ ...profile, language: lng });
-              } catch (err) {
-                console.error("Failed to update user language preference in database:", err);
-              }
-            }
-          }}
-        />
       </div>
 
       {/* Hero Header Area */}
       <div className="flex flex-col gap-1.5 border-b border-neutral-100 pb-4">
-        <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 tracking-tight">Referral Program</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-neutral-900 tracking-tight">{t('referral_program.title')}</h1>
         <p className="text-xs text-vantage-muted font-normal leading-relaxed">
-          Invite friends to YOUR FINANCES. Share the wealth of smart, secure capital tracking and predictive financial intelligence.
+          {t('referral_program.description')}
         </p>
       </div>
 
@@ -198,11 +183,11 @@ export const ReferralProgramView: React.FC<ReferralProgramViewProps> = ({
             <div className="w-7 h-7 rounded-lg bg-[#E9F5ED] text-[#366945] flex items-center justify-center">
               <Gift size={16} />
             </div>
-            <h3 className="text-sm font-bold text-neutral-900">Your Unique Referral Code</h3>
+            <h3 className="text-sm font-bold text-neutral-900">{t('referral_program.your_unique_code')}</h3>
           </div>
           
           <p className="text-xs text-vantage-muted font-normal leading-relaxed">
-            When a new user signs up and redeems this code, you will instantly unlock premium access to Vantage AI for a week and receive 2,000 Vantage AI tokens to use.
+            {t('referral_program.your_code_description')}
           </p>
 
           <div className="flex items-center gap-2 bg-neutral-50 border border-neutral-200 rounded-2xl p-3 mt-1.5">
@@ -217,12 +202,12 @@ export const ReferralProgramView: React.FC<ReferralProgramViewProps> = ({
               {copied ? (
                 <>
                   <Check size={14} className="text-[#366945]" />
-                  <span>Copied</span>
+                  <span>{t('referral_program.copied')}</span>
                 </>
               ) : (
                 <>
                   <Copy size={14} />
-                  <span>Copy</span>
+                  <span>{t('referral_program.copy')}</span>
                 </>
               )}
             </button>
@@ -238,11 +223,11 @@ export const ReferralProgramView: React.FC<ReferralProgramViewProps> = ({
             <div className="w-7 h-7 rounded-lg bg-[#E9F5ED] text-[#366945] flex items-center justify-center">
               <UserPlus size={16} />
             </div>
-            <h3 className="text-sm font-bold text-neutral-900">Redeem a Friend's Code</h3>
+            <h3 className="text-sm font-bold text-neutral-900">{t('referral_program.redeem_friend_code')}</h3>
           </div>
 
           <p className="text-xs text-vantage-muted font-normal leading-relaxed">
-            Referred by a friend? Enter their referral code below to reward them with Vantage AI tokens and continuous premium intelligence access.
+            {t('referral_program.redeem_description')}
           </p>
 
           {profile?.referredBy ? (
@@ -267,7 +252,7 @@ export const ReferralProgramView: React.FC<ReferralProgramViewProps> = ({
                   disabled={isSubmitting || !referralInput.trim()}
                   className="px-5 py-2.5 bg-black hover:bg-neutral-900 text-[#00FF88] rounded-xl text-xs font-bold transition-all active:scale-95 cursor-pointer disabled:opacity-30"
                 >
-                  {isSubmitting ? 'Redeeming...' : 'Redeem Code'}
+                  {isSubmitting ? t('referral_program.redeeming') : t('referral_program.redeem_code')}
                 </button>
               </div>
 

@@ -5,7 +5,7 @@ import { Fingerprint, ShieldCheck, Lock as LockIcon, Unlock as UnlockIcon, Alert
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { db, auth, getGoogleProvider } from '../lib/firebase';
 import { handleFirestoreError, OperationType } from '../lib/firebaseUtils';
-import { signInWithPopup, GoogleAuthProvider, FacebookAuthProvider } from 'firebase/auth';
+import { signInWithPopup, GoogleAuthProvider, FacebookAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { setCachedAccessToken } from '../lib/googleAuth';
 import { seedUserCustomCategories } from '../lib/categoryUtils';
 import { LanguageSelector } from './LanguageSelector';
@@ -77,6 +77,8 @@ export const BiometricLogin: React.FC<BiometricLoginProps> = ({ onSuccess }) => 
     return localStorage.getItem('vantage_fingerprint_enabled') === 'true';
   });
   const [emailInput, setEmailInput] = useState('');
+  const [passwordInput, setPasswordInput] = useState('');
+  const [isSignUp, setIsSignUp] = useState(false);
   const [complianceChecked, setComplianceChecked] = useState<boolean>(false);
   const [activeModal, setActiveModal] = useState<'privacy' | 'terms' | null>(null);
   const lastTapRef = useRef<number>(0);
@@ -202,58 +204,28 @@ export const BiometricLogin: React.FC<BiometricLoginProps> = ({ onSuccess }) => 
     lastTapRef.current = now;
   };
 
-  const handleDirectEmailBypass = async (emailInputVal: string) => {
-    if (!emailInputVal || !emailInputVal.includes('@')) {
-      alert("Please enter a valid email address (e.g. user@example.com)");
+  const handleEmailAuth = async () => {
+    if (!complianceChecked) {
+      setErrorMsg('Please agree to the privacy policy and terms of service.');
+      return;
+    }
+    if (!emailInput || !passwordInput) {
+      setErrorMsg('Please enter both email and password.');
       return;
     }
     setStatus('scanning');
     try {
-      const cleanEmail = emailInputVal.trim().toLowerCase();
-      const sfx = cleanEmail.replace(/[^a-zA-Z0-9]/g, '_');
-      const uid = `usr_${sfx}`;
-      
-      const userRef = doc(db, 'users', uid);
-      const userSnap = await getDoc(userRef);
-      
-      const nowTs = serverTimestamp();
-      
-      if (!userSnap.exists()) {
-        const newProfile = {
-          uid: uid,
-          email: cleanEmail,
-          displayName: cleanEmail.split('@')[0],
-          fullName: '', // Start strictly empty for native gray text placeholder hint validation
-          subscriptionTier: 'free', 
-          fingerprintLoginEnabled: false,
-          lastLogin: nowTs,
-          createdAt: nowTs,
-          isOnboarded: false, 
-          geminiInsightsEnabled: true,
-          legalAcceptedAt: nowTs,
-          appPrivacyVersion: 'Version 1.0.0',
-          hasAcceptedTerms: true,
-        };
-        await setDoc(userRef, newProfile);
-        await seedUserCustomCategories(uid);
-        
-        setStatus('success');
-        setTimeout(() => {
-          onSuccess({ ...newProfile, lastLogin: new Date().toISOString(), createdAt: new Date().toISOString() });
-        }, 500);
+      if (isSignUp) {
+        await createUserWithEmailAndPassword(auth, emailInput, passwordInput);
       } else {
-        await setDoc(userRef, { lastLogin: nowTs }, { merge: true });
-        const existingData = userSnap.data();
-        
-        setStatus('success');
-        setTimeout(() => {
-          onSuccess({ ...existingData, lastLogin: new Date().toISOString() });
-        }, 500);
+        await signInWithEmailAndPassword(auth, emailInput, passwordInput);
       }
+      setStatus('success');
     } catch (err: any) {
-      console.error("Direct Access flow failed:", err);
+      console.error("Email/Password Auth failed:", err);
       setStatus('error');
-      setErrorMsg(`Direct connection failed: ${err.message || err}`);
+      const message = err.code === 'auth/invalid-credential' ? 'Wrong password/email' : (err.message || 'Authentication failed.');
+      setErrorMsg(message);
     }
   };
 
@@ -438,7 +410,7 @@ export const BiometricLogin: React.FC<BiometricLoginProps> = ({ onSuccess }) => 
 
                     <div className="flex flex-col gap-3 rounded-xl border border-[#E1E8ED] bg-[#F8FAFC] p-4 shadow-sm text-left">
                       <label className="text-[11px] font-bold text-neutral-700" htmlFor="direct-email-field">
-                        Email Login/Sign Up
+                        Email
                       </label>
                       <input 
                         id="direct-email-field"
@@ -446,23 +418,37 @@ export const BiometricLogin: React.FC<BiometricLoginProps> = ({ onSuccess }) => 
                         placeholder="name@company.com"
                         value={emailInput}
                         onChange={(e) => setEmailInput(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' && emailInput && emailInput.includes('@') && complianceChecked) {
-                            handleDirectEmailBypass(emailInput);
-                          }
-                        }}
+                        className="w-full bg-white border border-[#D1D8E0] rounded-lg px-3 py-2 text-xs font-bold text-neutral-800 outline-none focus:border-emerald-600 transition-colors placeholder:text-neutral-400 placeholder:font-normal"
+                      />
+                      <label className="text-[11px] font-bold text-neutral-700 mt-2" htmlFor="password-field">
+                        Password
+                      </label>
+                      <input 
+                        id="password-field"
+                        type="password"
+                        placeholder="••••••••"
+                        value={passwordInput}
+                        onChange={(e) => setPasswordInput(e.target.value)}
                         className="w-full bg-white border border-[#D1D8E0] rounded-lg px-3 py-2 text-xs font-bold text-neutral-800 outline-none focus:border-emerald-600 transition-colors placeholder:text-neutral-400 placeholder:font-normal"
                       />
                     </div>
-
+                    
                     <button
-                      onClick={handleSandboxBypass}
-                      disabled={!complianceChecked}
-                      className="w-full py-2.5 bg-neutral-900 border border-neutral-800 hover:bg-neutral-850 disabled:opacity-40 disabled:cursor-not-allowed text-[#FFFFFF] rounded-xl text-xs font-bold shadow-md transition-transform active:scale-95 text-center cursor-pointer"
+                      onClick={handleEmailAuth}
+                      disabled={!complianceChecked || !emailInput || !passwordInput}
+                      className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl text-center text-xs font-bold shadow-sm transition-all cursor-pointer"
                     >
-                      🚀 Enter development sandbox
+                      {isSignUp ? 'Sign Up' : 'Login'}
                     </button>
-                  </motion.div>
+                    
+                    <button
+                      onClick={() => setIsSignUp(!isSignUp)}
+                      className="text-xs text-emerald-600 font-bold hover:underline cursor-pointer"
+                    >
+                      {isSignUp ? 'Already have an account? Login' : 'Need an account? Sign Up'}
+                    </button>
+
+                                      </motion.div>
                 )}
 
                 {status === 'scanning' && (
@@ -515,17 +501,12 @@ export const BiometricLogin: React.FC<BiometricLoginProps> = ({ onSuccess }) => 
                     <p className="text-xs font-normal text-red-500 text-center px-4 leading-relaxed">{errorMsg}</p>
                     
                     <div className="flex flex-col gap-2 mt-1 w-full">
+                      
                       <button 
                         onClick={() => setStatus('idle')}
                         className="px-4 py-2 bg-neutral-100 hover:bg-neutral-150 text-neutral-800 rounded-xl text-xs font-bold transition-all cursor-pointer text-center"
                       >
                         Retry Connection
-                      </button>
-                      <button 
-                        onClick={handleSandboxBypass}
-                        className="px-4 py-2.5 bg-emerald-600 text-white hover:bg-emerald-700 transition-all w-full rounded-xl text-xs font-bold text-center cursor-pointer"
-                      >
-                        🚀 Enter development sandbox
                       </button>
                     </div>
                   </motion.div>
@@ -951,38 +932,36 @@ export const BiometricLogin: React.FC<BiometricLoginProps> = ({ onSuccess }) => 
                     <div className="flex-1 border-t border-neutral-200"></div>
                   </div>
 
-                  <div className="flex flex-col gap-3 rounded-xl border border-[#E1E8ED] bg-[#F8FAFC] p-4 shadow-sm text-left w-full">
-                    <label className="text-[11px] font-bold text-neutral-700" htmlFor="direct-email-field-home">
-                      {t('onboarding_flow.auth_gateway.email_gateway_label', 'Email Login/Sign Up')}
-                    </label>
+                  <div className="flex flex-col gap-3 w-full">
                     <input 
-                      id="direct-email-field-home"
                       type="email"
-                      placeholder="name@company.com"
+                      placeholder="Email"
                       value={emailInput}
                       onChange={(e) => setEmailInput(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && emailInput && emailInput.includes('@') && complianceChecked) {
-                          handleDirectEmailBypass(emailInput);
-                        }
-                      }}
-                      className="w-full bg-white border border-[#D1D8E0] rounded-lg px-3 py-2 text-xs font-bold text-neutral-800 outline-none focus:border-emerald-600 transition-colors placeholder:text-neutral-400 placeholder:font-normal"
+                      className="w-full bg-white border border-[#D1D8E0] rounded-lg px-3 py-2 text-xs font-bold text-neutral-800 outline-none focus:border-emerald-600 transition-colors"
                     />
+                    <input 
+                      type="password"
+                      placeholder="Password"
+                      value={passwordInput}
+                      onChange={(e) => setPasswordInput(e.target.value)}
+                      className="w-full bg-white border border-[#D1D8E0] rounded-lg px-3 py-2 text-xs font-bold text-neutral-800 outline-none focus:border-emerald-600 transition-colors"
+                    />
+                    <button
+                      onClick={handleEmailAuth}
+                      disabled={!complianceChecked || !emailInput || !passwordInput}
+                      className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl text-center text-xs font-bold shadow-sm transition-all cursor-pointer"
+                    >
+                      {isSignUp ? 'Sign Up' : 'Login'}
+                    </button>
+                    <button
+                      onClick={() => setIsSignUp(!isSignUp)}
+                      className="text-xs text-emerald-600 font-bold hover:underline cursor-pointer"
+                    >
+                      {isSignUp ? 'Already have an account? Login' : 'Need an account? Sign Up'}
+                    </button>
                   </div>
 
-                  <button
-                    onClick={() => {
-                      if (emailInput && emailInput.includes('@') && complianceChecked) {
-                        handleDirectEmailBypass(emailInput);
-                      } else {
-                        setErrorMsg('Please enter a valid email address and agree to the terms.');
-                      }
-                    }}
-                    disabled={!complianceChecked}
-                    className="w-full py-2.5 bg-neutral-900 border border-neutral-800 hover:bg-neutral-850 disabled:opacity-40 disabled:cursor-not-allowed text-[#FFFFFF] rounded-xl text-xs font-bold shadow-md transition-transform active:scale-95 text-center cursor-pointer"
-                  >
-                    🚀 {t('onboarding_flow.auth_gateway.sign_in_up_btn', 'Email Sign In/Up')}
-                  </button>
                 </motion.div>
               )}
 
@@ -1041,12 +1020,6 @@ export const BiometricLogin: React.FC<BiometricLoginProps> = ({ onSuccess }) => 
                       className="px-4 py-2 bg-neutral-100 hover:bg-neutral-150 text-neutral-800 rounded-xl text-xs font-bold transition-all cursor-pointer text-center"
                     >
                       {t('onboarding_flow.auth_gateway.retry', 'Retry Connection')}
-                    </button>
-                    <button 
-                      onClick={handleSandboxBypass}
-                      className="px-4 py-2.5 bg-emerald-600 text-white hover:bg-emerald-700 transition-all w-full rounded-xl text-xs font-bold text-center cursor-pointer"
-                    >
-                      🚀 Enter development sandbox
                     </button>
                   </div>
                 </motion.div>

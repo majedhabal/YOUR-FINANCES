@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Landmark, CreditCard, TrendingDown, Percent, Calendar } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface Account {
   id: string;
@@ -33,6 +34,7 @@ export const DebtBreakdownModal: React.FC<DebtBreakdownModalProps> = ({
   exchangeRates,
   defaultRates,
 }) => {
+  const { t } = useTranslation();
   const getRateToAED = (curr: string) => {
     const c = curr || 'AED';
     if (c === 'AED') return 1;
@@ -124,13 +126,13 @@ export const DebtBreakdownModal: React.FC<DebtBreakdownModalProps> = ({
                     }}
                     className="tracking-tight"
                   >
-                    Total Debts Breakdown
+                    {t('debt_breakdown.title')}
                   </h3>
                   <p 
                     style={{ fontWeight: 400, fontFamily: "'Google Sans', sans-serif" }}
                     className="text-neutral-500 text-[11px]"
                   >
-                    Credit cards, personal loans, and active mortgages
+                    {t('debt_breakdown.subtitle')}
                   </p>
                 </div>
                 <button 
@@ -144,9 +146,9 @@ export const DebtBreakdownModal: React.FC<DebtBreakdownModalProps> = ({
               {/* Calculations Summary Card */}
               <div className="p-4 rounded-xl bg-white/40 border border-neutral-100/50 flex flex-col gap-3 shrink-0">
                 <div className="flex justify-between items-center">
-                  <span style={{ fontWeight: 400, fontFamily: "'Google Sans', sans-serif" }} className="text-neutral-500 text-[11px]">Liability Summary</span>
+                  <span style={{ fontWeight: 400, fontFamily: "'Google Sans', sans-serif" }} className="text-neutral-500 text-[11px]">{t('debt_breakdown.liability_summary')}</span>
                   <span style={{ fontWeight: 500, fontFamily: "'Google Sans', sans-serif" }} className="text-rose-600 text-[10px] bg-rose-50/50 px-2 py-0.5 rounded-full">
-                    Outstanding Debt
+                    {t('debt_breakdown.outstanding_debt_label')}
                   </span>
                 </div>
                 
@@ -158,7 +160,7 @@ export const DebtBreakdownModal: React.FC<DebtBreakdownModalProps> = ({
                   flexWrap: 'nowrap',
                   width: '100%'
                 }} className="flex items-center justify-between flex-nowrap w-full">
-                  <span style={{ fontWeight: 400, fontFamily: "'Google Sans', sans-serif", color: '#1E2229' }} className="text-[11px]">Total Outstanding Debt ({primaryCurrency})</span>
+                  <span style={{ fontWeight: 400, fontFamily: "'Google Sans', sans-serif", color: '#1E2229' }} className="text-[11px]">{t('debt_breakdown.total_outstanding_debt', { currency: primaryCurrency })}</span>
                   <span 
                     style={{ 
                       fontWeight: 600, 
@@ -186,7 +188,7 @@ export const DebtBreakdownModal: React.FC<DebtBreakdownModalProps> = ({
                         color: '#1E2229'
                       }}
                     >
-                      Liability Accounts
+                      {t('debt_breakdown.liability_accounts_title')}
                     </span>
                     <span className="text-[10px] text-neutral-400 font-normal">({debtList.length})</span>
                   </div>
@@ -194,7 +196,7 @@ export const DebtBreakdownModal: React.FC<DebtBreakdownModalProps> = ({
                   <div className="space-y-1.5">
                     {debtList.length === 0 ? (
                       <div className="text-neutral-400 text-[11px] font-normal py-4 text-center border border-dashed border-neutral-100/50 rounded-xl">
-                        No active debt accounts found.
+                        {t('debt_breakdown.no_accounts_found')}
                       </div>
                     ) : (
                       debtList.map(acc => {
@@ -319,7 +321,7 @@ export const DebtBreakdownModal: React.FC<DebtBreakdownModalProps> = ({
               
               {/* Disclaimer text footer */}
               <div style={{ fontWeight: 400, fontFamily: "'Google Sans', sans-serif" }} className="text-[10px] text-neutral-400 text-center border-t border-neutral-200/55 pt-2 leading-tight shrink-0">
-                Reflects all credit card balances, loan liabilities, and mortgage obligations.
+                {t('debt_breakdown.disclaimer')}
               </div>
             </motion.div>
           </div>

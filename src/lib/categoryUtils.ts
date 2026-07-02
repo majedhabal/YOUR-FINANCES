@@ -26,12 +26,28 @@ export async function fetchGlobalPresets(): Promise<CategoryDef[]> {
       }
     }
     
-    // Seed global_configurations/onboarding_presets document if not found
+    // Seed or update global_configurations/onboarding_presets document if not found or incomplete
     const initialPreset = {
-      defaultCategoryMap: DEFAULT_PRESET_MAP
+      defaultCategoryMap: DEFAULT_PRESET_MAP,
+      updatedAt: new Date().toISOString(),
+      version: '1.1.0' // Versioning to trigger updates
     };
-    await setDoc(docRef, initialPreset);
-    return DEFAULT_PRESET_MAP;
+    
+    if (!dSnap.exists()) {
+      await setDoc(docRef, initialPreset);
+      return DEFAULT_PRESET_MAP;
+    } else {
+      // Check if we need to force an update for "Starting Balance"
+      const data = dSnap.data();
+      const currentMap = data.defaultCategoryMap as CategoryDef[];
+      const others = currentMap.find(c => c.name === 'Others');
+      if (others && !others.subcategories?.includes('Starting Balance')) {
+        await setDoc(docRef, initialPreset);
+        return DEFAULT_PRESET_MAP;
+      }
+    }
+    
+    return dSnap.data().defaultCategoryMap as CategoryDef[];
   } catch (err) {
     console.warn("Failed to fetch global presets, falling back to local Constant categories map:", err);
     return DEFAULT_PRESET_MAP;

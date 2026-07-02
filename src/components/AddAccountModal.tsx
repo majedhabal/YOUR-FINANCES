@@ -168,10 +168,10 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({ isOpen, onClos
   };
 
   const accountTypes = [
-    { id: 'bank', label: 'Bank Account', icon: BankIcon, desc: 'Savings, checking, or current' },
-    { id: 'cash', label: 'Cash Account', icon: Wallet, desc: 'Physical currency or petty cash' },
-    { id: 'credit', label: 'Credit Card', icon: CreditCard, desc: 'Visa, Mastercard, or Amex' },
-    { id: 'investment', label: 'Investment Portfolio', icon: Landmark, desc: 'Stocks, crypto, real estate, or Sarwa' },
+    { id: 'bank', label: t('add_account.bank_account'), icon: BankIcon, desc: t('add_account.bank_account_desc') },
+    { id: 'cash', label: t('add_account.cash_account'), icon: Wallet, desc: t('add_account.cash_account_desc') },
+    { id: 'credit', label: t('add_account.credit_card'), icon: CreditCard, desc: t('add_account.credit_card_desc') },
+    { id: 'investment', label: t('add_account.investment_portfolio'), icon: Landmark, desc: t('add_account.investment_portfolio_desc') },
   ];
 
   const handleSelectType = (type: any) => {
@@ -317,15 +317,16 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({ isOpen, onClos
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={handleClose}
-            className="absolute inset-0 bg-[#1E2229]/60 backdrop-blur-[6px]"
-          />
-          
+        <div className="fixed inset-0 z-[100] overflow-y-auto overflow-x-hidden">
+          <div className="min-h-full w-full flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={handleClose}
+              className="fixed inset-0 bg-[#1E2229]/60 backdrop-blur-[6px]"
+            />
+            
             <motion.div
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -337,16 +338,16 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({ isOpen, onClos
                 borderRadius: '24px',
                 border: '1px solid rgba(0, 0, 0, 0.08)',
               }}
-              className="relative w-full max-w-[92%] md:max-w-[420px] max-h-[90dvh] overflow-y-auto shadow-2xl [WebkitOverflowScrolling:touch]"
+              className="relative w-full max-w-[92%] md:max-w-[420px] shadow-2xl"
             >
               <div className="p-6 md:p-8 flex flex-col gap-6">
               <div className="flex justify-between items-start">
                 <div className="flex flex-col gap-1 animate-none">
                   <h3 style={{ fontFamily: "'Google Sans', sans-serif", fontSize: '24px', color: '#111c2d' }} className="font-bold tracking-tight">
-                    {step === 'type' ? 'Define identity' : t('add_account.account_details')}
+                    {step === 'type' ? t('add_account.define_identity') : t('add_account.account_details')}
                   </h3>
                   <p style={{ fontFamily: "'Google Sans', sans-serif", fontSize: '15px', color: '#6b7280' }} className="font-normal">
-                    {step === 'type' ? 'Select account source' : `${selectedType ? selectedType.charAt(0).toUpperCase() + selectedType.slice(1) : ''} configuration`}
+                    {step === 'type' ? t('add_account.select_source') : t(`add_account.${selectedType}_configuration`)}
                   </p>
                 </div>
                 <button onClick={handleClose} className="p-1 hover:bg-gray-100 rounded-full transition-colors cursor-pointer">
@@ -377,29 +378,13 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({ isOpen, onClos
                             style={{ fontFamily: "'Google Sans', sans-serif", fontSize: '16px' }} 
                             className="font-bold text-[#111c2d]"
                           >
-                            {(() => {
-                              switch(type.id) {
-                                case 'bank': return 'Bank Account';
-                                case 'cash': return 'Cash Account';
-                                case 'credit': return 'Credit Card';
-                                case 'investment': return 'Investment Portfolio';
-                                default: return type.label;
-                              }
-                            })()}
+                            {type.label}
                           </span>
                           <p 
                             style={{ fontFamily: "'Google Sans', sans-serif", fontSize: '13px' }} 
                             className="text-[#6b7280] font-normal"
                           >
-                            {(() => {
-                              switch(type.id) {
-                                case 'bank': return 'Savings, checking, or...';
-                                case 'cash': return 'Physical currency or p...';
-                                case 'credit': return 'Visa, Mastercard, or A...';
-                                case 'investment': return 'Stocks, crypto, real est...';
-                                default: return type.desc;
-                              }
-                            })()}
+                            {type.desc}
                           </p>
                         </div>
                       </div>
@@ -409,7 +394,7 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({ isOpen, onClos
                 </div>
               ) : (
                 <form onSubmit={handleAddAccount} className="flex flex-col gap-5">
-                  <div className="flex flex-col gap-4 w-full max-h-[75vh] md:max-h-none overflow-y-auto p-1 custom-scrollbar">
+                  <div className="flex flex-col gap-4 w-full p-1">
                     {/* Account Label */}
                     <GlassInput
                       required
@@ -436,7 +421,7 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({ isOpen, onClos
                     </GlassSelect>
                     {isFree && (
                       <span className="text-[11px] text-[#A0AEC0] font-normal mt-1 block">
-                        Free tier is restricted to {baseCurrency}. Upgrade to unlock multi-currency support.
+                        {t('add_account.free_tier_restricted', { currency: baseCurrency })}
                       </span>
                     )}
 
@@ -631,7 +616,7 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({ isOpen, onClos
                         </div>
 
                         {/* Sub-Asset List Container */}
-                        <div className="w-full flex flex-col gap-3 max-h-[220px] overflow-y-auto pr-1 shrink-0">
+                        <div className="w-full flex flex-col gap-3 pr-1 shrink-0">
                             {subAssets.map((sa, idx) => (
                               <div 
                                 key={sa.id || `sa-add-edit-${idx}`} 
@@ -645,7 +630,7 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({ isOpen, onClos
                                  <div className="flex justify-between items-center gap-2">
                                     <input 
                                       type="text"
-                                      placeholder="Asset name (e.g. BTC, rental unit)"
+                                      placeholder={t('add_account.asset_name_placeholder')}
                                       value={sa.name}
                                       onChange={(e) => {
                                         const newAssets = [...subAssets];
@@ -670,7 +655,7 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({ isOpen, onClos
                                  </div>
                                  <div className="grid grid-cols-2 gap-2 mt-1">
                                     <div className="flex flex-col gap-1">
-                                       <label style={{ fontFamily: "'Google Sans', sans-serif" }} className="text-[11px] font-normal text-[#57606F] tracking-wide px-1">Principal</label>
+                                       <label style={{ fontFamily: "'Google Sans', sans-serif" }} className="text-[11px] font-normal text-[#57606F] tracking-wide px-1">{t('add_account.principal')}</label>
                                        <input 
                                          type="number"
                                          placeholder="0"
@@ -690,7 +675,7 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({ isOpen, onClos
                                        />
                                     </div>
                                     <div className="flex flex-col gap-1">
-                                       <label style={{ fontFamily: "'Google Sans', sans-serif" }} className="text-[11px] font-normal text-[#57606F] tracking-wide px-1">Value</label>
+                                       <label style={{ fontFamily: "'Google Sans', sans-serif" }} className="text-[11px] font-normal text-[#57606F] tracking-wide px-1">{t('add_account.value')}</label>
                                        <input 
                                          type="number"
                                          placeholder="0"
@@ -712,10 +697,10 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({ isOpen, onClos
                                  </div>
                                  <div className="grid grid-cols-2 gap-2 mt-1">
                                     <div className="flex flex-col gap-1">
-                                       <label style={{ fontFamily: "'Google Sans', sans-serif" }} className="text-[11px] font-normal text-[#57606F] tracking-wide px-1">Est. passive yield</label>
+                                       <label style={{ fontFamily: "'Google Sans', sans-serif" }} className="text-[11px] font-normal text-[#57606F] tracking-wide px-1">{t('add_account.est_passive_yield')}</label>
                                        <input 
                                          type="number"
-                                         placeholder="Yield"
+                                         placeholder={t('add_account.yield_placeholder')}
                                          value={sa.estimatedYield}
                                          onChange={(e) => {
                                            const newAssets = [...subAssets];
@@ -732,7 +717,7 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({ isOpen, onClos
                                        />
                                     </div>
                                     <div className="flex flex-col gap-1 relative">
-                                       <label style={{ fontFamily: "'Google Sans', sans-serif" }} className="text-[11px] font-normal text-[#57606F] tracking-wide px-1">Yield period</label>
+                                       <label style={{ fontFamily: "'Google Sans', sans-serif" }} className="text-[11px] font-normal text-[#57606F] tracking-wide px-1">{t('add_account.yield_period')}</label>
                                        <select 
                                          value={sa.yieldPeriod || 'monthly'}
                                          onChange={(e) => {
@@ -748,15 +733,15 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({ isOpen, onClos
                                          }}
                                          className="w-full px-2 text-sm text-[#1E2229] outline-none focus:border-[#A6DDB1] appearance-none font-bold cursor-pointer h-10 min-h-[40px]"
                                        >
-                                          <option value="daily" className="bg-white text-[#1E2229]">Daily</option>
-                                          <option value="weekly" className="bg-white text-[#1E2229]">Weekly</option>
-                                          <option value="monthly" className="bg-white text-[#1E2229]">Monthly</option>
-                                          <option value="yearly" className="bg-white text-[#1E2229]">Yearly</option>
+                                          <option value="daily" className="bg-white text-[#1E2229]">{t('add_account.daily')}</option>
+                                          <option value="weekly" className="bg-white text-[#1E2229]">{t('add_account.weekly')}</option>
+                                          <option value="monthly" className="bg-white text-[#1E2229]">{t('add_account.monthly')}</option>
+                                          <option value="yearly" className="bg-white text-[#1E2229]">{t('add_account.yearly')}</option>
                                        </select>
                                     </div>
                                  </div>
                                  <div className="flex flex-col gap-1 mt-1">
-                                    <label style={{ fontFamily: "'Google Sans', sans-serif" }} className="text-[11px] font-normal text-[#57606F] tracking-wide px-1">Received (realized) income</label>
+                                    <label style={{ fontFamily: "'Google Sans', sans-serif" }} className="text-[11px] font-normal text-[#57606F] tracking-wide px-1">{t('add_account.received_income')}</label>
                                     <input 
                                       type="text"
                                       placeholder="0 or e.g., 7000*6"
@@ -871,7 +856,7 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({ isOpen, onClos
                       }}
                       className="flex-1 py-1 rounded-xl shadow-sm transition-all active:scale-95 h-12 md:h-14 flex items-center justify-center cursor-pointer"
                     >
-                      Back
+                      {t('add_account.back')}
                     </button>
                     <button 
                       disabled={isLoading}
@@ -892,7 +877,7 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({ isOpen, onClos
                       ) : (
                         <>
                           <Check size={18} />
-                          <span>Create Account</span>
+                          <span>{t('add_account.create_account_button')}</span>
                         </>
                       )}
                     </button>
@@ -902,6 +887,7 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({ isOpen, onClos
             </div>
           </motion.div>
         </div>
+      </div>
       )}
     </AnimatePresence>
   );
