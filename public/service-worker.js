@@ -1,4 +1,4 @@
-const CACHE_NAME = 'your-finances-mint-v2';
+const CACHE_NAME = 'your-finances-mint-v4';
 
 // Core static assets to pre-cache for instant offline availability
 const PRECACHE_ASSETS = [
