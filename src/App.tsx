@@ -149,11 +149,21 @@ function AppContent() {
         setUser(currentUser);
         
         // Establish real-time persistent data pipe to flat root profile schema
+        console.log("Setting up snapshot listener for user:", currentUser.uid);
         const profileRef = doc(db, 'users', currentUser.uid);
+        console.log("Profile ref created:", profileRef.path);
+
+        const timeoutId = setTimeout(() => {
+          console.warn("Sync timed out for user:", currentUser.uid);
+          setLoading(false);
+        }, 10000); // 10 seconds
 
         const unsubProfile = onSnapshot(profileRef, async (docSnap) => {
+          clearTimeout(timeoutId);
+          console.log("Profile snapshot received for:", currentUser.uid, "Exists:", docSnap.exists());
           if (docSnap.exists()) {
             const profileData = docSnap.data();
+            console.log("Profile data retrieved:", profileData);
             
             // Streak Calculation Logic
             const today = getSimulatedDate().toISOString().split('T')[0];
@@ -161,130 +171,137 @@ function AppContent() {
             
             console.log("Streak check:", { today, lastLoginDate, dailyStreak: profileData.dailyStreak });
             
-            if (lastLoginDate !== today) {
-              const yesterday = getSimulatedDate();
-              yesterday.setDate(yesterday.getDate() - 1);
-              const yesterdayStr = yesterday.toISOString().split('T')[0];
-              
-              let newStreak = (profileData.dailyStreak || 0) + 1;
-              let streakFreezes = profileData.streakFreezes || 0;
-              let usedFreeze = false;
+            try {
+                if (lastLoginDate !== today) {
+                  const yesterday = getSimulatedDate();
+                  yesterday.setDate(yesterday.getDate() - 1);
+                  const yesterdayStr = yesterday.toISOString().split('T')[0];
+                  
+                  let newStreak = (profileData.dailyStreak || 0) + 1;
+                  let streakFreezes = profileData.streakFreezes || 0;
+                  let usedFreeze = false;
 
-              if (lastLoginDate === yesterdayStr) {
-                // Normal streak increment
-                newStreak = (profileData.dailyStreak || 0) + 1;
-              } else {
-                // A day (or more) was skipped.
-                // Calculate days missed
-                const lastLogin = new Date(lastLoginDate);
-                const todayDate = getSimulatedDate();
-                
-                // Simple day difference
-                const diffTime = Math.abs(todayDate.getTime() - lastLogin.getTime());
-                const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-                
-                const daysMissed = diffDays - 1; // e.g., if last login was yesterday, diff is 1 day, missed 0 days.
+                  if (lastLoginDate === yesterdayStr) {
+                    // Normal streak increment
+                    newStreak = (profileData.dailyStreak || 0) + 1;
+                  } else {
+                    // A day (or more) was skipped.
+                    // Calculate days missed
+                    const lastLogin = new Date(lastLoginDate);
+                    const todayDate = getSimulatedDate();
+                    
+                    // Simple day difference
+                    const diffTime = Math.abs(todayDate.getTime() - lastLogin.getTime());
+                    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                    
+                    const daysMissed = diffDays - 1; // e.g., if last login was yesterday, diff is 1 day, missed 0 days.
 
-                if (streakFreezes >= daysMissed) {
-                    // Use freezes
-                    streakFreezes -= daysMissed;
-                    newStreak = (profileData.dailyStreak || 0); // Keep streak
-                    usedFreeze = true;
-                } else {
-                    // No freezes, reset streak
-                    newStreak = 1;
-                    // Notify user about streak loss
-                    console.log("Streak lost! Not enough freezes.");
-                    if ('Notification' in window && Notification.permission === 'granted') {
-                        new Notification("Vantage Streak Lost", {
-                            body: "You missed too many days and didn't have enough streak freezes to cover it.",
-                            icon: '/icons/Your_Finances_Logo.png'
-                        });
+                    if (streakFreezes >= daysMissed) {
+                        // Use freezes
+                        streakFreezes -= daysMissed;
+                        newStreak = (profileData.dailyStreak || 0); // Keep streak
+                        usedFreeze = true;
+                    } else {
+                        // No freezes, reset streak
+                        newStreak = 1;
+                        // Notify user about streak loss
+                        console.log("Streak lost! Not enough freezes.");
+                        if ('Notification' in window && Notification.permission === 'granted') {
+                            new Notification("Vantage Streak Lost", {
+                                body: "You missed too many days and didn't have enough streak freezes to cover it.",
+                                icon: '/icons/Your_Finances_Logo.png'
+                            });
+                        }
                     }
-                }
-              }
-
-              
-              console.log("Updating streak:", newStreak);
-              const updateData: any = {
-                dailyStreak: newStreak,
-                streakFreezes: streakFreezes,
-                lastLoginDate: today
-              };
-
-              if (!usedFreeze && (profileData.dailyStreak || 0) > 0) {
-                  // Notify user about streak loss - simple alert for now
-                  console.log("Streak lost!");
-              }
-
-              // Handle rewards
-              const claimedRewards = profileData.claimedRewards || [];
-              const newRewards = profileData.rewardHistory || [];
-              const todayStr = getSimulatedDate().toISOString().split('T')[0];
-
-              REWARDS.forEach(reward => {
-                  if (newStreak >= reward.streakThreshold && !claimedRewards.includes(reward.id)) {
-                      claimedRewards.push(reward.id);
-                      newRewards.push({
-                        id: reward.id,
-                        dateClaimed: todayStr
-                      });
-                      if (reward.type === 'receipt_scan') {
-                          updateData.receiptScans = (profileData.receiptScans || 0) + reward.amount;
-                      } else if (reward.type === 'ai_tokens') {
-                          updateData.aiTokens = (profileData.aiTokens || 0) + reward.amount;
-                      } else if (reward.type === 'streak_freeze') {
-                          updateData.streakFreezes = (profileData.streakFreezes || 0) + reward.amount;
-                      } else if (reward.type === 'ai_report') {
-                          updateData.aiReportUnlocked = true;
-                      } else if (reward.type === 'budget_audit') {
-                          updateData.budgetAuditUnlocked = true;
-                      } else if (reward.type === 'investment_report') {
-                          updateData.investmentReportUnlocked = true;
-                      } else if (reward.type === 'asset_allocation_report') {
-                          updateData.assetAllocationReportUnlocked = true;
-                      } else if (reward.type === 'annual_forecast_report') {
-                          updateData.annualForecastReportUnlocked = true;
-                      }
-                      setIsBonusStreak(true); // Trigger animation for reward
-                      setRewardNotification(reward);
                   }
-              });
-              updateData.claimedRewards = claimedRewards;
-              updateData.rewardHistory = newRewards;
 
-              if (newStreak % 30 === 0 && !claimedRewards.includes('ai_tokens')) {
-                 // Already handled by REWARDS loop, but let's keep it safe if logic overlaps
-              }
-              // Removed old % 30 logic as it's now covered by REWARDS
+                  
+                  console.log("Updating streak:", newStreak);
+                  const updateData: any = {
+                    dailyStreak: newStreak,
+                    streakFreezes: streakFreezes,
+                    lastLoginDate: today
+                  };
 
-              await updateDoc(profileRef, updateData);
-              
-              setStreakUpdated(true);
-              setAnimatingStreak(updateData.dailyStreak);
-              setShowStreakAnimation(true);
-              setTimeout(() => setStreakUpdated(false), 3000);
-            }
-            
-            // Record login for streak calendar (always)
-            const loginRef = doc(db, 'users', currentUser.uid, 'userLogins', today);
-            await setDoc(loginRef, { userId: currentUser.uid, timestamp: getSimulatedDate() });
+                  if (!usedFreeze && (profileData.dailyStreak || 0) > 0) {
+                      // Notify user about streak loss - simple alert for now
+                      console.log("Streak lost!");
+                  }
 
-            setProfile({ uid: currentUser.uid, ...profileData });
-            
-            // Sync saved language if available
-            if (profileData.language) {
-              i18n.changeLanguage(profileData.language);
-            }
-            
-            // Trigger tactical tour sequence dynamically if onboarding just cleared
-            if (profileData.hasAcceptedTerms && !localStorage.getItem(`vantage_tour_completed_${currentUser.uid}`)) {
-              setCurrentTourStep(1);
+                  // Handle rewards
+                  const claimedRewards = profileData.claimedRewards || [];
+                  const newRewards = profileData.rewardHistory || [];
+                  const todayStr = getSimulatedDate().toISOString().split('T')[0];
+
+                  REWARDS.forEach(reward => {
+                      if (newStreak >= reward.streakThreshold && !claimedRewards.includes(reward.id)) {
+                          claimedRewards.push(reward.id);
+                          newRewards.push({
+                            id: reward.id,
+                            dateClaimed: todayStr
+                          });
+                          if (reward.type === 'receipt_scan') {
+                              updateData.receiptScans = (profileData.receiptScans || 0) + reward.amount;
+                          } else if (reward.type === 'ai_tokens') {
+                              updateData.aiTokens = (profileData.aiTokens || 0) + reward.amount;
+                          } else if (reward.type === 'streak_freeze') {
+                              updateData.streakFreezes = (profileData.streakFreezes || 0) + reward.amount;
+                          } else if (reward.type === 'ai_report') {
+                              updateData.aiReportUnlocked = true;
+                          } else if (reward.type === 'budget_audit') {
+                              updateData.budgetAuditUnlocked = true;
+                          } else if (reward.type === 'investment_report') {
+                              updateData.investmentReportUnlocked = true;
+                          } else if (reward.type === 'asset_allocation_report') {
+                              updateData.assetAllocationReportUnlocked = true;
+                          } else if (reward.type === 'annual_forecast_report') {
+                              updateData.annualForecastReportUnlocked = true;
+                          }
+                          setIsBonusStreak(true); // Trigger animation for reward
+                          setRewardNotification(reward);
+                      }
+                  });
+                  updateData.claimedRewards = claimedRewards;
+                  updateData.rewardHistory = newRewards;
+
+                  if (newStreak % 30 === 0 && !claimedRewards.includes('ai_tokens')) {
+                     // Already handled by REWARDS loop, but let's keep it safe if logic overlaps
+                  }
+                  // Removed old % 30 logic as it's now covered by REWARDS
+
+                  await updateDoc(profileRef, updateData);
+                  
+                  setStreakUpdated(true);
+                  setAnimatingStreak(updateData.dailyStreak);
+                  setShowStreakAnimation(true);
+                  setTimeout(() => setStreakUpdated(false), 3000);
+                }
+                
+                // Record login for streak calendar (always)
+                const loginRef = doc(db, 'users', currentUser.uid, 'userLogins', today);
+                await setDoc(loginRef, { userId: currentUser.uid, timestamp: getSimulatedDate() });
+                console.log("Login record updated.");
+
+                setProfile({ uid: currentUser.uid, ...profileData });
+                
+                // Sync saved language if available
+                if (profileData.language) {
+                  i18n.changeLanguage(profileData.language);
+                }
+                
+                // Trigger tactical tour sequence dynamically if onboarding just cleared
+                if (profileData.hasAcceptedTerms && !localStorage.getItem(`vantage_tour_completed_${currentUser.uid}`)) {
+                  setCurrentTourStep(1);
+                }
+            } catch (err) {
+                console.error("Error inside profile snapshot callback:", err);
             }
           } else {
+            console.log("No profile document exists for:", currentUser.uid);
             // Un-onboarded flat user state catch pass
             setProfile({ uid: currentUser.uid, hasAcceptedTerms: false });
           }
+          console.log("Finished syncing, setting loading(false)");
           setLoading(false);
         }, (error) => {
           console.error("Profile security stream intercept error:", error);
