@@ -77,7 +77,7 @@ export const BudgetSection: React.FC<{
   };
 
   const filteredBudgets = currentPeriod 
-    ? budgets.filter(b => b.period === currentPeriod)
+    ? budgets.filter(b => b.period === currentPeriod || !b.period)
     : budgets;
 
   const budgetsWithDynamicSpent = filteredBudgets.map(b => ({
@@ -85,7 +85,7 @@ export const BudgetSection: React.FC<{
     spentAmount: calculateSpentForBudget(b)
   }));
 
-  const totalBudgeted = budgetsWithDynamicSpent.reduce((sum, b) => sum + (b.allocatedAmount || b.maxBudget || 0), 0);
+  const totalBudgeted = budgetsWithDynamicSpent.reduce((sum, b) => sum + (b.allocatedAmount || 0), 0);
   const totalSpent = budgetsWithDynamicSpent.reduce((sum, b) => sum + (b.spentAmount || 0), 0);
   const spentPercentage = totalBudgeted > 0 ? (totalSpent / totalBudgeted) * 100 : 0;
 

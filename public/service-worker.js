@@ -54,16 +54,30 @@ self.addEventListener('fetch', (event) => {
     return event.respondWith(fetch(event.request));
   }
 
-  // 3. Bypass caching for our dynamic /api/* endpoints (AI, receipt processing, real-time sync)
+  // 3. Bypass caching for our dynamic /api/* endpoints
   if (url.pathname.startsWith('/api/')) {
     return event.respondWith(fetch(event.request));
   }
 
-  // 4. Stale-While-Revalidate caching strategy for static pages, styles, scripts, and media assets
+  // 4. Navigation Requests: Network-First strategy
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          // Cache the latest response (e.g., index.html)
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+          return response;
+        })
+        .catch(() => caches.match(event.request) || caches.match('/index.html') || caches.match('/'))
+    );
+    return;
+  }
+
+  // 5. Other requests: Stale-While-Revalidate caching strategy
   event.respondWith(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.match(event.request).then((cachedResponse) => {
-        // Run network fetch in the background to refresh cache silently
         const fetchPromise = fetch(event.request).then((networkResponse) => {
           if (networkResponse && networkResponse.status === 200) {
             cache.put(event.request, networkResponse.clone());
@@ -73,7 +87,6 @@ self.addEventListener('fetch', (event) => {
           console.warn('[Vantage SW] Network fetch failed, relying on cache:', err);
         });
 
-        // Return cached resource immediately if exists; otherwise wait for network
         return cachedResponse || fetchPromise;
       });
     })
@@ -94,8 +107,8 @@ self.addEventListener('push', (event) => {
   const title = data.title || 'Your Finances';
   const options = {
     body: data.body || 'You have a new update.',
-    icon: '/icons/icon-192x192.png',
-    badge: '/icons/icon-192x192.png',
+    icon: '/icons/Your_Finances_Logo_No_BG.png',
+    badge: '/icons/Your_Finances_Logo_No_BG.png',
     data: {
       url: data.url || '/'
     }

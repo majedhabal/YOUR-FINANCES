@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { doc, onSnapshot, collection, updateDoc, getDoc } from 'firebase/firestore';
+import { doc, onSnapshot, collection, updateDoc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from './lib/firebase';
 import { Layout } from './components/Layout';
 import { Settings } from './components/Settings';
@@ -10,6 +10,7 @@ import { OnboardingFlow } from './components/OnboardingFlow';
 import { ProductTour } from './components/ProductTour';
 import { AddTransactionModal } from './components/AddTransactionModal';
 import { AddAccountModal } from './components/AddAccountModal';
+import { PremiumModal } from './components/PremiumModal';
 import { VantageDataErrorBoundary } from './components/VantageDataErrorBoundary';
 import { RefreshCw } from 'lucide-react';
 import i18n from './lib/i18n';
@@ -19,11 +20,16 @@ import { DebtMilestoneConfigModal } from './components/DebtMilestoneConfigModal'
 import { Accounts } from './components/Accounts';
 import { VantageAI } from './components/VantageAI';
 import { Transactions } from './components/Transactions';
+import { getSimulatedDate } from './lib/dateSimulator';
 import { Analytics } from './components/Analytics';
 import { SalaryBreakdownModal } from './components/SalaryBreakdownModal';
 import { StreakAnimation } from './components/StreakAnimation';
+import { MilestoneRewardBanner } from './components/MilestoneRewardBanner';
+import { FullMilestoneOverlay } from './components/FullMilestoneOverlay';
+import { NotificationManager } from './components/NotificationManager';
 import { DEFAULT_RATES, syncExchangeRates } from './lib/exchangeRates';
 import { calculateAccountBalances } from './lib/trendUtils';
+import { REWARDS } from './lib/badgeUtils';
 
 export type Tab = 'essentials' | 'accounts' | 'ai' | 'activity' | 'analytics' | 'settings' | 'salary-breakdown';
 
@@ -44,6 +50,7 @@ function AppContent() {
   const [showStreakAnimation, setShowStreakAnimation] = useState(false);
   const [animatingStreak, setAnimatingStreak] = useState(0);
   const [isBonusStreak, setIsBonusStreak] = useState(false);
+  const [rewardNotification, setRewardNotification] = useState<any>(null);
   
   // Feature Modal Interface Toggles
   const [isAIModalOpen, setIsAIModalOpen] = useState(false);
@@ -52,11 +59,13 @@ function AppContent() {
   const [isAccountModalOpen, setIsAddAccountOpen] = useState(false);
   const [isMilestoneModalOpen, setIsMilestoneModalOpen] = useState(false);
   const [isDebtMilestoneModalOpen, setIsDebtMilestoneModalOpen] = useState(false);
+  const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false);
   const [currentTourStep, setCurrentTourStep] = useState<number | null>(null);
 
   // Synchronized state pools for analytics routing
   const [accounts, setAccounts] = useState<any[]>([]);
   const [transactions, setTransactions] = useState<any[]>([]);
+  const [userLogins, setUserLogins] = useState<any[]>([]);
   const [exchangeRates, setExchangeRates] = useState<any>(DEFAULT_RATES);
 
   const isRTL = ['ar', 'ur'].includes(i18nextInstance.language);
@@ -109,12 +118,20 @@ function AppContent() {
     const handleForwardDebt = () => {
       setIsDebtMilestoneModalOpen(true);
     };
+    const handleOpenPremium = () => {
+      setIsPremiumModalOpen(true);
+    };
 
     window.addEventListener('trigger-savings-goal-config', handleForwardSavings);
     window.addEventListener('trigger-debt-config', handleForwardDebt);
+    window.addEventListener('trigger-premium-modal', handleOpenPremium);
+    window.addEventListener('open-premium-modal', handleOpenPremium);
+    
     return () => {
       window.removeEventListener('trigger-savings-goal-config', handleForwardSavings);
       window.removeEventListener('trigger-debt-config', handleForwardDebt);
+      window.removeEventListener('trigger-premium-modal', handleOpenPremium);
+      window.removeEventListener('open-premium-modal', handleOpenPremium);
     };
   }, []);
 
@@ -139,40 +156,119 @@ function AppContent() {
             const profileData = docSnap.data();
             
             // Streak Calculation Logic
-            const today = new Date().toISOString().split('T')[0];
+            const today = getSimulatedDate().toISOString().split('T')[0];
             const lastLoginDate = profileData.lastLoginDate || "";
             
             console.log("Streak check:", { today, lastLoginDate, dailyStreak: profileData.dailyStreak });
             
             if (lastLoginDate !== today) {
-              const yesterday = new Date();
+              const yesterday = getSimulatedDate();
               yesterday.setDate(yesterday.getDate() - 1);
               const yesterdayStr = yesterday.toISOString().split('T')[0];
               
-              let newStreak = 1;
+              let newStreak = (profileData.dailyStreak || 0) + 1;
+              let streakFreezes = profileData.streakFreezes || 0;
+              let usedFreeze = false;
+
               if (lastLoginDate === yesterdayStr) {
+                // Normal streak increment
                 newStreak = (profileData.dailyStreak || 0) + 1;
+              } else {
+                // A day (or more) was skipped.
+                // Calculate days missed
+                const lastLogin = new Date(lastLoginDate);
+                const todayDate = getSimulatedDate();
+                
+                // Simple day difference
+                const diffTime = Math.abs(todayDate.getTime() - lastLogin.getTime());
+                const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                
+                const daysMissed = diffDays - 1; // e.g., if last login was yesterday, diff is 1 day, missed 0 days.
+
+                if (streakFreezes >= daysMissed) {
+                    // Use freezes
+                    streakFreezes -= daysMissed;
+                    newStreak = (profileData.dailyStreak || 0); // Keep streak
+                    usedFreeze = true;
+                } else {
+                    // No freezes, reset streak
+                    newStreak = 1;
+                    // Notify user about streak loss
+                    console.log("Streak lost! Not enough freezes.");
+                    if ('Notification' in window && Notification.permission === 'granted') {
+                        new Notification("Vantage Streak Lost", {
+                            body: "You missed too many days and didn't have enough streak freezes to cover it.",
+                            icon: '/icons/Your_Finances_Logo.png'
+                        });
+                    }
+                }
               }
+
               
               console.log("Updating streak:", newStreak);
               const updateData: any = {
                 dailyStreak: newStreak,
+                streakFreezes: streakFreezes,
                 lastLoginDate: today
               };
 
-              if (newStreak % 30 === 0) {
-                updateData.aiTokens = (profileData.aiTokens || 0) + 500;
-                setIsBonusStreak(true);
-              } else {
-                setIsBonusStreak(false);
+              if (!usedFreeze && (profileData.dailyStreak || 0) > 0) {
+                  // Notify user about streak loss - simple alert for now
+                  console.log("Streak lost!");
               }
 
+              // Handle rewards
+              const claimedRewards = profileData.claimedRewards || [];
+              const newRewards = profileData.rewardHistory || [];
+              const todayStr = getSimulatedDate().toISOString().split('T')[0];
+
+              REWARDS.forEach(reward => {
+                  if (newStreak >= reward.streakThreshold && !claimedRewards.includes(reward.id)) {
+                      claimedRewards.push(reward.id);
+                      newRewards.push({
+                        id: reward.id,
+                        dateClaimed: todayStr
+                      });
+                      if (reward.type === 'receipt_scan') {
+                          updateData.receiptScans = (profileData.receiptScans || 0) + reward.amount;
+                      } else if (reward.type === 'ai_tokens') {
+                          updateData.aiTokens = (profileData.aiTokens || 0) + reward.amount;
+                      } else if (reward.type === 'streak_freeze') {
+                          updateData.streakFreezes = (profileData.streakFreezes || 0) + reward.amount;
+                      } else if (reward.type === 'ai_report') {
+                          updateData.aiReportUnlocked = true;
+                      } else if (reward.type === 'budget_audit') {
+                          updateData.budgetAuditUnlocked = true;
+                      } else if (reward.type === 'investment_report') {
+                          updateData.investmentReportUnlocked = true;
+                      } else if (reward.type === 'asset_allocation_report') {
+                          updateData.assetAllocationReportUnlocked = true;
+                      } else if (reward.type === 'annual_forecast_report') {
+                          updateData.annualForecastReportUnlocked = true;
+                      }
+                      setIsBonusStreak(true); // Trigger animation for reward
+                      setRewardNotification(reward);
+                  }
+              });
+              updateData.claimedRewards = claimedRewards;
+              updateData.rewardHistory = newRewards;
+
+              if (newStreak % 30 === 0 && !claimedRewards.includes('ai_tokens')) {
+                 // Already handled by REWARDS loop, but let's keep it safe if logic overlaps
+              }
+              // Removed old % 30 logic as it's now covered by REWARDS
+
               await updateDoc(profileRef, updateData);
+              
               setStreakUpdated(true);
-              setAnimatingStreak(newStreak);
+              setAnimatingStreak(updateData.dailyStreak);
               setShowStreakAnimation(true);
               setTimeout(() => setStreakUpdated(false), 3000);
             }
+            
+            // Record login for streak calendar (always)
+            const loginRef = doc(db, 'users', currentUser.uid, 'userLogins', today);
+            await setDoc(loginRef, { userId: currentUser.uid, timestamp: getSimulatedDate() });
 
             setProfile({ uid: currentUser.uid, ...profileData });
             
@@ -231,9 +327,19 @@ function AppContent() {
       console.warn("Ledger streaming transport errored safely:", error);
     });
 
+    const loginsRef = collection(db, 'users', user.uid, 'userLogins');
+    const unsubLogins = onSnapshot(loginsRef, (snapshot) => {
+      const loginsList: any[] = [];
+      snapshot.forEach(doc => loginsList.push({ id: doc.id, ...doc.data() }));
+      setUserLogins(loginsList);
+    }, (error) => {
+      console.warn("Logins streaming transport errored safely:", error);
+    });
+
     return () => {
       unsubAccounts();
       unsubTx();
+      unsubLogins();
     };
   }, [user]);
 
@@ -272,14 +378,18 @@ function AppContent() {
       transactions={transactions}
       accountBalances={accountBalances}
       streakUpdated={streakUpdated}
+      userLogins={userLogins}
+      receiptScanCount={profile.receiptScans || 0}
     >
       {showStreakAnimation && (
         <StreakAnimation 
           streak={animatingStreak} 
           isBonusStreak={isBonusStreak}
+          rewardNotification={rewardNotification}
           onComplete={() => setShowStreakAnimation(false)} 
         />
       )}
+      <NotificationManager />
      <AnimatePresence mode="wait">
   {activeTab === 'essentials' && (
     <motion.div key="essentials" {...animation}>
@@ -389,6 +499,28 @@ function AppContent() {
         editingMilestone={null}
         accounts={accounts}
         exchangeRates={exchangeRates}
+      />
+
+      {rewardNotification && (
+        [30, 90, 180, 360].includes(rewardNotification.streakThreshold) ? (
+          <FullMilestoneOverlay
+            reward={rewardNotification}
+            onClose={() => setRewardNotification(null)}
+          />
+        ) : (
+          <MilestoneRewardBanner
+            reward={rewardNotification}
+            onClose={() => setRewardNotification(null)}
+          />
+        )
+      )}
+
+      <PremiumModal
+        isOpen={isPremiumModalOpen}
+        onClose={() => setIsPremiumModalOpen(false)}
+        uid={user.uid}
+        profile={profile}
+        onSuccess={(updatedProfile) => {}}
       />
 
       {/* PRODUCT TOUR OVERLAY LAYER */}

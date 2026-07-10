@@ -53,7 +53,9 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
 
   // Check user tier
   const tierClean = (profile?.subscriptionTier || 'free').toLowerCase().replace(' ', '');
-  const hasAccess = tierClean === 'tier2' || tierClean === 'tier3' || tierClean === 'premium';
+  const isPremium = tierClean === 'tier2' || tierClean === 'tier3' || tierClean === 'premium';
+  const hasAccess = isPremium || (profile?.receiptScans || 0) > 0;
+  const showRestriction = !isPremium && (profile?.receiptScans || 0) === 0;
 
   // Reactively sync custom categories
   useEffect(() => {
@@ -139,7 +141,8 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
 
     try {
       const currentTokens = typeof profile?.vantageAiTokens === 'number' ? profile.vantageAiTokens : 0;
-      if (currentTokens < 100) {
+      console.log('DEBUG [Scanner]:', { hasAccess, currentTokens });
+      if (!hasAccess && currentTokens < 100) {
         throw new Error(t('receipt_scanner.insufficient_tokens', 'Insufficient Vantage AI tokens remaining. Receipt scanning requires 100 tokens. Please claim sandbox tokens or upgrade your subscription.'));
       }
 
@@ -155,7 +158,7 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-Vantage-Authorization': `Bearer ${idToken}`
+          'Authorization': `Bearer ${idToken}`
         },
         body: JSON.stringify({
           image: {
@@ -165,7 +168,14 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
         })
       });
 
-      const resJson = await response.json();
+      const text = await response.text();
+      let resJson;
+      try {
+        resJson = JSON.parse(text);
+      } catch (e) {
+        console.error("Failed to parse JSON. Response was:", text);
+        throw new Error("Server returned invalid response (possibly HTML).");
+      }
 
       if (!response.ok) {
         throw new Error(resJson.message || resJson.error || t('receipt_scanner.parse_error', 'Could not analyze receipt.'));
@@ -253,6 +263,12 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
         updatedAt: serverTimestamp()
       });
 
+      // Decrement receipt scans if not premium
+      if (!isPremium) {
+        const userRef = doc(db, 'users', uid);
+        await updateDoc(userRef, { receiptScans: increment(-1) });
+      }
+
       setSuccess(true);
       if (onSuccess) {
         onSuccess();
@@ -302,7 +318,7 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
 
             {/* Content Area */}
             <div className="p-6 flex-1 overflow-y-auto max-h-[80vh]">
-              {!hasAccess ? (
+              {showRestriction ? (
                 /* Tier Restricted Experience */
                 <div className="flex flex-col items-center justify-center text-center py-8">
                   <div className="w-16 h-16 bg-amber-50 rounded-2xl flex items-center justify-center mb-4 border border-amber-100">

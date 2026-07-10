@@ -143,6 +143,7 @@ let mockDatabase = {
 
 // Security Middleware: Verify Firebase ID Token
 const authenticate = async (req: Request, res: Response, next: NextFunction) => {
+  console.log(`[DEBUG] Authenticating request: ${req.method} ${req.url}`);
   let authHeader = req.headers.authorization;
   if (!authHeader && req.headers['x-vantage-authorization']) {
     authHeader = req.headers['x-vantage-authorization'] as string;
@@ -190,7 +191,13 @@ async function startServer() {
   const app = express();
   const PORT = Number(process.env.PORT) || 3000;
 
-  app.use(express.json({ limit: '10mb' }));
+  app.use(express.json({ limit: '20mb' }));
+
+  // Debugging middleware
+  app.use((req, res, next) => {
+    console.log(`[DEBUG] Received request: ${req.method} ${req.url}`);
+    next();
+  });
 
   // Public Health Check
   app.get("/api/health", (req, res) => {
@@ -423,8 +430,10 @@ async function startServer() {
 
   // Receipt scanning and AI parsing endpoint (Tier 2 & 3 only)
   app.post("/api/ai/parse-receipt", authenticate, async (req: Request, res: Response) => {
+    console.log("[DEBUG] /api/ai/parse-receipt called");
     const { image, geminiKey: clientGeminiKey, subscriptionTier: clientTier } = req.body;
     const authUser = (req as any).user;
+    console.log("[DEBUG] authUser:", authUser ? authUser.uid : "no user");
 
     if (!image || !image.data || !image.mimeType) {
       return res.status(400).json({ error: "Missing receipt image payload" });

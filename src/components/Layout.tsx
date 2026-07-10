@@ -9,6 +9,7 @@ import { Settings } from './Settings';
 import { NotificationDispatchHub } from './NotificationDispatchHub';
 import { StreakTracker } from './StreakTracker';
 import { ReceiptScannerModal } from './ReceiptScannerModal';
+import { DateSimulator } from './DateSimulator';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -26,10 +27,12 @@ interface LayoutProps {
   transactions?: any[];
   accountBalances?: Record<string, number>;
   streakUpdated?: boolean;
+  userLogins?: any[];
+  receiptScanCount?: number;
 }
 
 export const Layout: React.FC<LayoutProps> = ({ 
-  children, activeTab, setActiveTab, isAIModalOpen, setIsAIModalOpen, isTxModalOpen, setIsTxModalOpen, txMode, setTxMode, profile, accounts, transactions, accountBalances, streakUpdated
+  children, activeTab, setActiveTab, isAIModalOpen, setIsAIModalOpen, isTxModalOpen, setIsTxModalOpen, txMode, setTxMode, profile, accounts, transactions, accountBalances, streakUpdated, userLogins, receiptScanCount = 0
 }) => {
   const { t } = useTranslation();
   const [isOffline, setIsOffline] = React.useState<boolean>(() => {
@@ -54,6 +57,7 @@ export const Layout: React.FC<LayoutProps> = ({
   const [isDebtModalOpen, setIsDebtModalOpen] = React.useState(false);
   const [isMilestoneModalOpen, setIsMilestoneModalOpen] = React.useState(false);
   const [isDebtMilestoneModalOpen, setIsDebtMilestoneModalOpen] = React.useState(false);
+  const [isPremiumModalOpen, setIsPremiumModalOpen] = React.useState(false);
   const [isDispatchHubOpen, setIsDispatchHubOpen] = React.useState(false);
   const [isReceiptScannerOpen, setIsReceiptScannerOpen] = React.useState(false);
   const [isStatementVaultOpen, setIsStatementVaultOpen] = React.useState(false);
@@ -86,6 +90,9 @@ export const Layout: React.FC<LayoutProps> = ({
     const handleDebtMilestoneModal = (e: any) => {
       setIsDebtMilestoneModalOpen(e.detail.isOpen);
     };
+    const handlePremiumModal = (e: any) => {
+      setIsPremiumModalOpen(e.detail.isOpen);
+    };
     const handleDispatchHub = (e: any) => {
       setIsDispatchHubOpen(e.detail.isOpen);
     };
@@ -109,6 +116,7 @@ export const Layout: React.FC<LayoutProps> = ({
     window.addEventListener('debt-modal-toggled', handleDebtModal);
     window.addEventListener('milestone-modal-toggled', handleMilestoneModal);
     window.addEventListener('debt-milestone-modal-toggled', handleDebtMilestoneModal);
+    window.addEventListener('premium-modal-toggled', handlePremiumModal);
     window.addEventListener('dispatch-hub-toggled', handleDispatchHub);
     window.addEventListener('statement-vault-toggled', handleStatementVault);
     window.addEventListener('budget-detail-toggled', handleBudgetDetail);
@@ -123,6 +131,7 @@ export const Layout: React.FC<LayoutProps> = ({
       window.removeEventListener('debt-modal-toggled', handleDebtModal);
       window.removeEventListener('milestone-modal-toggled', handleMilestoneModal);
       window.removeEventListener('debt-milestone-modal-toggled', handleDebtMilestoneModal);
+      window.removeEventListener('premium-modal-toggled', handlePremiumModal);
       window.removeEventListener('dispatch-hub-toggled', handleDispatchHub);
       window.removeEventListener('statement-vault-toggled', handleStatementVault);
       window.removeEventListener('budget-detail-toggled', handleBudgetDetail);
@@ -131,7 +140,9 @@ export const Layout: React.FC<LayoutProps> = ({
     };
   }, []);
 
-  const shouldHideHeaderFooter = isSalaryModalOpen || isTxDetailModalOpen || isAccountModalOpen || isAccountDetailModalOpen || isBreakdownModalOpen || isDebtModalOpen || isTxModalOpen || isMilestoneModalOpen || isDebtMilestoneModalOpen || isAIModalOpen || activeTab === 'ai' || isStatementVaultOpen || isBudgetDetailOpen || isSettingsSubViewOpen || isBudgetTxModalOpen;
+  const shouldHideHeaderFooter = isSalaryModalOpen || isTxDetailModalOpen || isAccountModalOpen || isAccountDetailModalOpen || isBreakdownModalOpen || isDebtModalOpen || isTxModalOpen || isMilestoneModalOpen || isDebtMilestoneModalOpen || isAIModalOpen || isPremiumModalOpen || activeTab === 'ai' || isStatementVaultOpen || isBudgetDetailOpen || isSettingsSubViewOpen || isBudgetTxModalOpen;
+
+  console.log('Layout debug:', { isPremiumModalOpen, shouldHideHeaderFooter });
 
   return (
     <div className="w-full h-screen flex flex-col bg-[#F8FAFC] text-black overflow-hidden relative">
@@ -185,7 +196,8 @@ export const Layout: React.FC<LayoutProps> = ({
             )}
             {profile?.uid && (
               <div className="flex items-center gap-2">
-                <StreakTracker streak={profile.dailyStreak} streakUpdated={streakUpdated} />
+                <DateSimulator uid={profile.uid} />
+                <StreakTracker profile={profile} streakUpdated={streakUpdated} userLogins={userLogins} />
                 <NotificationDispatchHub
                   uid={profile.uid}
                   accounts={accounts || []}
@@ -219,9 +231,11 @@ export const Layout: React.FC<LayoutProps> = ({
           title={t('layout.scan_receipt', 'Scan receipt with AI')}
         >
           <Camera size={22} className="text-[#1E3A20] group-hover:scale-105 transition-transform" />
-          <span className="absolute -top-1 -right-1 bg-[#A6DDB1] text-[#1E3A20] text-[9px] font-bold px-1.5 py-0.5 rounded-full border border-white flex items-center gap-0.5 shadow-sm">
-            AI
-          </span>
+          {receiptScanCount > 0 && (
+            <span className="absolute -top-1 -right-1 bg-[#A6DDB1] text-[#1E3A20] text-[10px] font-bold px-1.5 py-0.5 rounded-full border border-white flex items-center justify-center shadow-sm min-w-[18px] h-[18px]">
+              {receiptScanCount}
+            </span>
+          )}
         </button>
 
         {/* FAB */}

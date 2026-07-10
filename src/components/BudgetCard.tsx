@@ -8,18 +8,16 @@ import { formatLabel, translateCategoryOrSubcategory } from '../lib/stringUtils'
 
 export interface BudgetCategory {
   id: string;
-  budgetId?: string; // exact payload compatibility
+  budgetId?: string;
   title?: string;
-  categoryTitle?: string; // exact payload compatibility
-  maxBudget?: number;
-  allocatedAmount?: number; // exact payload compatibility
-  amount?: number; // fallback
+  categoryTitle?: string;
+  allocatedAmount?: number;
   currency: string;
   category?: string;
   subcategory?: string | null;
   emoji?: string;
-  iconAsset?: string; // exact payload compatibility
-  spentAmount?: number; // exact payload compatibility
+  iconAsset?: string;
+  spentAmount?: number;
   spent?: number;
   period?: 'daily' | 'weekly' | 'monthly';
   lastHistorySnapshotDate?: any;
@@ -79,7 +77,7 @@ export const BudgetCard: React.FC<BudgetCardProps> = ({
 }) => {
   const { t } = useTranslation();
   // Extract fields aligning with exact payload
-  const maxLimit = budget.allocatedAmount !== undefined ? budget.allocatedAmount : (budget.maxBudget || budget.amount || 1);
+  const maxLimit = budget.allocatedAmount || 1;
   const spentVal = spent !== undefined ? spent : (budget.spentAmount !== undefined ? budget.spentAmount : (budget.spent || 0));
   const ratio = maxLimit > 0 ? spentVal / maxLimit : 0;
   const progress = Math.min(ratio * 100, 100);

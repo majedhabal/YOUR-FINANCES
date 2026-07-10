@@ -5,6 +5,7 @@ import {
   persistentLocalCache, 
   persistentSingleTabManager 
 } from 'firebase/firestore';
+import { getMessaging } from 'firebase/messaging';
 import firebaseConfig from '../../firebase-applet-config.json';
 
 const app = initializeApp(firebaseConfig);
@@ -24,6 +25,7 @@ export const db = initializeFirestore(
 );
 
 export const auth = getAuth(app);
+export const messaging = getMessaging(app);
 
 // Explicitly set browser-based local persistence for Firebase Auth
 setPersistence(auth, browserLocalPersistence).catch((err) => {

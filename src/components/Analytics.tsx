@@ -1952,7 +1952,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
         }
         div#root:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) {
           border-width: 0px !important;
-          border-radius: 25px !important;
+          border-radius: 0px !important;
         }
         div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div#analytics-recurring-card:nth-of-type(2) {
           border-radius: 10px !important;
@@ -2173,7 +2173,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
           text-align: center !important;
         }
         div#root:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) {
-          height: 45px !important;
+          height: 81px !important;
         }
         div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div#analytics-sticky-selector-row:nth-of-type(3) > button#analytics-switcher-btn-now:nth-of-type(1) {
           font-size: 12px !important;

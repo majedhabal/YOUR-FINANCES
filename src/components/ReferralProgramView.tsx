@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { ChevronLeft, Gift, Copy, Check, Sparkles, UserPlus, AlertCircle } from 'lucide-react';
+import { ChevronLeft, Gift, Copy, Check, Sparkles, UserPlus, AlertCircle, Share2 } from 'lucide-react';
 import { doc, updateDoc, collection, query, where, getDocs, getDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useTranslation } from 'react-i18next';
@@ -70,6 +70,22 @@ export const ReferralProgramView: React.FC<ReferralProgramViewProps> = ({
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleShareCode = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Join YOUR FINANCES',
+          text: `Join me on YOUR FINANCES! It's a great app for tracking your finances and achieving financial freedom. Use my referral code: ${profile?.referralCode}`,
+          url: window.location.href,
+        });
+      } catch (err) {
+        console.error('Error sharing code:', err);
+      }
+    } else {
+      handleCopyCode();
+    }
+  };
+
   const handleRedeemCode = async () => {
     const entered = referralInput.trim().toUpperCase();
     setErrorMsg('');
@@ -110,7 +126,10 @@ export const ReferralProgramView: React.FC<ReferralProgramViewProps> = ({
       
       const newUnlocked = Math.max(currentUnlocked, Date.now()) + (7 * 24 * 60 * 60 * 1000);
       const currentTokens = typeof referrerData.vantageAiTokens === 'number' ? referrerData.vantageAiTokens : 0;
-      const nextTokens = currentTokens + 1000;
+      
+      const isPaid = referrerData.subscriptionTier && referrerData.subscriptionTier.toLowerCase() !== 'free';
+      const tokenReward = isPaid ? 1000 : 500;
+      const nextTokens = currentTokens + tokenReward;
 
       await updateDoc(referrerRef, {
         vantageAiUnlockedUntil: new Date(newUnlocked).toISOString(),
@@ -189,6 +208,9 @@ export const ReferralProgramView: React.FC<ReferralProgramViewProps> = ({
           <p className="text-xs text-vantage-muted font-normal leading-relaxed">
             {t('referral_program.your_code_description')}
           </p>
+          <p className="text-[10px] italic text-vantage-muted font-normal mt-1">
+            {t('referral_program.paid_user_hint')}
+          </p>
 
           <div className="flex items-center gap-2 bg-neutral-50 border border-neutral-200 rounded-2xl p-3 mt-1.5">
             <span className="text-base font-bold text-neutral-800 font-mono flex-1 select-all pl-2">
@@ -210,6 +232,14 @@ export const ReferralProgramView: React.FC<ReferralProgramViewProps> = ({
                   <span>{t('referral_program.copy')}</span>
                 </>
               )}
+            </button>
+            <button
+              onClick={handleShareCode}
+              disabled={!profile?.referralCode}
+              className="px-4 py-2 bg-white border border-neutral-200 hover:border-neutral-800 rounded-xl text-xs font-bold text-neutral-700 hover:text-neutral-900 flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer disabled:opacity-50"
+            >
+              <Share2 size={14} />
+              Share
             </button>
           </div>
         </div>

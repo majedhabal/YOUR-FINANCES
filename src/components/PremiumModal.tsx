@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Sparkles, ShieldCheck, Zap, X, Check, CreditCard, Globe, Info, Flame, Trophy } from 'lucide-react';
-import { doc, updateDoc } from 'firebase/firestore';
+import { Sparkles, ShieldCheck, Zap, X, Check, CreditCard, Flame, Trophy } from 'lucide-react';
+import { doc, updateDoc, addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { handleFirestoreError, OperationType } from '../lib/firebaseUtils';
 import { useTranslation } from 'react-i18next';
@@ -29,15 +29,19 @@ interface TierPlan {
 export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, uid, onSuccess, profile }) => {
   const { t } = useTranslation();
   const [isProcessing, setIsProcessing] = useState(false);
-  const [step, setStep] = useState<'benefits' | 'payment' | 'success'>('benefits');
+  
+  React.useEffect(() => {
+    window.dispatchEvent(new CustomEvent('premium-modal-toggled', { detail: { isOpen } }));
+  }, [isOpen]);
+
+  const [step, setStep] = useState<'benefits' | 'payment' | 'success' | 'cancellationFeedback'>('benefits');
   const [hasReadTerms, setHasReadTerms] = useState(!!profile?.hasAcceptedTerms);
   
   // Selected premium tier defaults to Tier 1
   const [selectedTierId, setSelectedTierId] = useState<'tier1' | 'tier2' | 'tier3'>('tier2');
   
-  // Simulated IP Location
-  const [ipLocation, setIpLocation] = useState<'UAE' | 'US' | 'EU' | 'PH'>('UAE');
-
+  // No simulated IP location needed
+  
   const plans: TierPlan[] = [
     {
       id: 'free',
@@ -97,39 +101,15 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, uid
       ]
     }
   ];
+  
+  const [expandedFaqId, setExpandedFaqId] = useState<string | null>(null);
+  const [showCancellationFeedback, setShowCancellationFeedback] = useState(false);
+  const [feedbackText, setFeedbackText] = useState('');
 
   const getRateToAED = (curr: string) => {
     const c = curr || 'AED';
     if (c === 'AED') return 1;
     return (DEFAULT_RATES as any)[c] || 1;
-  };
-
-  const getEquivalentText = (aedAmount: number, location: string) => {
-    if (aedAmount === 0) return 'Free';
-    
-    if (location === 'UAE') {
-      // UAE base shows equivalents in other currencies below it
-      const usdRate = getRateToAED('USD');
-      const eurRate = getRateToAED('EUR');
-      const phpRate = getRateToAED('PHP');
-      const usdVal = (aedAmount / usdRate).toFixed(2);
-      const eurVal = (aedAmount / eurRate).toFixed(2);
-      const phpVal = (aedAmount / phpRate).toFixed(2);
-      return `Equivalent to: $${usdVal} USD / €${eurVal} EUR / ₱${phpVal} PHP`;
-    } else if (location === 'US') {
-      const rate = getRateToAED('USD');
-      const val = (aedAmount / rate).toFixed(2);
-      return `Equivalent to: $${val} USD`;
-    } else if (location === 'EU') {
-      const rate = getRateToAED('EUR');
-      const val = (aedAmount / rate).toFixed(2);
-      return `Equivalent to: €${val} EUR`;
-    } else if (location === 'PH') {
-      const rate = getRateToAED('PHP');
-      const val = (aedAmount / rate).toFixed(2);
-      return `Equivalent to: ₱${val} PHP`;
-    }
-    return '';
   };
 
   const handleSubscribe = async () => {
@@ -174,11 +154,53 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, uid
 
   const activePlan = plans.find(p => p.id === selectedTierId) || plans[1];
   const userCurrentTier = (profile?.subscriptionTier || 'free').toLowerCase().replace(' ', '');
+  const isUserPremium = !!(profile.isPremium || (profile.subscriptionTier && profile.subscriptionTier.toLowerCase() !== 'free'));
+
+  const handleCancelSubscription = async () => {
+    setStep('cancellationFeedback');
+  };
+
+  const confirmCancelSubscription = async () => {
+    setIsProcessing(true);
+    try {
+      // Save feedback
+      if (feedbackText.trim()) {
+        await addDoc(collection(db, 'feedback'), {
+          userId: uid,
+          feedback: feedbackText,
+          timestamp: serverTimestamp(),
+          reason: 'subscription_cancellation'
+        });
+      }
+
+      // Cancel subscription
+      const userRef = doc(db, 'users', uid);
+      await updateDoc(userRef, { 
+        isPremium: false,
+        subscriptionTier: 'free',
+        vantageAiTokens: 0,
+        premiumSince: null
+      });
+      onSuccess({ 
+        ...profile,
+        isPremium: false,
+        subscriptionTier: 'free',
+        vantageAiTokens: 0,
+        premiumSince: null
+      });
+      onClose();
+    } catch (err: any) {
+      handleFirestoreError(err, OperationType.UPDATE, `users/${uid}`);
+    } finally {
+      setIsProcessing(false);
+      setShowCancellationFeedback(false);
+    }
+  };
 
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-y-auto">
+        <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 overflow-y-auto">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -197,7 +219,33 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, uid
           >
             {/* Modal Scrollable Container */}
             <div className="overflow-y-auto flex-1 p-6 md:p-8 flex flex-col gap-6">
-              {step === 'benefits' && (
+              {step === 'cancellationFeedback' && (
+                <div className="flex flex-col gap-6">
+                  <h3 className="text-xl font-bold text-neutral-800">We are sad to see you go, is there anything we could have done better?</h3>
+                  <textarea
+                    value={feedbackText}
+                    onChange={(e) => setFeedbackText(e.target.value)}
+                    className="w-full h-32 p-4 border border-neutral-200 rounded-2xl text-sm focus:ring-2 focus:ring-emerald-500"
+                    placeholder="Share your thoughts with us..."
+                  />
+                  <div className="flex flex-col gap-3">
+                    <button
+                      onClick={confirmCancelSubscription}
+                      disabled={isProcessing}
+                      className="w-full py-4 bg-emerald-600 text-white font-bold rounded-2xl active:scale-95 transition-all text-sm"
+                    >
+                      {isProcessing ? 'Processing...' : 'Confirm Cancellation'}
+                    </button>
+                    <button
+                      onClick={() => setStep('benefits')}
+                      className="w-full py-3 text-neutral-500 font-bold tracking-wide rounded-2xl border border-neutral-200 hover:bg-neutral-50 active:scale-95 transition-all text-sm"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              )}
+                    {step === 'benefits' && (
                 <>
                   {/* Header */}
                   <div className="flex justify-between items-start">
@@ -217,36 +265,7 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, uid
                     </button>
                   </div>
 
-                  {/* Simulated Geolocation / IP Currency Tracker */}
-                  <div className="p-4 rounded-xl bg-neutral-50 border border-neutral-100 flex flex-col gap-2">
-                    <div className="flex items-center gap-2 text-neutral-600">
-                      <Globe size={16} className="text-neutral-400" />
-                      <span className="text-xs font-normal">User IP Location (Simulated)</span>
-                    </div>
-                    <div className="flex items-center justify-between gap-4">
-                      <select 
-                        value={ipLocation}
-                        onChange={(e) => setIpLocation(e.target.value as any)}
-                        className="bg-white border border-neutral-200 rounded-lg px-2 py-1.5 text-xs text-neutral-800 font-medium focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all flex-1"
-                      >
-                        <option value="UAE">United Arab Emirates (Dubai IP) - Base AED</option>
-                        <option value="US">United States (New York IP) - USD equivalent</option>
-                        <option value="EU">Germany (Berlin IP) - EUR equivalent</option>
-                        <option value="PH">Philippines (Manila IP) - PHP equivalent</option>
-                      </select>
-                    </div>
-                    {ipLocation === 'UAE' ? (
-                      <p className="text-[10px] text-emerald-600 font-normal leading-relaxed">
-                        Based in UAE: subscription currency is strictly in AED. Equivalent rates shown below.
-                      </p>
-                    ) : (
-                      <p className="text-[10px] text-neutral-500 font-normal leading-relaxed">
-                        Equivalent pricing calculated live using active exchange index.
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Tiers List */}
+                  {/* Subscription tiers list */}
                   <div className="flex flex-col gap-3.5">
                     {plans.map((plan) => {
                       const isUserCurrent = userCurrentTier === plan.id || 
@@ -302,7 +321,7 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, uid
                           {/* Currency Conversions Equivalent */}
                           {plan.priceAED > 0 && (
                             <div className="text-[10px] text-neutral-500 font-normal pl-1 px-1 bg-neutral-50 rounded py-1 border border-neutral-100/50">
-                              {getEquivalentText(plan.priceAED, ipLocation)}
+                              {plan.priceAED} AED
                             </div>
                           )}
 
@@ -320,13 +339,45 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, uid
                   </div>
 
                   {/* Upgrade Actions */}
+                  {/* {faqs.length > 0 && (
+                    <div className="mt-6 pt-6 border-t border-neutral-200">
+                        <h4 className="text-sm font-bold text-neutral-800 mb-3">Common Questions</h4>
+                        <div className="flex flex-col gap-2">
+                            {faqs.map((faq) => (
+                                <div key={faq.id} className="border border-neutral-200 rounded-xl overflow-hidden">
+                                    <button 
+                                        className="w-full flex items-center justify-between p-3 text-left text-xs font-medium text-neutral-700 bg-neutral-50"
+                                        onClick={() => setExpandedFaqId(expandedFaqId === faq.id ? null : faq.id)}
+                                    >
+                                        {faq.question}
+                                        {expandedFaqId === faq.id ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                                    </button>
+                                    {expandedFaqId === faq.id && (
+                                        <div className="p-3 text-xs text-neutral-600 bg-white">
+                                            {faq.answer}
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                  )} */}
                   <div className="flex flex-col gap-3 mt-2">
                     <button 
                       onClick={() => setStep('payment')}
                       className="w-full py-4 bg-emerald-600 text-white font-bold tracking-wide rounded-2xl shadow-sm hover:bg-emerald-700 active:scale-95 transition-all text-sm"
                     >
-                      Continue with {activePlan.name}
+                      {isUserPremium ? 'Upgrade / Change Plan' : `Continue with ${activePlan.name}`}
                     </button>
+                    {isUserPremium && (
+                        <button
+                          onClick={handleCancelSubscription}
+                          disabled={isProcessing}
+                          className="w-full py-3 text-neutral-500 font-bold tracking-wide rounded-2xl border border-neutral-200 hover:bg-neutral-50 active:scale-95 transition-all text-sm"
+                        >
+                            {isProcessing ? 'Processing...' : 'Cancel Subscription'}
+                        </button>
+                    )}
                     <p className="text-[10px] text-center text-neutral-500 font-normal">
                       Cancel anytime. Subscription values converted securely based on official exchange index rates.
                     </p>
@@ -372,7 +423,7 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, uid
                       <div className="flex justify-between text-xs pt-2 border-t border-neutral-200">
                         <span className="text-neutral-500 font-normal">Local Geolocation Equivalent</span>
                         <span className="font-bold text-emerald-600">
-                          {ipLocation === 'UAE' ? 'Dubai Base (AED)' : getEquivalentText(activePlan.priceAED, ipLocation).replace('Equivalent to: ', '')}
+                          Dubai Base (AED)
                         </span>
                       </div>
                       <div className="flex justify-between text-xs">
@@ -389,9 +440,19 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, uid
                         onChange={(e) => setHasReadTerms(e.target.checked)}
                         className="mt-1 w-4 h-4 rounded border-neutral-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
                       />
-                      <label htmlFor="opt-terms-check" className="text-xs text-neutral-500 font-normal leading-relaxed cursor-pointer select-none">
-                        I have read and agree to the Terms of Engagement of YOUR FINANCES.
-                      </label>
+                      <div className="flex flex-col gap-2">
+                        <label htmlFor="opt-terms-check" className="text-xs text-neutral-500 font-normal leading-relaxed cursor-pointer select-none">
+                          I have read and agree to the Terms of Engagement of YOUR FINANCES.
+                        </label>
+                        <div className="flex gap-4">
+                          <a href="https://www.yourfinances.me/privacy" target="_blank" rel="noopener noreferrer" className="text-xs text-emerald-600 font-bold hover:underline">
+                            Privacy Policy
+                          </a>
+                          <a href="https://www.yourfinances.me/terms-of-engagement" target="_blank" rel="noopener noreferrer" className="text-xs text-emerald-600 font-bold hover:underline">
+                            Terms of Engagement
+                          </a>
+                        </div>
+                      </div>
                     </div>
                   </div>
 

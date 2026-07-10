@@ -70,6 +70,7 @@ interface SalaryBreakdownModalProps {
   profile: any;
   budgets: any[];
   onSuccess: () => void;
+  onOpenPremiumModal: () => void;
 }
 
 interface CustomAuxiliaryIncome {
@@ -96,7 +97,8 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
   onClose,
   profile,
   budgets,
-  onSuccess
+  onSuccess,
+  onOpenPremiumModal
 }) => {
   const { t, i18n } = useTranslation();
   const [selectedYearMonth, setSelectedYearMonth] = useState<string>(() => {
@@ -247,7 +249,9 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
 
         let defaultSal = recItems.reduce((sum, item) => sum + Number(item.amount || 0), 0);
         let defaultPayday = 28;
-        const salaryItem = recItems.find((item: any) => item.category === 'Salary' && item.dayOption) || recItems.find((item: any) => item.dayOption);
+        const salaryItem = recItems.find((item: any) => 
+          (item.category === 'Salary' || (item.category === 'Income' && item.subcategory === 'Wage')) && item.dayOption
+        ) || recItems.find((item: any) => item.category === 'Salary' || (item.category === 'Income' && item.subcategory === 'Wage')) || recItems.find((item: any) => item.dayOption);
         if (salaryItem) {
           defaultPayday = Number(salaryItem.dayOption);
         }
@@ -462,7 +466,7 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
   }, [sourceCategories, uniqueDbAccounts]);
 
   const verifiedSalaryLedger = useMemo(() => {
-    return dbRecurringIncomes.find(item => item.category === 'Salary' && Number(item.amount) > 0 && item.dayOption);
+    return dbRecurringIncomes.find(item => (item.category === 'Salary' || (item.category === 'Income' && item.subcategory === 'Wage')) && Number(item.amount) > 0 && item.dayOption);
   }, [dbRecurringIncomes]);
 
   // Calculations: Calculate total aggregated budget drop by summing all checked multi-income sources
@@ -1124,6 +1128,14 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
                       </select>
                     </div>
 
+                    <button
+                      type="button"
+                      onClick={onOpenPremiumModal}
+                      className="w-[273px] text-xs font-bold text-emerald-600 underline text-center"
+                    >
+                      Do you want to explore other options?
+                    </button>
+
                     {newIncomeType === 'recurring' && (
                       <>
                         <div className="flex flex-col gap-1.5">
@@ -1461,13 +1473,13 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
                   {/* Calculations Row Details */}
                   <div className="grid grid-cols-3 gap-2 py-4 text-center w-full bg-[#EAEDF5] rounded-xl mb-4">
                     <div className="flex flex-col gap-1">
-                      <span className="text-[10px] text-[#57606F] font-normal" style={{ fontFamily: "'Google Sans', sans-serif" }}>{t("salary_breakdown_modal.income", "Salary Breakdown")}</span>
+                      <span className="text-xs text-[#57606F] font-normal" style={{ fontFamily: "'Google Sans', sans-serif" }}>{t("salary_breakdown_modal.income", "Salary Breakdown")}</span>
                       <span className="text-[16px] text-[#1E2229] font-bold" style={{ fontFamily: "'Google Sans', sans-serif" }}>
                         {calculatedIncomeDrop.toLocaleString(undefined, { minimumFractionDigits: 0 })}
                       </span>
                     </div>
                     <div className="flex flex-col gap-1 border-l border-[#D1D5DB]">
-                      <span className="text-[10px] text-[#57606F] font-normal" style={{ fontFamily: "'Google Sans', sans-serif" }}>{t("salary_breakdown_modal.expenses", "Allocation")}</span>
+                      <span className="text-xs text-[#57606F] font-normal" style={{ fontFamily: "'Google Sans', sans-serif" }}>{t("salary_breakdown_modal.expenses", "Allocation")}</span>
                       <span className="text-[16px] text-[#1E2229] font-bold" style={{ fontFamily: "'Google Sans', sans-serif" }}>
                         {sumAllocated.toLocaleString(undefined, { minimumFractionDigits: 0 })}
                       </span>

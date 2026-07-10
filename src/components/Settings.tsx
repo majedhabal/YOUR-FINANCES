@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'motion/react';
 import { User, Shield, Bell, CreditCard, LogOut, ChevronRight, Moon, Globe, Sparkles, Zap, PackageOpen, RotateCcw, LayoutGrid, RefreshCw, Calendar, CheckSquare, Brain, Lock, Fingerprint, MessageSquare, Zap as ZapIcon, Type, ZoomIn, ArrowLeftRight, Wand2 } from 'lucide-react';
 import { LanguageSelector } from './LanguageSelector';
+import { BadgesModal } from './BadgesModal';
+import { BADGES } from '../lib/badgeUtils';
 
 import { doc, updateDoc, getDoc, setDoc, writeBatch, collection, getDocs } from 'firebase/firestore';
 import { db } from '../lib/firebase';
@@ -57,6 +59,7 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
   }, [activeView]);
 
   const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false);
+  const [isBadgesModalOpen, setIsBadgesModalOpen] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [currencySearch, setCurrencySearch] = useState('');
@@ -285,6 +288,12 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
       return; // Cannot disable the base currency
     }
     
+    // Check for premium restriction
+    if (!isPremium && !enabledCurrencies.includes(curr)) {
+      setIsPremiumModalOpen(true);
+      return;
+    }
+    
     let nextEnabled = [...enabledCurrencies];
     if (nextEnabled.includes(curr)) {
       nextEnabled = nextEnabled.filter(c => c !== curr);
@@ -427,6 +436,16 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
           action: () => {
             setActiveView('referrals');
           },
+        },
+        {
+          icon: Sparkles,
+          label: 'Badges',
+          value: profile?.badges?.length && profile.badges.length > 0 
+            ? <img src={BADGES.find(b => b.id === profile.badges[profile.badges.length-1])?.image} alt="Latest badge" className="w-6 h-6 inline object-contain" />
+            : null,
+          action: () => {
+             setIsBadgesModalOpen(true);
+          }
         },
         { 
           icon: RotateCcw, 
@@ -951,9 +970,13 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
           </div>
         </div>
         <div className="flex shrink-0">
-          <span className={`px-2 py-0.5 rounded-full tracking-wide ${isPremium ? 'bg-vantage-green/10 text-vantage-green border border-vantage-green/20' : 'bg-vantage-text/10 text-vantage-muted border border-vantage-text/15'}`} style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: '14px' }}>
+          <button 
+            onClick={() => setIsPremiumModalOpen(true)}
+            className={`px-2 py-0.5 rounded-full tracking-wide ${isPremium ? 'bg-vantage-green/10 text-vantage-green border border-vantage-green/20' : 'bg-vantage-text/10 text-vantage-muted border border-vantage-text/15'}`} 
+            style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: '14px' }}
+          >
             {subscriptionTierDisplay}
-          </span>
+          </button>
         </div>
       </div>
 
@@ -1465,6 +1488,11 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
           profile={profile}
         />
       )}
+      <BadgesModal 
+        isOpen={isBadgesModalOpen}
+        onClose={() => setIsBadgesModalOpen(false)}
+        currentStreak={profile?.dailyStreak || 0}
+      />
     </div>
   );
 };

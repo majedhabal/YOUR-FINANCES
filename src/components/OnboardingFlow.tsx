@@ -394,6 +394,9 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
   const [activeStep, setActiveStep] = useState<number>(1);
   const [isTyping, setIsTyping] = useState<boolean>(false);
 
+  const rawTier = (profile?.subscriptionTier || 'free').toLowerCase();
+  const isPaid = ['tier1', 'tier2', 'tier3', 'premium'].includes(rawTier);
+
   // Selector matrix states
   const [primaryGoal, setPrimaryGoal] = useState<string>(() => {
     const raw = profile?.primaryFinancialGoal || '';
@@ -465,8 +468,10 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
 
   // Payroll state variables
   const [salaryAmount, setSalaryAmount] = useState<string>('12000');
+  const [salaryAccountName, setSalaryAccountName] = useState<string>('Salary Account');
+  const [salaryAccountStartingBalance, setSalaryAccountStartingBalance] = useState<string>('0');
   const [paymentDay, setPaymentDay] = useState<number>(28);
-  const [payrollDestination, setPayrollDestination] = useState<'dedicated' | 'existing'>('dedicated');
+  const [checkingDestination, setCheckingDestination] = useState<'dedicated' | 'existing'>('dedicated');
   const [incomeTrackingType, setIncomeTrackingType] = useState<string>(profile?.incomeTrackingType || 'payroll');
 
   // 50/30/20 Budget Setup variables
@@ -759,6 +764,10 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
 
   // Stack/Save multiple accounts before final submission
   const handleAddAnotherAccount = () => {
+    if (profile?.subscriptionTier === 'free' && accountsList.length >= 2) {
+      alert("Free users are limited to 2 accounts. Please upgrade to add more.");
+      return;
+    }
     if (!accountName.trim()) {
       alert("Please enter a nickname for the new account.");
       return;
@@ -920,6 +929,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
               categoryGroup: bp.categoryGroup,
               mappedCategories: [sub],
               mappedSubCategories: [sub],
+              period: 'monthly',
               createdAt: new Date().toISOString(),
               updatedAt: new Date().toISOString()
             };
@@ -950,6 +960,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
             categoryGroup: bp.categoryGroup,
             mappedCategories: bp.mappedCategories || [],
             mappedSubCategories: bp.mappedSubCategories || [],
+            period: 'monthly',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString()
           };
@@ -986,8 +997,19 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
   const handleFinalizeOnboarding = async (isTour: boolean = false) => {
     if (isSaving) return;
     
+    // Check if free user is trying to add an account
+    if (profile?.subscriptionTier === 'free' && !hasSkippedAccountSetup && accountName.trim()) {
+      alert("Free users cannot add bank accounts.");
+      return;
+    }
+    
     // Prepare accounts
-    const finalAccounts = hasSkippedAccountSetup ? [] : [...accountsList];
+    let finalAccounts = hasSkippedAccountSetup ? [] : [...accountsList];
+    if (checkingDestination === 'dedicated') {
+      // Filter out existing default accounts to prevent duplicates
+      finalAccounts = finalAccounts.filter(acc => !acc.name.toLowerCase().includes('checking') && !acc.name.toLowerCase().includes('salary'));
+    }
+
     if (!hasSkippedAccountSetup && accountName.trim()) {
       const isCreditCard = accountType === 'credit_card' || accountType === 'credit';
       if (isCreditCard && creditOutstandingBalance.trim()) {
@@ -1016,16 +1038,26 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
     }
 
     // Ensure the auto-generated Salary Account is instantiated if opted
-    if (payrollDestination === 'dedicated') {
-      const evalSalary = parseFloat(evaluateMathExpression(salaryAmount)) || 12000;
-      const payrollAccName = 'Salary Account';
-      const hasPayrollAcc = finalAccounts.some(a => a.name === payrollAccName);
-      if (!hasPayrollAcc) {
+    if (checkingDestination === 'dedicated') {
+      const evalSalaryBal = parseFloat(evaluateMathExpression(salaryAccountStartingBalance)) || 0;
+      const checkingAccName = salaryAccountName.trim() || 'Salary Account';
+      
+      // Check if this account already exists in the accounts list from previous steps
+      const existingAccIndex = finalAccounts.findIndex(a => a.name === checkingAccName);
+      
+      if (existingAccIndex !== -1) {
+        // Update existing account
+        finalAccounts[existingAccIndex] = {
+          ...finalAccounts[existingAccIndex],
+          startingBalance: evalSalaryBal
+        };
+      } else {
+        // Create new account
         finalAccounts.push({
-          name: payrollAccName,
+          name: checkingAccName,
           type: 'Bank',
           bankAccountType: 'Checking',
-          startingBalance: evalSalary,
+          startingBalance: evalSalaryBal,
           currency: currency.toUpperCase() || 'AED'
         });
       }
@@ -1049,6 +1081,8 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
     const existingLastLogin = profile?.lastLogin || new Date().toISOString();
     const rawTier = (profile?.subscriptionTier || 'free').toLowerCase();
     const existingSubscriptionTier = rawTier === 'premium' ? 'tier 1' : (rawTier === 'tier1' ? 'tier 1' : (rawTier === 'tier2' ? 'tier 2' : (rawTier === 'tier3' ? 'tier 3' : rawTier)));
+    const isPaid = ['tier 1', 'tier 2', 'tier 3'].includes(existingSubscriptionTier);
+    const initialCurrencies = isPaid ? [homeCurrency, 'USD'] : [homeCurrency];
 
     const payload = {
       uid: uid,
@@ -1064,7 +1098,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
           age: Number(d.age) || 0
         })),
       baseCurrency: homeCurrency,
-      enabledCurrencies: profile?.enabledCurrencies || [homeCurrency, 'USD'],
+      enabledCurrencies: profile?.enabledCurrencies || initialCurrencies,
       financialExperience: Number(financialExperience) || 3,
       primaryFinancialGoal: primaryGoal || '',
       financialGoals: primaryGoal || (Array.isArray(financialGoals) ? financialGoals.join(', ') : (financialGoals || "Buy a family villa, optimize long-term savings")),
@@ -1073,6 +1107,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
       language: selectedLanguage,
       geminiInsightsEnabled: profile?.geminiInsightsEnabled !== undefined ? profile.geminiInsightsEnabled : true,
       hasAcceptedTerms: true,
+      salaryAmount: incomeTrackingType === 'payroll' ? (parseFloat(evaluateMathExpression(salaryAmount)) || 0) : null,
       onboardedAt: new Date().toISOString(),
       lastLogin: existingLastLogin,
       subscriptionTier: existingSubscriptionTier,
@@ -1102,11 +1137,15 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
         console.warn("Optimistic background sync (profile):", err);
       });
 
-      let payrollAccountId = '';
+      let checkingAccountId = '';
       const createdAccountIds: string[] = [];
+      const accountCreationPromises = [];
 
       for (const acc of finalAccounts) {
         const accSubRef = doc(collection(db, `users/${uid}/accounts`));
+        if (checkingDestination === 'dedicated' && acc.name === (salaryAccountName.trim() || 'Salary Account')) {
+          checkingAccountId = accSubRef.id;
+        }
         const originalStartingBalance = Number(acc.startingBalance) || 0;
         const isBank = acc.type === 'bank' || acc.type === 'savings';
         const isCash = acc.type === 'cash';
@@ -1186,16 +1225,14 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
         
         createdAccountIds.push(accSubRef.id);
         
-        if (acc.name === 'Salary Account') {
-          payrollAccountId = accSubRef.id;
+        if (acc.name.trim().toLowerCase() === (salaryAccountName.trim() || 'salary account').toLowerCase()) {
+          checkingAccountId = accSubRef.id;
         }
 
-        setDoc(accSubRef, finalAccObj).catch(err => {
-          console.warn("Optimistic background sync (account):", err);
-        });
+        accountCreationPromises.push(setDoc(accSubRef, finalAccObj));
 
         // Generate the initial tracking ledger credit baseline transaction entry
-        if (originalStartingBalance !== 0) {
+        if (originalStartingBalance !== 0 && !acc.name.toLowerCase().includes('salary')) {
           const txRef = doc(collection(db, `users/${uid}/transactions`));
           const isExpense = originalStartingBalance < 0;
           const initTxObj = {
@@ -1216,24 +1253,31 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
             status: 'confirmed'
           };
 
-          setDoc(txRef, initTxObj).catch(err => {
-            console.warn("Optimistic background sync (starting balance transaction):", err);
-          });
+          accountCreationPromises.push(setDoc(txRef, initTxObj));
 
           // Sequentially update account's currentBalance to reflect the setup funds ledger transaction
           const finalBal = isCredit ? -1 * Math.abs(originalStartingBalance) : originalStartingBalance;
-          updateDoc(accSubRef, {
+          accountCreationPromises.push(updateDoc(accSubRef, {
             currentBalance: finalBal,
             updatedAt: new Date().toISOString()
-          }).catch(err => {
-            console.warn("Optimistic background sync (starting balance account update):", err);
-          });
+          }));
+        } else if (originalStartingBalance !== 0 && acc.name.toLowerCase().includes('salary')) {
+          // Still need to update the balance for the salary account, even if we skip the ledger tx
+          const finalBal = isCredit ? -1 * Math.abs(originalStartingBalance) : originalStartingBalance;
+          accountCreationPromises.push(updateDoc(accSubRef, {
+            currentBalance: finalBal,
+            updatedAt: new Date().toISOString()
+          }));
         }
       }
 
+      await Promise.all(accountCreationPromises);
+
       // Automatically initialize the target entity inside the 'accounts' collection
+      console.log("handleFinalizeOnboarding: Checking primaryGoal", { primaryGoal, goalAmount });
       if (primaryGoal) {
         const config = GOALS_CONFIG.find(g => g.key === primaryGoal);
+        console.log("handleFinalizeOnboarding: Found config", config);
         if (config) {
           const accSubRef = doc(collection(db, `users/${uid}/accounts`));
           const goalVal = parseFloat(goalAmount) || 0;
@@ -1282,7 +1326,9 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
           });
 
           // Automatically initialize reference inside the 'milestones' collection if not tackle_debt
+          console.log("Creating account for config:", config.key, "goalVal:", goalVal);
           if (config.key !== 'tackle_debt') {
+            console.log("Creating milestone for config:", config.key);
             const milestoneRef = doc(collection(db, `users/${uid}/milestones`));
             const milestonePayload = {
               id: milestoneRef.id,
@@ -1296,7 +1342,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
               isArchived: false,
               userId: uid
             };
-
+            
             // Local cache update for offline resilience
             const prevSavedMilestonesStr = localStorage.getItem(`vantage_offline_milestones_${uid}`);
             let prevSavedMilestones = [];
@@ -1313,10 +1359,9 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
             );
 
             // Write to Firestore Milestones collection
-            setDoc(milestoneRef, milestonePayload).catch(err => {
-              console.warn("Optimistic background sync (milestone savings goal):", err);
-            });
+            await setDoc(milestoneRef, milestonePayload);
           } else {
+            console.log("Creating debt milestone for config:", config.key);
             // It is tackle_debt, automatically initialize reference inside the 'debtMilestones' collection
             const debtMilestoneRef = doc(collection(db, `users/${uid}/debtMilestones`));
             const debtMilestonePayload = {
@@ -1342,85 +1387,100 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
       }
 
       // Automatically create a recurring income rule matching the salary parameters
-      const evalSalary = parseFloat(evaluateMathExpression(salaryAmount)) || 12000;
-      const recRef = doc(collection(db, `users/${uid}/recurringTransactions`));
-      const targetAccountId = payrollAccountId || createdAccountIds[0] || 'manual-fallback-acc';
+      const evalSalary = profile?.salaryAmount || (parseFloat(String(evaluateMathExpression(salaryAmount)).replace(/[^0-9.]/g, '')) || 0);
+      console.log("Salary evaluation details:", { salaryAmount, evalSalary, uid: uid, checkingAccountId, checkingDestination, paymentDay });
+      
+      if (evalSalary > 0) {
+        console.log("Condition evalSalary > 0 met, proceeding to create recurring transaction");
+        try {
+          const recRef = doc(collection(db, `users/${uid}/recurringTransactions`));
+          const targetAccountId = checkingAccountId || (createdAccountIds.length > 0 ? createdAccountIds[0] : 'manual-fallback-acc');
+          
+          const now = new Date();
+          const currentYear = now.getFullYear();
+          const currentMonth = now.getMonth();
+          const userDay = paymentDay ? Number(paymentDay) : 1;
+          
+          let nextExecutionDateObj = new Date(currentYear, currentMonth, userDay);
+          if (nextExecutionDateObj < now) {
+            nextExecutionDateObj = new Date(currentYear, currentMonth + 1, userDay);
+          }
+          
+          const yyyy = nextExecutionDateObj.getFullYear();
+          const mm = String(nextExecutionDateObj.getMonth() + 1).padStart(2, '0');
+          const dd = String(nextExecutionDateObj.getDate()).padStart(2, '0');
+          const nextExecutionDate = `${yyyy}-${mm}-${dd}`;
 
-      const now = new Date();
-      const currentYear = now.getFullYear();
-      const currentMonth = now.getMonth();
-      const daysInActiveMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-      const userDay = paymentDay;
-      const constrainedDay = userDay > daysInActiveMonth ? daysInActiveMonth : userDay;
+          const recurringRulePayload = {
+            // Exact required schema
+            recurringId: recRef.id,
+            userId: uid,
+            title: 'Monthly Salary',
+            amount: evalSalary,
+            transactionType: 'income',
+            type: 'income',
+            category: 'Income',
+            subcategory: 'Wage',
+            recurrency: 'monthly',
+            frequency: 'Monthly',
+            interval: 1,
+            sourceAccountId: targetAccountId,
+            accountId: targetAccountId,
+            startDate: nextExecutionDate,
+            nextExecutionDate: nextExecutionDate,
+            nextGenerationDate: nextExecutionDate,
+            dayOption: 'sameDate',
+            specificDayOfMonth: null,
+            duration: 'Indefinite',
+            durationLimit: '',
+            notes: '',
+            isActive: true,
+            isBreakdownConfigured: true,
+            emoji: '💰',
+            isSyncedToCalendar: false,
+            isSyncedToTasks: false,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          };
 
-      const formattedMonth = String(currentMonth + 1).padStart(2, '0');
-      const formattedDay = String(constrainedDay).padStart(2, '0');
-      const nextExecutionDate = `${currentYear}-${formattedMonth}-${formattedDay}`;
+          // Save to localStorage for instant local access
+          localStorage.setItem(`vantage_offline_recurring_${uid}`, JSON.stringify([recurringRulePayload]));
 
-      const recurringRulePayload = {
-        // Legacy compatibility
-        id: recRef.id,
-        type: 'income',
-        recurrency: 'monthly',
-        date: nextExecutionDate,
-        accountId: targetAccountId,
-        category: 'Income',
-        subcategory: 'Wage',
-        notes: 'Monthly Payroll',
-        interval: 1,
-        duration: 'forever',
-        durationLimit: null,
-        eventsRemaining: null,
-        lastGeneratedDate: nextExecutionDate,
-        nextGenerationDate: nextExecutionDate,
-
-        // Exact new payload
-        recurringId: recRef.id,
-        userId: uid,
-        title: 'Monthly Salary Payout',
-        amount: evalSalary,
-        transactionType: 'income',
-        frequency: 'Monthly',
-        sourceAccountId: targetAccountId,
-        destinationAccountId: null,
-        startDate: new Date().toISOString().split('T')[0],
-        nextExecutionDate,
-        dayOption: Number(paymentDay) || 28,
-        isActive: true,
-        isBreakdownConfigured: false,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-
-      // Save to localStorage for instant local access
-      localStorage.setItem(`vantage_offline_recurring_${uid}`, JSON.stringify([recurringRulePayload]));
-
-      // Save to Firebase Firestore
-      setDoc(recRef, {
-        ...recurringRulePayload,
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
-      }).catch(err => {
-        console.warn("Optimistic background sync (recurring payroll rule):", err);
-      });
+          // Save to Firebase Firestore
+          console.log("DEBUG: About to write recurring transaction to Firestore:", {
+            recRefId: recRef.id,
+            uid: uid,
+            payload: recurringRulePayload
+          });
+          
+          await setDoc(recRef, {
+            ...recurringRulePayload,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp()
+          });
+          console.log("DEBUG: Recurring transaction created successfully in Firestore");
+        } catch (error) {
+          console.error("Critical error creating recurring transaction:", error);
+        }
+      } else {
+        console.warn("Salary amount is 0 or invalid, skipping recurring transaction creation.", { salaryAmount, evalSalary });
+      }
 
       if (!blueprintsApplied) {
-        for (const ob of onboardingBudgets) {
+        await Promise.all(onboardingBudgets.map(ob => {
           const budgetRef = doc(collection(db, `users/${uid}/miniBudgets`));
-          setDoc(budgetRef, {
-            id: budgetRef.id,
-            title: ob.title,
-            maxBudget: parseFloat(evaluateMathExpression(ob.maxBudget)) || 100,
+          return setDoc(budgetRef, {
+            budgetId: budgetRef.id,
+            userId: uid,
+            categoryTitle: ob.title,
+            allocatedAmount: parseFloat(evaluateMathExpression(ob.maxBudget)) || 0,
+            spentAmount: 0,
             currency: ob.currency,
-            category: ob.category,
-            subcategory: ob.subcategory || 'All',
-            emoji: ob.emoji,
-            period: ob.period,
-            createdAt: serverTimestamp()
-          }).catch(err => {
-            console.warn("Optimistic background sync (budget):", err);
+            iconAsset: ob.emoji || 'shopping-cart',
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp()
           });
-        }
+        }));
       }
 
       // 3. Immediate UI Transition with Gorgeous Celebration (No-Block Routing)
@@ -2102,16 +2162,54 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                     <label style={{ fontFamily: "'Google Sans', sans-serif", fontSize: "clamp(11px, 3.2vw, 13px)", fontWeight: 400 }} className="text-neutral-500 select-none">
                       {t("onboarding.pay_date_label", "Pay Date (Day of Month)")}
                     </label>
-                    <input
-                      type="number"
-                      min={1}
-                      max={31}
+                    <select
                       value={paymentDay}
                       onChange={(e) => {
                         const val = parseInt(e.target.value);
                         setPaymentDay(isNaN(val) ? 28 : Math.max(1, Math.min(31, val)));
                       }}
-                      placeholder="e.g. 28"
+                      style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
+                      className="w-full h-[38px] max-h-[38px] bg-[#F8F9FA] border border-[#E1E8ED] rounded-xl px-3 py-0 text-xs text-black outline-none focus:border-black focus:bg-white transition-all appearance-none"
+                    >
+                      {[...Array(31)].map((_, i) => (
+                        <option key={i + 1} value={i + 1}>
+                          {i + 1}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Salary Account Name */}
+                  <div className="flex flex-col gap-0.5 text-left">
+                    <label style={{ fontFamily: "'Google Sans', sans-serif", fontSize: "clamp(11px, 3.2vw, 13px)", fontWeight: 400 }} className="text-neutral-500 select-none">
+                      {t("onboarding.salary_account_name", "Salary Account Name")}
+                    </label>
+                    <input
+                      type="text"
+                      value={salaryAccountName}
+                      onChange={(e) => setSalaryAccountName(e.target.value)}
+                      placeholder="e.g. Main Salary"
+                      style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
+                      className="w-full h-[38px] max-h-[38px] bg-[#F8F9FA] border border-[#E1E8ED] rounded-xl px-3 py-0 text-xs text-black outline-none focus:border-black focus:bg-white placeholder:text-neutral-400 transition-all"
+                    />
+                  </div>
+
+                  {/* Salary Account Starting Balance */}
+                  <div className="flex flex-col gap-0.5 text-left">
+                    <label style={{ fontFamily: "'Google Sans', sans-serif", fontSize: "clamp(11px, 3.2vw, 13px)", fontWeight: 400 }} className="text-neutral-500 select-none">
+                      {t("onboarding.salary_starting_balance", "Starting Balance ({{currency}})", { currency: currency || 'AED' })}
+                    </label>
+                    <input
+                      type="text"
+                      value={salaryAccountStartingBalance}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/[^0-9+\-*/.()]/g, '');
+                        setSalaryAccountStartingBalance(val);
+                      }}
+                      onBlur={() => {
+                        setSalaryAccountStartingBalance(prev => evaluateMathExpression(prev));
+                      }}
+                      placeholder="e.g. 0"
                       style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
                       className="w-full h-[38px] max-h-[38px] bg-[#F8F9FA] border border-[#E1E8ED] rounded-xl px-3 py-0 text-xs text-black outline-none focus:border-black focus:bg-white placeholder:text-neutral-400 transition-all font-mono"
                     />
@@ -2145,9 +2243,9 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                       }
                       
                       // Clicking "Create Dedicated Salary Account" automatically appends a preset bank card
-                      if (payrollDestination === 'dedicated') {
-                        const payrollAccName = 'Salary Account';
-                        const existingPayloadIndex = accountsList.findIndex(a => a.name === payrollAccName);
+                      if (checkingDestination === 'dedicated') {
+                        const checkingAccName = 'Salary Account';
+                        const existingPayloadIndex = accountsList.findIndex(a => a.name === checkingAccName);
                         if (existingPayloadIndex >= 0) {
                           // update existing starting balance
                           const updated = [...accountsList];
@@ -2157,7 +2255,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                         } else {
                           // append new card
                           setAccountsList(prev => [...prev, {
-                            name: payrollAccName,
+                            name: checkingAccName,
                             type: 'bank',
                             startingBalance: evalSalary,
                             currency: currency.toUpperCase() || 'AED'
@@ -2187,7 +2285,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
           <div className="flex flex-col gap-1 self-end max-w-[85%] animate-fadeIn">
             <div className="bg-black text-white rounded-2xl rounded-tr-none p-2.5 shadow-sm text-right">
               <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: "clamp(11px, 3.2vw, 13px)" }} className="tracking-tight font-normal">
-                {t("onboarding.salary_details_summary", "Salary Details:")} {parseFloat(evaluateMathExpression(salaryAmount)).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {currency || 'AED'} {t("onboarding.on_day", "on day")} {paymentDay} ({payrollDestination === 'dedicated' ? t("onboarding.create_dedicated_salary_option", "Create Dedicated Salary Account") : t("onboarding.link_to_existing_option", "Link to Existing Account")})
+                {t("onboarding.salary_details_summary", "Salary Details:")} {parseFloat(evaluateMathExpression(salaryAmount)).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {currency || 'AED'} {t("onboarding.on_day", "on day")} {paymentDay} ({checkingDestination === 'dedicated' ? t("onboarding.create_dedicated_salary_option", "Create Dedicated Salary Account") : t("onboarding.link_to_existing_option", "Link to Existing Account")})
               </p>
             </div>
           </div>
@@ -2227,7 +2325,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                           style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, color: '#A6DDB1', fontSize: '12px' }} 
                           className="font-normal block"
                         >
-                          {t("onboarding.account_type_prefix", "Type:")} {t(`onboarding.type_${acc.type.toLowerCase()}`, acc.type)} {acc.name === 'Salary Account' && `• ${t("onboarding.automated", "Automated")}`}
+                          {t("onboarding.account_type_prefix", "Type:")} {t(`onboarding.type_${acc.type.toLowerCase()}`, acc.type)} {/* Removed Automated label logic */}
                         </span>
                         <span 
                           style={{ 
@@ -2340,9 +2438,9 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                       className="w-full h-[38px] max-h-[38px] bg-neutral-50 border border-neutral-250 rounded-xl px-3 py-0 text-xs text-black focus:border-[#00FF88] outline-none cursor-pointer font-normal"
                     >
                       <option value="AED" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="font-normal">AED (UAE Dirham)</option>
-                      <option value="USD" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="font-normal font-sans">USD (US Dollar)</option>
-                      <option value="PHP" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="font-normal">PHP (Philippine Peso)</option>
-                      <option value="EUR" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="font-normal font-sans">EUR (Euro)</option>
+                      <option value="USD" disabled={!isPaid} style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="font-normal font-sans">USD (US Dollar)</option>
+                      <option value="PHP" disabled={!isPaid} style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="font-normal">PHP (Philippine Peso)</option>
+                      <option value="EUR" disabled={!isPaid} style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="font-normal font-sans">EUR (Euro)</option>
                     </select>
                   </div>
 
@@ -3737,7 +3835,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                 {t("onboarding.celebration_message", "Welcome aboard! Your secure financial vault is now live.")}
               </p>
 
-              {payrollDestination === 'dedicated' && (
+              {checkingDestination === 'dedicated' && (
                 <div 
                   style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
                   className="w-full text-xs text-[#2A4430] bg-[#A6DDB1]/20 border border-[#A6DDB1]/45 px-3 py-2.5 rounded-2xl mb-6 font-normal tracking-tight text-center leading-normal"

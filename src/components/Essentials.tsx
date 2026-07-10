@@ -56,26 +56,27 @@ import { DebtSection } from './DebtSection';
 import { GoalTransactionModal } from './GoalTransactionModal';
 import { DebtTransactionModal } from './DebtTransactionModal';
 import { BudgetTransactionModal } from './BudgetTransactionModal';
+import { PremiumModal } from './PremiumModal';
 
 
 interface BudgetCategory {
   id: string;
-  title: string;
-  maxBudget: number;
+  budgetId?: string;
+  accountId?: string;
+  maxBudget?: number;
+  title?: string;
+  categoryTitle?: string;
+  allocatedAmount: number;
   currency: string;
   category: string;
   subcategory?: string;
-  emoji: string;
+  emoji?: string;
+  iconAsset?: string;
   period: 'daily' | 'weekly' | 'monthly';
   lastHistorySnapshotDate?: any;
   createdAt: any;
-  accountId?: string;
-  categoryTitle?: string;
-  budgetId?: string;
-  allocatedAmount?: number;
   spentAmount?: number;
   spent?: number;
-  iconAsset?: string;
   mappedCategories?: string[];
   mappedSubCategories?: string[];
 }
@@ -141,6 +142,7 @@ export const Essentials: React.FC<DailyLogProps> = ({ profile }) => {
     }
     return [];
   });
+  const [userLogins, setUserLogins] = useState<any[]>([]);
   const [isMilestoneModalOpen, setIsMilestoneModalOpen] = useState(false);
   
   useEffect(() => {
@@ -159,6 +161,9 @@ export const Essentials: React.FC<DailyLogProps> = ({ profile }) => {
   useEffect(() => {
     window.dispatchEvent(new CustomEvent('debt-milestone-modal-toggled', { detail: { isOpen: isDebtMilestoneModalOpen } }));
   }, [isDebtMilestoneModalOpen]);
+
+  useEffect(() => {
+  }, []);
   const [editingDebtMilestone, setEditingDebtMilestone] = useState<any | null>(null);
   const [debtMilestoneToDelete, setDebtMilestoneToDelete] = useState<any | null>(null);
   const [showManageLinkedModal, setShowManageLinkedModal] = useState(false);
@@ -176,6 +181,7 @@ export const Essentials: React.FC<DailyLogProps> = ({ profile }) => {
 
   // Salary Breakdown Blueprints State & Helpers
   const [isSalaryModalOpen, setIsSalaryModalOpen] = useState(false);
+  const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false);
   const [dbSalary, setDbSalary] = useState<number>(5000);
   const [dbPayday, setDbPayday] = useState<number>(28);
 
@@ -240,7 +246,7 @@ export const Essentials: React.FC<DailyLogProps> = ({ profile }) => {
       const computedSalary = items.reduce((sum, item) => sum + Number(item.amount || 0), 0);
       setDbSalary(computedSalary);
 
-      const payItem = items.find(item => item.category === 'Salary' && item.dayOption) || items.find(item => item.dayOption);
+      const payItem = items.find(item => (item.category === 'Salary' || (item.category === 'Income' && item.subcategory === 'Wage')) && item.dayOption) || items.find(item => (item.category === 'Salary' || (item.category === 'Income' && item.subcategory === 'Wage'))) || items.find(item => item.dayOption);
       if (payItem) {
         setDbPayday(Number(payItem.dayOption));
       } else {
@@ -310,7 +316,14 @@ useEffect(() => {
 
     // Fetch Budgets
     const unsubBudgets = onSnapshot(collection(db, `users/${profile.uid}/miniBudgets`), (snap) => {
-      setBudgets(snap.docs.map(d => ({ id: d.id, ...d.data() } as BudgetCategory)));
+      setBudgets(snap.docs.map(d => {
+        const data = d.data() as any;
+        return {
+          id: d.id,
+          ...data,
+          title: data.title || data.categoryTitle || 'Unnamed Budget'
+        } as BudgetCategory;
+      }));
     }, (error) => {
       handleFirestoreError(error, OperationType.LIST, `users/${profile.uid}/miniBudgets`);
     });
@@ -356,9 +369,11 @@ useEffect(() => {
     // Fetch Milestones
     const unsubMilestones = onSnapshot(collection(db, `users/${profile.uid}/milestones`), (snap) => {
       const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      console.log("Milestones fetched for user", profile.uid, ":", items);
       setMilestones(items);
       localStorage.setItem(`vantage_offline_milestones_${profile.uid}`, JSON.stringify(items));
     }, (error) => {
+      console.error("Error fetching milestones:", error);
       handleFirestoreError(error, OperationType.LIST, `users/${profile.uid}/milestones`);
     });
 
@@ -370,6 +385,14 @@ useEffect(() => {
       handleFirestoreError(error, OperationType.LIST, `users/${profile.uid}/debtMilestones`);
     });
 
+    // Fetch User Logins
+    const unsubLogins = onSnapshot(collection(db, `users/${profile.uid}/logins`), (snap) => {
+      const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      setUserLogins(items);
+    }, (error) => {
+      handleFirestoreError(error, OperationType.LIST, `users/${profile.uid}/logins`);
+    });
+
     // 🌟 FIX 1: Clean up all open streams when unmounting/navigating away
     return () => {
       unsubBudgets();
@@ -379,6 +402,7 @@ useEffect(() => {
       unsubCat();
       unsubMilestones();
       unsubDebtMilestones();
+      unsubLogins();
     };
   }, [profile?.uid]); // 🔒 FIX 2: Explicitly lock this hook to user session changes only!
 
@@ -828,9 +852,19 @@ useEffect(() => {
         onClose={() => setIsSalaryModalOpen(false)}
         profile={profile}
         budgets={budgets}
+        onOpenPremiumModal={() => setIsPremiumModalOpen(true)}
         onSuccess={() => {
           setShowSuccess(true);
           setTimeout(() => setShowSuccess(false), 2000);
+        }}
+      />
+      <PremiumModal
+        isOpen={isPremiumModalOpen}
+        onClose={() => setIsPremiumModalOpen(false)}
+        uid={profile.uid}
+        profile={profile}
+        onSuccess={(updatedProfile) => {
+          // Handle successful upgrade if needed
         }}
       />
 

@@ -38,9 +38,11 @@ export const DebtMilestoneConfigModal: React.FC<DebtMilestoneConfigModalProps> =
   const [paymentAmount, setPaymentAmount] = useState('');
   const [interestRate, setInterestRate] = useState('');
   const [minBalanceFloor, setMinBalanceFloor] = useState('');
+  const [selectedCurrency, setSelectedCurrency] = useState<string>(profile?.baseCurrency || profile?.currency || 'AED');
   const [isLoading, setIsLoading] = useState(false);
 
   const activeBaseCurr = profile?.baseCurrency || profile?.currency || 'AED';
+  const enabledCurrencies = profile?.enabledCurrencies || [activeBaseCurr];
 
   useEffect(() => {
     window.dispatchEvent(new CustomEvent('debt-modal-toggled', { detail: { isOpen } }));
@@ -53,6 +55,7 @@ export const DebtMilestoneConfigModal: React.FC<DebtMilestoneConfigModalProps> =
         setPrincipleAmount(editingMilestone.principleAmount?.toString() || '');
         setPaymentFrequency(editingMilestone.paymentFrequency || 'Monthly');
         setPaymentAmount(editingMilestone.paymentAmount?.toString() || '');
+        setSelectedCurrency(editingMilestone.currency || activeBaseCurr);
         
         // Match existing linked account details if available
         const linkedAcc = accounts.find(a => a.id === editingMilestone.accountId);
@@ -77,9 +80,10 @@ export const DebtMilestoneConfigModal: React.FC<DebtMilestoneConfigModalProps> =
         setLoanDirection('borrowed');
         setInterestRate('');
         setMinBalanceFloor('');
+        setSelectedCurrency(activeBaseCurr);
       }
     }
-  }, [editingMilestone, isOpen, accounts]);
+  }, [editingMilestone, isOpen, accounts, activeBaseCurr]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -95,7 +99,7 @@ export const DebtMilestoneConfigModal: React.FC<DebtMilestoneConfigModalProps> =
 
       const savedType = debtType === 'Loan' ? 'Personal Loan' : 'Mortgage';
       const savedDirection = debtType === 'Loan' ? loanDirection : 'borrowed';
-      const formattedProtocol = `${activeBaseCurr} ${(parseFloat(evaluateMathExpression(paymentAmount)) || 0).toLocaleString()} ${paymentFrequency}`;
+      const formattedProtocol = `${selectedCurrency} ${(parseFloat(evaluateMathExpression(paymentAmount)) || 0).toLocaleString()} ${paymentFrequency}`;
 
       // 1. BACKGROUND WRITE TRIGGER: Automatically spawn or update corresponding liability tracking document in master accounts
       if (!finalAccountId) {
@@ -109,7 +113,7 @@ export const DebtMilestoneConfigModal: React.FC<DebtMilestoneConfigModalProps> =
           type: savedType,
           loanDirection: savedDirection,
           name: name,
-          currency: activeBaseCurr,
+          currency: selectedCurrency,
           startingBalance: savedDirection === 'lent' ? Math.abs(parsedPrinciple) : -Math.abs(parsedPrinciple),
           currentBalance: savedDirection === 'lent' ? Math.abs(parsedPrinciple) : -Math.abs(parsedPrinciple),
           interestRate: parsedInterest,
@@ -126,6 +130,7 @@ export const DebtMilestoneConfigModal: React.FC<DebtMilestoneConfigModalProps> =
           name: name,
           type: savedType,
           loanDirection: savedDirection,
+          currency: selectedCurrency,
           startingBalance: savedDirection === 'lent' ? Math.abs(parsedPrinciple) : -Math.abs(parsedPrinciple),
           currentBalance: savedDirection === 'lent' ? Math.abs(parsedPrinciple) : -Math.abs(parsedPrinciple),
           interestRate: parsedInterest,
@@ -142,6 +147,7 @@ export const DebtMilestoneConfigModal: React.FC<DebtMilestoneConfigModalProps> =
       await setDoc(milestoneRef, {
         id: milestoneRef.id,
         name,
+        currency: selectedCurrency,
         principleAmount: parsedPrinciple,
         paymentFrequency,
         paymentAmount: parseFloat(evaluateMathExpression(paymentAmount)),
@@ -271,6 +277,35 @@ export const DebtMilestoneConfigModal: React.FC<DebtMilestoneConfigModalProps> =
                   }}
                   className="w-full bg-neutral-50 border border-[#E1E8ED]/80 rounded-lg px-3 py-2 text-black focus:border-black outline-none transition-all placeholder:text-[#57606F]/40"
                 />
+              </div>
+
+              {/* Currency Select */}
+              <div className="space-y-1">
+                <div className="flex justify-between items-center">
+                  <label style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[#57606F] text-[11px] block">
+                    {t('debt_milestone_modal.currency_label', 'Currency')}
+                  </label>
+                  {selectedCurrency !== activeBaseCurr && exchangeRates && exchangeRates[selectedCurrency] && (
+                    <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[#57606F] text-[10px]">
+                      1 {selectedCurrency} ≈ {parseFloat(exchangeRates[selectedCurrency]).toFixed(2)} {activeBaseCurr}
+                    </span>
+                  )}
+                </div>
+                <select
+                  value={selectedCurrency}
+                  onChange={e => setSelectedCurrency(e.target.value)}
+                  style={{ 
+                    fontFamily: "'Google Sans', sans-serif", 
+                    fontWeight: 400,
+                    fontSize: '12px',
+                    height: '36px',
+                  }}
+                  className="w-full bg-neutral-50 border border-[#E1E8ED]/80 rounded-lg px-2.5 py-1.5 text-neutral-700 focus:border-black outline-none transition-all"
+                >
+                  {enabledCurrencies.map((curr) => (
+                    <option key={curr} value={curr}>{curr}</option>
+                  ))}
+                </select>
               </div>
 
               {/* Principal Liability Amount */}

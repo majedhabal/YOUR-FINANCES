@@ -750,7 +750,7 @@ export const Accounts: React.FC<AccountsProps> = ({ profile, onNavigateToTransac
 
         <motion.div 
           onClick={() => {
-            window.dispatchEvent(new CustomEvent('vantage-navigate-tab', { detail: { tab: 'analytics' } }));
+            window.dispatchEvent(new CustomEvent('switch-tab', { detail: { tab: 'analytics' } }));
           }}
           whileHover={{ y: -2, scale: 1.01 }}
           whileTap={{ scale: 0.99 }}

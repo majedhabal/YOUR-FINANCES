@@ -834,11 +834,23 @@ export const AddAccountModal: React.FC<AddAccountModalProps> = ({ isOpen, onClos
                   </div>
 
                   {errorMessage && (
-                    <div style={{ background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.15)' }} className="p-3.5 rounded-xl flex items-center gap-2 animate-none">
-                       <X size={16} className="text-[#EF4444]" />
-                       <span style={{ fontFamily: "'Google Sans', sans-serif", fontSize: 'clamp(0.85rem, 2vw, 0.95rem)', fontWeight: 400 }} className="text-[#EF4444] tracking-normal text-left">
-                         {errorMessage}
-                       </span>
+                    <div style={{ background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.15)' }} className="p-3.5 rounded-xl flex flex-col gap-2 animate-none">
+                       <div className="flex items-center gap-2">
+                          <X size={16} className="text-[#EF4444]" />
+                          <span style={{ fontFamily: "'Google Sans', sans-serif", fontSize: 'clamp(0.85rem, 2vw, 0.95rem)', fontWeight: 400 }} className="text-[#EF4444] tracking-normal text-left">
+                            {errorMessage}
+                          </span>
+                       </div>
+                       {errorMessage.includes("FREE LIMIT EXCEEDED") && (
+                         <button 
+                           type="button"
+                           onClick={() => window.dispatchEvent(new CustomEvent('trigger-premium-modal'))}
+                           className="text-[#EF4444] font-bold text-sm underline text-left mt-1"
+                           style={{ fontFamily: "'Google Sans', sans-serif" }}
+                         >
+                           {t('add_account.explore_options', 'Do you want to explore other options?')}
+                         </button>
+                       )}
                     </div>
                   )}
 
