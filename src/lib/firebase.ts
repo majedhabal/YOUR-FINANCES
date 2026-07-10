@@ -2,24 +2,18 @@ import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, setPersistence, browserLocalPersistence } from 'firebase/auth';
 import { 
   initializeFirestore, 
-  persistentLocalCache, 
-  persistentSingleTabManager 
+  memoryLocalCache
 } from 'firebase/firestore';
 import { getMessaging } from 'firebase/messaging';
 import firebaseConfig from '../../firebase-applet-config.json';
 
 const app = initializeApp(firebaseConfig);
 
-// Configure Firestore with elegant, offline-first persistent local cache.
-// This buffers writes and handles reads completely locally.
-// We use persistentSingleTabManager to avoid Web Lock or postMessage errors
-// that occur within sandboxed iframes.
+// Configure Firestore with memory cache to avoid IndexedDB corruption issues.
 export const db = initializeFirestore(
   app,
   {
-    localCache: persistentLocalCache({
-      tabManager: persistentSingleTabManager({})
-    })
+    localCache: memoryLocalCache()
   },
   (firebaseConfig as any).firestoreDatabaseId
 );
