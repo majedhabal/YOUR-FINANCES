@@ -188,6 +188,7 @@ export const Layout: React.FC<LayoutProps> = ({
           </div>
 
           <div className="flex items-center gap-3">
+            <div className="text-[9px] text-neutral-300 font-mono">v{import.meta.env.VITE_APP_VERSION}</div>
             {isOffline && (
               <div className="flex items-center gap-1 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-400 text-[10px] font-mono tracking-wide uppercase">
                 <WifiOff size={10} />

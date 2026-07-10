@@ -23,6 +23,7 @@ html, body, #root {
   padding: 0;
   box-sizing: border-box;
   -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
 }
 
 /* Compact Scroll Container Utility Track Overlay */
