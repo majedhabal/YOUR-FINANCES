@@ -348,6 +348,9 @@ function AppContent() {
       <div className="w-full min-h-screen bg-[#1E2229] flex flex-col items-center justify-center select-none">
         <RefreshCw size={24} className="text-[#A6DDB1] animate-spin" />
         <span className="text-xs font-mono tracking-wider text-neutral-400 mt-3 uppercase">Syncing cockpit arrays...</span>
+        <div className="text-[8px] text-neutral-600 mt-4">
+          Auth: {auth ? 'Initialized' : 'Pending'} | User: {user ? 'Found' : 'Searching'}
+        </div>
       </div>
     );
   }
