@@ -31,7 +31,7 @@ import {
   TrendingUp
 } from 'lucide-react';
 import { doc, setDoc, collection, serverTimestamp, getDoc, updateDoc } from 'firebase/firestore';
-import { signInWithPopup, FacebookAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
+import { signInWithPopup, FacebookAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut } from 'firebase/auth';
 import { db, auth, getGoogleProvider } from '../lib/firebase';
 import { seedUserCustomCategories } from '../lib/categoryUtils';
 import { VantageLogo } from './VantageLogo';
@@ -1745,6 +1745,14 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
               <LanguageSelector onLanguageChange={(lng) => {
                  setSelectedLanguage(lng);
               }} />
+              <div className="border-t border-[#E1E8ED] pt-3 mt-3">
+                <button
+                  onClick={() => { signOut(auth); window.location.reload(); }}
+                  className="w-full text-left text-xs font-bold text-red-500 hover:text-red-700 cursor-pointer"
+                >
+                  Logout
+                </button>
+              </div>
             </div>
           </div>
         )}
