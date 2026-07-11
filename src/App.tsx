@@ -365,9 +365,14 @@ function AppContent() {
       <div className="w-full min-h-screen bg-[#1E2229] flex flex-col items-center justify-center select-none">
         <RefreshCw size={24} className="text-[#A6DDB1] animate-spin" />
         <span className="text-xs font-mono tracking-wider text-neutral-400 mt-3 uppercase">Syncing cockpit arrays...</span>
-        <div className="text-[8px] text-neutral-600 mt-4">
-          Auth: {auth ? 'Initialized' : 'Pending'} | User: {user ? 'Found' : 'Searching'}
-        </div>
+        <button
+          onClick={() => { signOut(auth); window.location.reload(); }}
+          className="mt-8 px-4 py-2 bg-neutral-800 rounded-full text-[10px] font-bold text-neutral-400 hover:text-white cursor-pointer"
+        >
+          Force Reset / Logout
+        </button>
+[diff_block_end]
+
       </div>
     );
   }
