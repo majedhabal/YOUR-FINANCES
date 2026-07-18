@@ -421,6 +421,13 @@ export const Accounts: React.FC<AccountsProps> = ({ profile, onNavigateToTransac
         </div>
       </header>
 
+      {/* Account Dashboard Header */}
+      <div className="px-4 md:px-6 w-full">
+        <h3 className="text-[17px] font-bold text-neutral-800 font-g-sans mb-3" style={{ fontFamily: "'Google Sans', sans-serif" }}>
+          {t('accounts.dashboard_title', 'Account Dashboard')}
+        </h3>
+      </div>
+
       {/* Total Combined Balance Card (Ambient Design) */}
       <div className="px-4 md:px-6 w-full">
         <div className="relative overflow-hidden rounded-2xl p-6 bg-white border-0 shadow-[0_2px_8px_rgba(0,0,0,0.02)]">

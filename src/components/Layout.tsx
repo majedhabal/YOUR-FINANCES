@@ -9,7 +9,6 @@ import { Settings } from './Settings';
 import { NotificationDispatchHub } from './NotificationDispatchHub';
 import { StreakTracker } from './StreakTracker';
 import { ReceiptScannerModal } from './ReceiptScannerModal';
-import { DateSimulator } from './DateSimulator';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -57,6 +56,8 @@ export const Layout: React.FC<LayoutProps> = ({
   const [isDebtModalOpen, setIsDebtModalOpen] = React.useState(false);
   const [isMilestoneModalOpen, setIsMilestoneModalOpen] = React.useState(false);
   const [isDebtMilestoneModalOpen, setIsDebtMilestoneModalOpen] = React.useState(false);
+  const [isGoalTxModalOpen, setIsGoalTxModalOpen] = React.useState(false);
+  const [isDebtTxModalOpen, setIsDebtTxModalOpen] = React.useState(false);
   const [isPremiumModalOpen, setIsPremiumModalOpen] = React.useState(false);
   const [isDispatchHubOpen, setIsDispatchHubOpen] = React.useState(false);
   const [isReceiptScannerOpen, setIsReceiptScannerOpen] = React.useState(false);
@@ -90,6 +91,12 @@ export const Layout: React.FC<LayoutProps> = ({
     const handleDebtMilestoneModal = (e: any) => {
       setIsDebtMilestoneModalOpen(e.detail.isOpen);
     };
+    const handleGoalTxModal = (e: any) => {
+      setIsGoalTxModalOpen(e.detail.isOpen);
+    };
+    const handleDebtTxModal = (e: any) => {
+      setIsDebtTxModalOpen(e.detail.isOpen);
+    };
     const handlePremiumModal = (e: any) => {
       setIsPremiumModalOpen(e.detail.isOpen);
     };
@@ -116,6 +123,8 @@ export const Layout: React.FC<LayoutProps> = ({
     window.addEventListener('debt-modal-toggled', handleDebtModal);
     window.addEventListener('milestone-modal-toggled', handleMilestoneModal);
     window.addEventListener('debt-milestone-modal-toggled', handleDebtMilestoneModal);
+    window.addEventListener('goal-tx-modal-toggled', handleGoalTxModal);
+    window.addEventListener('debt-tx-modal-toggled', handleDebtTxModal);
     window.addEventListener('premium-modal-toggled', handlePremiumModal);
     window.addEventListener('dispatch-hub-toggled', handleDispatchHub);
     window.addEventListener('statement-vault-toggled', handleStatementVault);
@@ -131,6 +140,8 @@ export const Layout: React.FC<LayoutProps> = ({
       window.removeEventListener('debt-modal-toggled', handleDebtModal);
       window.removeEventListener('milestone-modal-toggled', handleMilestoneModal);
       window.removeEventListener('debt-milestone-modal-toggled', handleDebtMilestoneModal);
+      window.removeEventListener('goal-tx-modal-toggled', handleGoalTxModal);
+      window.removeEventListener('debt-tx-modal-toggled', handleDebtTxModal);
       window.removeEventListener('premium-modal-toggled', handlePremiumModal);
       window.removeEventListener('dispatch-hub-toggled', handleDispatchHub);
       window.removeEventListener('statement-vault-toggled', handleStatementVault);
@@ -140,7 +151,9 @@ export const Layout: React.FC<LayoutProps> = ({
     };
   }, []);
 
-  const shouldHideHeaderFooter = isSalaryModalOpen || isTxDetailModalOpen || isAccountModalOpen || isAccountDetailModalOpen || isBreakdownModalOpen || isDebtModalOpen || isTxModalOpen || isMilestoneModalOpen || isDebtMilestoneModalOpen || isAIModalOpen || isPremiumModalOpen || activeTab === 'ai' || isStatementVaultOpen || isBudgetDetailOpen || isSettingsSubViewOpen || isBudgetTxModalOpen;
+  const isAnyModalOpen = isSalaryModalOpen || isTxDetailModalOpen || isAccountModalOpen || isAccountDetailModalOpen || isBreakdownModalOpen || isDebtModalOpen || isTxModalOpen || isMilestoneModalOpen || isDebtMilestoneModalOpen || isGoalTxModalOpen || isDebtTxModalOpen || isAIModalOpen || isPremiumModalOpen || isStatementVaultOpen || isBudgetDetailOpen || isSettingsSubViewOpen || isBudgetTxModalOpen;
+  
+  const shouldHideHeaderFooter = (isAnyModalOpen || activeTab === 'ai') && activeTab !== 'accounts';
 
   console.log('Layout debug:', { isPremiumModalOpen, shouldHideHeaderFooter });
 
@@ -197,7 +210,6 @@ export const Layout: React.FC<LayoutProps> = ({
             )}
             {profile?.uid && (
               <div className="flex items-center gap-2">
-                <DateSimulator uid={profile.uid} />
                 <StreakTracker profile={profile} streakUpdated={streakUpdated} userLogins={userLogins} />
                 <NotificationDispatchHub
                   uid={profile.uid}

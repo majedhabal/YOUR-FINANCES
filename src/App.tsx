@@ -467,6 +467,7 @@ function AppContent() {
       profile={profile} 
       accounts={accounts} 
       onUpdateProfile={(updated) => setProfile(updated)} 
+      onBack={() => setActiveTab('essentials')}
     />
   </motion.div>
 )}

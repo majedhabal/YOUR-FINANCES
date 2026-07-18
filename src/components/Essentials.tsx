@@ -167,10 +167,17 @@ export const Essentials: React.FC<DailyLogProps> = ({ profile }) => {
   }, [profile?.uid, profile?.initialized]);
 
   const [isMilestoneModalOpen, setIsMilestoneModalOpen] = useState(false);
+  const [targetForTx, setTargetForTx] = useState<{ type: 'milestone' | 'debt', target: any } | null>(null);
   
   useEffect(() => {
     window.dispatchEvent(new CustomEvent('milestone-modal-toggled', { detail: { isOpen: isMilestoneModalOpen } }));
   }, [isMilestoneModalOpen]);
+  
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent('goal-tx-modal-toggled', { detail: { isOpen: targetForTx?.type === 'milestone' } }));
+    window.dispatchEvent(new CustomEvent('debt-tx-modal-toggled', { detail: { isOpen: targetForTx?.type === 'debt' } }));
+  }, [targetForTx]);
+
   const [editingMilestone, setEditingMilestone] = useState<any | null>(null);
   const [milestoneToDelete, setMilestoneToDelete] = useState<any | null>(null);
   const [selectedTx, setSelectedTx] = useState<any | null>(null);
@@ -200,7 +207,6 @@ export const Essentials: React.FC<DailyLogProps> = ({ profile }) => {
   const [budgetToDelete, setBudgetToDelete] = useState<BudgetCategory | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
   const [selectedBudgetId, setSelectedBudgetId] = useState<string | null>(null);
-  const [targetForTx, setTargetForTx] = useState<{ type: 'milestone' | 'debt', target: any } | null>(null);
 
   // Salary Breakdown Blueprints State & Helpers
   const [isSalaryModalOpen, setIsSalaryModalOpen] = useState(false);

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'motion/react';
-import { User, Shield, Bell, CreditCard, LogOut, ChevronRight, Moon, Globe, Sparkles, Zap, PackageOpen, RotateCcw, LayoutGrid, RefreshCw, Calendar, CheckSquare, Brain, Lock, Fingerprint, MessageSquare, Zap as ZapIcon, Type, ZoomIn, ArrowLeftRight, Wand2 } from 'lucide-react';
+import { User, Shield, Bell, CreditCard, LogOut, ChevronRight, Moon, Globe, Sparkles, Zap, PackageOpen, RotateCcw, LayoutGrid, RefreshCw, Calendar, CheckSquare, Brain, Lock, Fingerprint, MessageSquare, Zap as ZapIcon, Type, ZoomIn, ArrowLeftRight, Wand2, ChevronLeft } from 'lucide-react';
 import { LanguageSelector } from './LanguageSelector';
 import { BadgesModal } from './BadgesModal';
 import { BADGES } from '../lib/badgeUtils';
@@ -43,9 +43,10 @@ interface SettingsProps {
   profile: any;
   accounts: any[];
   onUpdateProfile: (profile: any) => void;
+  onBack?: () => void;
 }
 
-export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateProfile }) => {
+export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateProfile, onBack }) => {
   const { t } = useTranslation();
   const { deleteProfile } = useVantageActions(profile?.uid);
   const [activeView, setActiveView] = useState<'main' | 'categories' | 'recurring' | 'privacy' | 'terms' | 'ai_conversations' | 'referrals'>('main');
@@ -771,6 +772,11 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
 
   return (
     <div className="w-full md:w-[48%] md:max-w-[48%] md:mx-auto flex flex-col gap-3 md:gap-4 pb-24 text-vantage-text">
+      {onBack && (
+        <button onClick={onBack} className="flex items-center gap-2 text-neutral-400 hover:text-white mb-4">
+          <ChevronLeft size={20} />
+        </button>
+      )}
       <style>{`
         div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1),
         div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) {
