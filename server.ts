@@ -189,7 +189,7 @@ const authenticate = async (req: Request, res: Response, next: NextFunction) => 
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const PORT = Number(process.env.PORT) || 3000;
 
   app.use(express.json({ limit: '20mb' }));
 
@@ -1296,7 +1296,7 @@ Schema:
   }
 
   app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+    console.log(`[Vantage Server] Running on port ${PORT}`);
   });
 }
 
