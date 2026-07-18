@@ -1,10 +1,12 @@
-const CACHE_NAME = 'your-finances-mint-v0.1.0';
+const CACHE_NAME = 'your-finances-mint-v0.1.1';
 
 // Core static assets to pre-cache for instant offline availability
 const PRECACHE_ASSETS = [
   '/',
   '/index.html',
-  '/manifest.json'
+  '/manifest.json',
+  'https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap',
+  'https://fonts.gstatic.com/s/googlesans/v57/4UaGrENHsxJlGDuGo1OIlL3Owp4.woff2' // Example font file
 ];
 
 // Hosts to bypass caching entirely (e.g., Firebase Auth/Database servers)

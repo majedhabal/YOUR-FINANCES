@@ -657,49 +657,48 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
 
     const interval = setInterval(() => {
       const now = new Date();
-      let changed = false;
+      
+      // Find all overdue, not notified, not completed
+      const pendingItems = checklist.filter(item => 
+        item.scheduledAt && !item.notified && !item.completed && new Date(item.scheduledAt) <= now
+      );
 
-      const updatedChecklist = checklist.map(item => {
-        if (item.scheduledAt && !item.notified && !item.completed) {
-          const targetTime = new Date(item.scheduledAt);
-          if (now >= targetTime) {
-            changed = true;
-            // Native lock screen push simulation via HTML5 Web notification
-            sendDeviceNotification(
-              `🔔 VANTAGE LEDGER DISPATCH`, 
-              `${getChecklistText(item)}`
-            );
-            // Alert chime playing
-            playNotificationSound();
-            
-            // Pop an attractive HTML5 feedback toast in viewport if iframe sandbox rejects Notifications
-            const toastId = `vantage-toast-${Date.now()}`;
-            const toastEl = document.createElement('div');
-            toastEl.id = toastId;
-            toastEl.className = "fixed top-6 left-1/2 -translate-x-1/2 z-[300] bg-[#1E293B] border-2 border-[#A6DDB1] text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 animate-bounce";
-            toastEl.style.fontFamily = "'Google Sans', sans-serif";
-            toastEl.innerHTML = `
-              <div class="text-[#A6DDB1] text-lg font-bold">🔔</div>
-              <div class="flex flex-col text-left">
-                <span class="text-[9px] font-bold text-[#A6DDB1]">Dispatch Live Alert</span>
-                <span class="text-xs font-normal text-neutral-100 mt-0.5">${getChecklistText(item)}</span>
-              </div>
-            `;
-            document.body.appendChild(toastEl);
-            setTimeout(() => {
-              toastEl.remove();
-            }, 6000);
+      if (pendingItems.length > 0) {
+        // Sort by scheduledAt to handle oldest first
+        pendingItems.sort((a, b) => new Date(a.scheduledAt!).getTime() - new Date(b.scheduledAt!).getTime());
+        
+        const item = pendingItems[0];
+        
+        // Native lock screen push simulation via HTML5 Web notification
+        sendDeviceNotification(
+          `🔔 VANTAGE LEDGER DISPATCH`, 
+          `${getChecklistText(item)}`
+        );
+        // Alert chime playing
+        playNotificationSound();
+        
+        // Pop an attractive HTML5 feedback toast in viewport if iframe sandbox rejects Notifications
+        const toastId = `vantage-toast-${Date.now()}`;
+        const toastEl = document.createElement('div');
+        toastEl.id = toastId;
+        toastEl.className = "fixed top-6 left-1/2 -translate-x-1/2 z-[300] bg-[#1E293B] border-2 border-[#A6DDB1] text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 animate-bounce";
+        toastEl.style.fontFamily = "'Google Sans', sans-serif";
+        toastEl.innerHTML = `
+          <div class="text-[#A6DDB1] text-lg font-bold">🔔</div>
+          <div class="flex flex-col text-left">
+            <span class="text-[9px] font-bold text-[#A6DDB1]">Dispatch Live Alert</span>
+            <span class="text-xs font-normal text-neutral-100 mt-0.5">${getChecklistText(item)}</span>
+          </div>
+        `;
+        document.body.appendChild(toastEl);
+        setTimeout(() => {
+          toastEl.remove();
+        }, 6000);
 
-            return { ...item, notified: true };
-          }
-        }
-        return item;
-      });
-
-      if (changed) {
+        const updatedChecklist = checklist.map(c => c.id === item.id ? { ...c, notified: true } : c);
         saveChecklist(updatedChecklist);
       }
-    }, 2000);
+    }, 5000);
 
     return () => clearInterval(interval);
   }, [uid, checklist]);
