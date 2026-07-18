@@ -243,7 +243,7 @@ function AppContent() {
                           if (reward.type === 'receipt_scan') {
                               updateData.receiptScans = (profileData.receiptScans || 0) + reward.amount;
                           } else if (reward.type === 'ai_tokens') {
-                              updateData.aiTokens = (profileData.aiTokens || 0) + reward.amount;
+                              updateData.vantageAiTokens = (profileData.vantageAiTokens || 0) + reward.amount;
                           } else if (reward.type === 'streak_freeze') {
                               updateData.streakFreezes = (profileData.streakFreezes || 0) + reward.amount;
                           } else if (reward.type === 'ai_report') {
@@ -527,17 +527,10 @@ function AppContent() {
       />
 
       {rewardNotification && (
-        [30, 90, 180, 360].includes(rewardNotification.streakThreshold) ? (
-          <FullMilestoneOverlay
-            reward={rewardNotification}
-            onClose={() => setRewardNotification(null)}
-          />
-        ) : (
-          <MilestoneRewardBanner
-            reward={rewardNotification}
-            onClose={() => setRewardNotification(null)}
-          />
-        )
+        <FullMilestoneOverlay
+          reward={rewardNotification}
+          onClose={() => setRewardNotification(null)}
+        />
       )}
 
       <PremiumModal

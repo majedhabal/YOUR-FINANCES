@@ -85,6 +85,12 @@ export const BudgetSection: React.FC<{
     spentAmount: calculateSpentForBudget(b)
   }));
 
+  const groupedBudgets = {
+    needs: budgetsWithDynamicSpent.filter(b => b.categoryGroup === 'needs'),
+    wants: budgetsWithDynamicSpent.filter(b => b.categoryGroup === 'wants'),
+    savings: budgetsWithDynamicSpent.filter(b => b.categoryGroup === 'savings')
+  };
+
   const totalBudgeted = budgetsWithDynamicSpent.reduce((sum, b) => sum + (b.allocatedAmount || 0), 0);
   const totalSpent = budgetsWithDynamicSpent.reduce((sum, b) => sum + (b.spentAmount || 0), 0);
   const spentPercentage = totalBudgeted > 0 ? (totalSpent / totalBudgeted) * 100 : 0;

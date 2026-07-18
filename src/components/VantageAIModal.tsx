@@ -20,7 +20,7 @@ interface VantageAIModalProps {
 export const VantageAIModal: React.FC<VantageAIModalProps> = ({ isOpen, onClose, uid, accounts, transactions, accountBalances, profile }) => {
   const { t } = useTranslation();
   const tierClean = (profile?.subscriptionTier || 'free').toLowerCase().replace(' ', '');
-  const hasAIAccess = tierClean === 'tier2' || tierClean === 'tier3' || tierClean === 'premium' || !!(profile?.vantageAiUnlockedUntil && new Date(profile.vantageAiUnlockedUntil).getTime() > Date.now()) || (typeof profile?.aiTokens === 'number' && profile.aiTokens > 0);
+  const hasAIAccess = tierClean === 'tier2' || tierClean === 'tier3' || tierClean === 'premium' || !!(profile?.vantageAiUnlockedUntil && new Date(profile.vantageAiUnlockedUntil).getTime() > Date.now()) || (typeof profile?.vantageAiTokens === 'number' && profile.vantageAiTokens > 0);
   const [queryInput, setQueryInput] = useState('');
   const [activeQuery, setActiveQuery] = useState('');
   const [response, setResponse] = useState<string | null>(null);

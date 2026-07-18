@@ -502,11 +502,11 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
       console.warn("Dispatched budgets offline fallback:", err);
     });
 
-    // 3. Listen to Milestones
-    const unsubMilestones = onSnapshot(collection(db, `users/${uid}/milestones`), (snap) => {
-      setMilestones(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    // 3. Listen to Goals
+    const unsubGoals = onSnapshot(collection(db, `users/${uid}/goals`), (snap) => {
+      setMilestones(snap.docs.map(d => ({ id: d.id, ...d.data() })).filter((item: any) => item.type === 'savings'));
     }, (err) => {
-      console.warn("Dispatched milestones offline fallback:", err);
+      console.warn("Dispatched goals offline fallback:", err);
     });
 
     // 4. Listen to Salary Breakdowns
@@ -519,7 +519,7 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
     return () => {
       unsubDrafts();
       unsubBudgets();
-      unsubMilestones();
+      unsubGoals();
       unsubSalary();
     };
   }, [uid]);

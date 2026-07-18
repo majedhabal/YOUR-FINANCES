@@ -1290,7 +1290,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
             tabGroup: "essentials",
             subTabSection: config.key === 'tackle_debt' ? 'debt' : 'default',
             name: config.key === 'tackle_debt' ? "Onboarding Debt" : config.label,
-            institution: config.key === 'tackle_debt' ? "Primary Provider" : undefined,
+            institution: config.key === 'tackle_debt' ? "Primary Provider" : null,
             currency: homeCurrency,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString()
@@ -1325,76 +1325,54 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
             console.warn("Optimistic background sync (goal account):", err);
           });
 
-          // Automatically initialize reference inside the 'milestones' collection if not tackle_debt
-          console.log("Creating account for config:", config.key, "goalVal:", goalVal);
-          if (config.key !== 'tackle_debt') {
-            console.log("Creating milestone for config:", config.key);
-            const milestoneRef = doc(collection(db, `users/${uid}/milestones`));
-            const milestonePayload = {
-              id: milestoneRef.id,
-              name: config.label,
-              targetAmount: goalVal,
-              currentValue: 0.00,
-              monthsToTarget: 12,
-              linkedAccountIds: [accSubRef.id],
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-              isArchived: false,
-              userId: uid
-            };
-            
-            // Local cache update for offline resilience
-            const prevSavedMilestonesStr = localStorage.getItem(`vantage_offline_milestones_${uid}`);
-            let prevSavedMilestones = [];
-            try {
-              if (prevSavedMilestonesStr) {
-                prevSavedMilestones = JSON.parse(prevSavedMilestonesStr);
-              }
-            } catch (e) {
-              console.warn("Error parsing offline milestones:", e);
-            }
-            localStorage.setItem(
-              `vantage_offline_milestones_${uid}`,
-              JSON.stringify([...prevSavedMilestones, milestonePayload])
-            );
+          // Automatically initialize reference inside the 'goals' collection
+          console.log("Creating goal for config:", config.key, "goalVal:", goalVal);
+          const goalRef = doc(collection(db, `users/${uid}/goals`));
+          const goalPayload = {
+            id: goalRef.id,
+            name: config.label,
+            type: config.key === 'tackle_debt' ? 'debt' : 'savings',
+            targetAmount: goalVal,
+            currentValue: 0.00,
+            monthsToTarget: 12,
+            linkedAccountIds: [accSubRef.id],
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            isArchived: false,
+            userId: uid
+          };
 
-            // Write to Firestore Milestones collection
-            await setDoc(milestoneRef, milestonePayload);
-          } else {
-            console.log("Creating debt milestone for config:", config.key);
-            // It is tackle_debt, automatically initialize reference inside the 'debtMilestones' collection
-            const debtMilestoneRef = doc(collection(db, `users/${uid}/debtMilestones`));
-            const debtMilestonePayload = {
-              id: debtMilestoneRef.id,
-              name: config.label,
-              principleAmount: goalVal,
-              paymentFrequency: "Monthly",
-              paymentAmount: (parseFloat(evaluateMathExpression(salaryAmount)) || 12000) * 0.40,
-              accountId: accSubRef.id,
-              loanDirection: "borrowed",
-              isArchived: false,
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-              userId: uid
-            };
+          // Write to Firestore goals collection
+          await setDoc(goalRef, goalPayload);
 
-            // Write to Firestore debtMilestones collection
-            setDoc(debtMilestoneRef, debtMilestonePayload).catch(err => {
-              console.warn("Optimistic background sync (debt milestone onboarding):", err);
+          // Trigger Server-side Initialization
+          try {
+            const idToken = await auth.currentUser?.getIdToken();
+            await fetch('/api/initialize-user', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${idToken}`
+              },
+              body: JSON.stringify({ data: {} })
             });
+          } catch (err) {
+            console.error("Server-side initialization trigger failed:", err);
           }
         }
       }
 
       // Automatically create a recurring income rule matching the salary parameters
       const evalSalary = profile?.salaryAmount || (parseFloat(String(evaluateMathExpression(salaryAmount)).replace(/[^0-9.]/g, '')) || 0);
-      console.log("Salary evaluation details:", { salaryAmount, evalSalary, uid: uid, checkingAccountId, checkingDestination, paymentDay });
+      console.log("Salary evaluation details:", { salaryAmount, evalSalary, uid: uid, checkingAccountId, checkingDestination, paymentDay, profileSalary: profile?.salaryAmount });
       
       if (evalSalary > 0) {
         console.log("Condition evalSalary > 0 met, proceeding to create recurring transaction");
         try {
           const recRef = doc(collection(db, `users/${uid}/recurringTransactions`));
           const targetAccountId = checkingAccountId || (createdAccountIds.length > 0 ? createdAccountIds[0] : 'manual-fallback-acc');
+          
+          console.log("Creating recurring transaction with targetAccountId:", targetAccountId);
           
           const now = new Date();
           const currentYear = now.getFullYear();
@@ -1415,12 +1393,12 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
             // Exact required schema
             recurringId: recRef.id,
             userId: uid,
-            title: 'Monthly Salary',
+            title: 'Monthly Payroll',
             amount: evalSalary,
             transactionType: 'income',
             type: 'income',
-            category: 'Income',
-            subcategory: 'Wage',
+            category: 'Salary',
+            subcategory: 'Wages',
             recurrency: 'monthly',
             frequency: 'Monthly',
             interval: 1,
@@ -1429,11 +1407,11 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
             startDate: nextExecutionDate,
             nextExecutionDate: nextExecutionDate,
             nextGenerationDate: nextExecutionDate,
-            dayOption: 'sameDate',
+            dayOption: userDay,
             specificDayOfMonth: null,
             duration: 'Indefinite',
             durationLimit: '',
-            notes: '',
+            notes: 'Monthly Payroll',
             isActive: true,
             isBreakdownConfigured: true,
             emoji: '💰',
@@ -1473,6 +1451,9 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
             budgetId: budgetRef.id,
             userId: uid,
             categoryTitle: ob.title,
+            categoryGroup: ob.category === 'Savings' ? 'savings' : (['Housing', 'Food & Drinks', 'Transportation', 'Communication'].includes(ob.category) ? 'needs' : 'wants'),
+            mappedCategories: [ob.category],
+            mappedSubCategories: [ob.subcategory || 'All'],
             allocatedAmount: parseFloat(evaluateMathExpression(ob.maxBudget)) || 0,
             spentAmount: 0,
             currency: ob.currency,

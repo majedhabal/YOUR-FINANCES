@@ -189,7 +189,7 @@ const authenticate = async (req: Request, res: Response, next: NextFunction) => 
 
 async function startServer() {
   const app = express();
-  const PORT = Number(process.env.PORT) || 3000;
+  const PORT = 3000;
 
   app.use(express.json({ limit: '20mb' }));
 
@@ -202,6 +202,58 @@ async function startServer() {
   // Public Health Check
   app.get("/api/health", (req, res) => {
     res.json({ status: "ok", message: "YOUR FINANCES by ME Vantage Server is live and protected" });
+  });
+
+  // Initialize User Resources (Budgets/Milestones)
+  app.post("/api/initialize-user", authenticate, async (req: Request, res: Response) => {
+    const authUser = (req as any).user;
+    const uid = authUser.uid;
+    const { data } = req.body;
+    
+    try {
+      const db = admin.firestore();
+      const batch = db.batch();
+
+      // Seed Budgets
+      const budgetRef = db.doc(`users/${uid}/miniBudgets/default`);
+      batch.set(budgetRef, {
+        budgetId: 'default',
+        userId: uid,
+        categoryTitle: 'Essential Needs',
+        categoryGroup: 'needs',
+        allocatedAmount: 6000.00,
+        mappedCategories: ['Food & Drinks', 'Housing'],
+        iconAsset: 'shopping-cart',
+        emoji: '🛒',
+        period: 'monthly',
+        currency: 'AED',
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      // Seed Milestones
+      const milestoneRef = db.doc(`users/${uid}/goals/starter_goal`);
+      batch.set(milestoneRef, {
+        id: 'starter_goal',
+        userId: uid,
+        name: 'Initial Savings',
+        type: 'savings',
+        targetAmount: 0,
+        currentValue: 0,
+        isArchived: false,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      // Mark initialized
+      batch.update(db.doc(`users/${uid}`), { initialized: true });
+
+      await batch.commit();
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error("Initialization failed:", error);
+      res.status(500).json({ error: "Initialization failed" });
+    }
   });
 
   // Protected Core API

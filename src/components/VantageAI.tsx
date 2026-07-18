@@ -133,7 +133,7 @@ export const VantageAI: React.FC<VantageAIProps> = ({
   if (!isOpen) return null;
 
   const tierClean = (profile?.subscriptionTier || 'free').toLowerCase().replace(' ', '');
-  const isPremium = tierClean === 'tier2' || tierClean === 'tier3' || tierClean === 'premium' || !!(profile?.vantageAiUnlockedUntil && new Date(profile.vantageAiUnlockedUntil).getTime() > Date.now()) || (typeof profile?.aiTokens === 'number' && profile.aiTokens > 0);
+  const isPremium = tierClean === 'tier2' || tierClean === 'tier3' || tierClean === 'premium' || !!(profile?.vantageAiUnlockedUntil && new Date(profile.vantageAiUnlockedUntil).getTime() > Date.now()) || (typeof profile?.vantageAiTokens === 'number' && profile.vantageAiTokens > 0);
 
   const handleClaimSandboxTokens = async () => {
     if (!profile?.uid) return;
@@ -152,7 +152,7 @@ export const VantageAI: React.FC<VantageAIProps> = ({
   const handleExecuteInsightTaskDirect = async (userMessage: string) => {
     if (!userMessage) return;
 
-    const currentTokens = typeof profile?.aiTokens === 'number' ? profile.aiTokens : 0;
+    const currentTokens = typeof profile?.vantageAiTokens === 'number' ? profile.vantageAiTokens : 0;
     
     // Check if trends, forecasting, or comprehensive record reading keywords are present
     const lowerMessage = userMessage.toLowerCase();
@@ -226,7 +226,7 @@ export const VantageAI: React.FC<VantageAIProps> = ({
       if (profile?.uid) {
         const userRef = doc(db, 'users', profile.uid);
         const nextTokens = Math.max(0, currentTokens - tokenCost);
-        await updateDoc(userRef, { aiTokens: nextTokens });
+        await updateDoc(userRef, { vantageAiTokens: nextTokens });
       }
     } catch (err) {
       console.error("Assistant execution failure:", err);

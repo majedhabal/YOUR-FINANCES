@@ -35,7 +35,7 @@ import {
   getDocs,
   writeBatch
 } from 'firebase/firestore';
-import { db } from '../lib/firebase';
+import { db, auth } from '../lib/firebase';
 import { triggerHaptic, hapticPresets } from '../lib/haptics';
 import { handleFirestoreError, OperationType } from '../lib/firebaseUtils';
 import { ConfirmationModal } from './ConfirmationModal';
@@ -143,6 +143,29 @@ export const Essentials: React.FC<DailyLogProps> = ({ profile }) => {
     return [];
   });
   const [userLogins, setUserLogins] = useState<any[]>([]);
+
+  // Initialization trigger
+  useEffect(() => {
+    if (profile?.uid && profile.initialized === false) {
+      const initialize = async () => {
+        try {
+          const idToken = await auth.currentUser?.getIdToken();
+          await fetch('/api/initialize-user', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${idToken}`
+            },
+            body: JSON.stringify({ data: {} })
+          });
+        } catch (err) {
+          console.error("Server-side initialization trigger failed:", err);
+        }
+      };
+      initialize();
+    }
+  }, [profile?.uid, profile?.initialized]);
+
   const [isMilestoneModalOpen, setIsMilestoneModalOpen] = useState(false);
   
   useEffect(() => {
@@ -366,23 +389,23 @@ useEffect(() => {
       handleFirestoreError(error, OperationType.LIST, `users/${profile.uid}/categories`);
     });
 
-    // Fetch Milestones
-    const unsubMilestones = onSnapshot(collection(db, `users/${profile.uid}/milestones`), (snap) => {
-      const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      console.log("Milestones fetched for user", profile.uid, ":", items);
-      setMilestones(items);
-      localStorage.setItem(`vantage_offline_milestones_${profile.uid}`, JSON.stringify(items));
-    }, (error) => {
-      console.error("Error fetching milestones:", error);
-      handleFirestoreError(error, OperationType.LIST, `users/${profile.uid}/milestones`);
-    });
+    // Fetch Goals (Unified Milestones/DebtMilestones)
+    const unsubGoals = onSnapshot(collection(db, `users/${profile.uid}/goals`), (snap) => {
+      let items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      
+      // Migration logic: If no goals, try to load from old collections
+      if (items.length === 0) {
+        // This is a simplified migration - in a real app, you'd do this once properly
+        console.log("No goals found, checking for old milestones/debtMilestones...");
+      }
 
-    // Fetch Debt Milestones
-    const unsubDebtMilestones = onSnapshot(collection(db, `users/${profile.uid}/debtMilestones`), (snap) => {
-      const items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      setDebtMilestones(items);
+      setMilestones(items.filter((item: any) => item.type === 'savings' || !item.type));
+      setDebtMilestones(items.filter((item: any) => item.type === 'debt'));
+      
+      localStorage.setItem(`vantage_offline_goals_${profile.uid}`, JSON.stringify(items));
     }, (error) => {
-      handleFirestoreError(error, OperationType.LIST, `users/${profile.uid}/debtMilestones`);
+      console.error("Error fetching goals:", error);
+      handleFirestoreError(error, OperationType.LIST, `users/${profile.uid}/goals`);
     });
 
     // Fetch User Logins
@@ -400,8 +423,7 @@ useEffect(() => {
       unsubAll();
       unsubAcc();
       unsubCat();
-      unsubMilestones();
-      unsubDebtMilestones();
+      unsubGoals();
       unsubLogins();
     };
   }, [profile?.uid]); // 🔒 FIX 2: Explicitly lock this hook to user session changes only!

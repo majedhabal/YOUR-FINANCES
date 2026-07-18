@@ -22,15 +22,18 @@ export const AddGoalModal: React.FC<AddGoalModalProps> = ({ isOpen, onClose, uid
     if (!name || !targetAmount) return;
 
     try {
-      const milestoneRef = doc(collection(db, `users/${uid}/milestones`));
-      await setDoc(milestoneRef, {
-        id: milestoneRef.id,
+      const goalRef = doc(collection(db, `users/${uid}/goals`));
+      await setDoc(goalRef, {
+        id: goalRef.id,
         name,
+        type: 'savings',
         targetAmount: parseFloat(targetAmount),
         currentValue: parseFloat(currentValue || '0'),
         currency,
         isArchived: false,
         createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        userId: uid
       });
       onClose();
       setName('');
