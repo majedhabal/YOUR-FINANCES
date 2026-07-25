@@ -30,6 +30,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { MASTER_CATEGORIES } from '../lib/constants';
+import { SpendFromAccountModal } from './SpendFromAccountModal';
 import { formatLabel } from '../lib/stringUtils';
 
 const migrateEnvelopesList = (list: string[]): string[] => {
@@ -103,7 +104,9 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
   const { t, i18n } = useTranslation();
   const [selectedYearMonth, setSelectedYearMonth] = useState<string>(() => {
     const today = new Date();
-    return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
+    const str = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
+    console.log('SalaryBreakdownModal selectedYearMonth initialized to:', str, 'today:', today);
+    return str;
   });
 
   // Base onboarding parameters
@@ -156,6 +159,7 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
   const [newIncomePayday, setNewIncomePayday] = useState(28);
   const [isSavingSchedule, setIsSavingSchedule] = useState(false);
   const [showClassificationPrompt, setShowClassificationPrompt] = useState(false);
+  const [showSpendFromAccountModal, setShowSpendFromAccountModal] = useState(false);
 
   // Load user's recurring transactions where type or transactionType is income to feed dynamic multi-income selection
   useEffect(() => {
@@ -230,10 +234,14 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
     }
   }, [dbRecurringIncomes, isOpen]);
 
+  useEffect(() => {
+    console.log('SalaryBreakdownModal selectedYearMonth changed to:', selectedYearMonth);
+  }, [selectedYearMonth]);
+
   // Load saved blueprint arrangements for selected Year/Month or default settings
   useEffect(() => {
     if (!profile?.uid || !isOpen) return;
-
+    console.log('Loading blueprint for:', selectedYearMonth);
     const fetchBlueprintAndProfile = async () => {
       setIsLoading(true);
       try {
@@ -948,6 +956,26 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
           transition={{ duration: 0.2, ease: 'easeOut' }}
           className="relative w-[320px] max-w-[320px] max-h-[90vh] bg-white flex flex-col rounded-2xl overflow-hidden"
         >
+          {/* Spend from Existing Account Modal */}
+          <SpendFromAccountModal
+            isOpen={showSpendFromAccountModal}
+            onClose={() => setShowSpendFromAccountModal(false)}
+            accounts={uniqueDbAccounts}
+            onSave={(accountId, amount) => {
+              const account = uniqueDbAccounts.find(acc => acc.id === accountId);
+              const title = account ? `Spend from: ${account.name}` : "Spend from account";
+              setCustomAuxiliaries(prev => [...prev, { id: `transfer__${accountId}`, title, amount }]);
+              
+              setDoc(doc(db, `users/${profile.uid}/salaryBreakdowns/${selectedYearMonth}`), {
+                override: {
+                  accountId,
+                  amount
+                }
+              }, { merge: true });
+              setShowSpendFromAccountModal(false);
+            }}
+          />
+          
           {/* Calendar Date Mismatch Guard Warning Modal */}
           <AnimatePresence>
             {showMismatchWarning && (
@@ -1261,13 +1289,22 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
                                <p className="text-sm font-bold text-[#111C2D]">{t('salary_overview.no_income_sources_linked', 'No income sources linked')}</p>
                                <p className="text-xs text-[#57606F]">{t('salary_overview.link_recurring_stream', 'Link a recurring stream to begin allocation')}</p>
                              </div>
-                             <button
-                               type="button"
-                               onClick={() => setIsCreatingSchedule(true)}
-                               className="px-4 py-2 bg-[#A6DDB1] text-[#366945] rounded-lg text-xs font-bold hover:brightness-95 active:scale-95 transition-all cursor-pointer shadow-sm"
-                             >
-                               <span>{t('salary_overview.link_first_income_source', 'Link First Income Source')}</span>
-                             </button>
+                             <div className="flex gap-2">
+                               <button
+                                 type="button"
+                                 onClick={() => setIsCreatingSchedule(true)}
+                                 className="px-4 py-2 bg-[#A6DDB1] text-[#366945] rounded-lg text-xs font-bold hover:brightness-95 active:scale-95 transition-all cursor-pointer shadow-sm"
+                               >
+                                 <span>{t('salary_overview.link_first_income_source', 'Link First Income Source')}</span>
+                               </button>
+                               <button
+                                 type="button"
+                                 onClick={() => setShowSpendFromAccountModal(true)}
+                                 className="px-4 py-2 bg-[#E1E8ED] text-[#111C2D] rounded-lg text-xs font-bold hover:brightness-95 active:scale-95 transition-all cursor-pointer shadow-sm"
+                               >
+                                 <span>{t('salary_overview.spend_from_existing_account', 'Spend from existing account')}</span>
+                               </button>
+                             </div>
                            </div>
                         ) : (
                           <div className="space-y-3 w-full">
@@ -1416,45 +1453,48 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
 
                     {/* Inner lists wrapper */}
                     <div className="space-y-1.5 pr-1 border border-[#E1E8ED] rounded-[12px] p-2">
-                      {allAvailableEnvelopesCatalog
-                        .filter((cat) => activeEnvelopes.includes(cat.key))
-                        .map((cat, index) => {
-                          return (
-                            <div 
-                              key={`envelope-${cat.key}-${index}`}
-                              className="h-[45px] bg-white border border-[#E1E8ED] px-2 rounded-[12px] flex items-center justify-between gap-1 transition-all shrink-0 hover:bg-neutral-50"
-                            >
-                              <div className="flex items-center gap-2 min-w-0 flex-1">
-                                <span className="text-sm shrink-0">{cat.emoji}</span>
+                      {activeEnvelopes.map((envelopeKey, index) => {
+                        const cat = allAvailableEnvelopesCatalog.find(e => e.key === envelopeKey);
+                        if (!cat) return null;
+                        const label = `${t(`categories.${cat.category}`, formatLabel(cat.category))} - ${t(`subcategories.${cat.subcategory}`, formatLabel(cat.subcategory))}`;
+                        const emoji = cat.emoji;
+
+                        return (
+                          <div 
+                            key={`envelope-${envelopeKey}-${index}`}
+                            className="h-[45px] bg-white border border-[#E1E8ED] px-2 rounded-[12px] flex items-center justify-between gap-1 transition-all shrink-0 hover:bg-neutral-50"
+                          >
+                            <div className="flex items-center gap-2 min-w-0 flex-1">
+                              <span className="text-sm shrink-0">{emoji}</span>
+                              <span 
+                                style={{ fontFamily: "'Google Sans', sans-serif" }}
+                                className="text-[14px] leading-[14px] text-slate-800 font-normal truncate"
+                              >
+                                {label}
+                              </span>
+                              {isFuturePeriod && (
                                 <span 
                                   style={{ fontFamily: "'Google Sans', sans-serif" }}
-                                  className="text-[14px] leading-[14px] text-slate-800 font-normal truncate"
+                                  className="text-[9px] text-[#2E7D32] leading-none shrink-0 border border-[#A6DDB1] px-1 py-0.5 rounded-[4px] bg-[#E8F5E9]"
                                 >
-                                  {t(`categories.${cat.category}`, formatLabel(cat.category))} - {t(`subcategories.${cat.subcategory}`, formatLabel(cat.subcategory))}
+                                  Sch
                                 </span>
-                                {isFuturePeriod && (
-                                  <span 
-                                    style={{ fontFamily: "'Google Sans', sans-serif" }}
-                                    className="text-[9px] text-[#2E7D32] leading-none shrink-0 border border-[#A6DDB1] px-1 py-0.5 rounded-[4px] bg-[#E8F5E9]"
-                                  >
-                                    Sch
-                                  </span>
-                                )}
-                              </div>
-
-                              <div className="relative flex items-center w-[80px] shrink-0 h-[30px]">
-                                <span className="absolute left-2 text-[9px] text-zinc-400 font-normal leading-none pointer-events-none">{activeBaseCurrency}</span>
-                                <input 
-                                  type="number"
-                                  placeholder="0"
-                                  min="0"
-                                  value={(allocations[cat.key] === undefined || isNaN(allocations[cat.key])) ? '' : allocations[cat.key]}
-                                  onChange={(e) => handleAllocationChange(cat.key, e.target.value)}
-                                                                    className="w-full h-full bg-[#ffffff] rounded-[10px] border border-[#E1E8ED] text-right focus:border-[#A6DDB1] pr-1.5 pl-6 text-[13px] text-[#1E2229] outline-none font-bold transition-all"
-                                />
-                              </div>
+                              )}
                             </div>
-                          );
+
+                            <div className="relative flex items-center w-[80px] shrink-0 h-[30px]">
+                              <span className="absolute left-2 text-[9px] text-zinc-400 font-normal leading-none pointer-events-none">{activeBaseCurrency}</span>
+                              <input 
+                                type="number"
+                                placeholder="0"
+                                min="0"
+                                value={(allocations[envelopeKey] === undefined || isNaN(allocations[envelopeKey])) ? '' : allocations[envelopeKey]}
+                                onChange={(e) => handleAllocationChange(envelopeKey, e.target.value)}
+                                className="w-full h-full bg-[#ffffff] rounded-[10px] border border-[#E1E8ED] text-right focus:border-[#A6DDB1] pr-1.5 pl-6 text-[13px] text-[#1E2229] outline-none font-bold transition-all"
+                              />
+                            </div>
+                          </div>
+                        );
                       })}
                       
                       {activeEnvelopes.length === 0 && (

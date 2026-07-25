@@ -10,6 +10,7 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { readFileSync } from "fs";
 import dotenv from "dotenv";
 import nodemailer from "nodemailer";
+import cron from "node-cron";
 
 // Import client Firebase SDK to bypass permission/service-account gaps in sandboxed server environment
 import { initializeApp as initializeClientApp, getApps as getClientApps } from "firebase/app";
@@ -1294,6 +1295,34 @@ Schema:
       res.sendFile(path.join(distPath, 'index.html'));
     });
   }
+
+  // Daily reminder cron job
+  cron.schedule("0 * * * *", async () => {
+    console.log("[Vantage Server] Running daily login reminder cron job...");
+    try {
+      const db = admin.firestore();
+      const usersSnap = await db.collection("users").get();
+      const currentHour = new Date().getHours();
+      
+      for (const userDoc of usersSnap.docs) {
+        const userData = userDoc.data();
+        if (userData.dailyLoginReminderEnabled === true && userData.dailyLoginReminderHour === currentHour) {
+          const notificationsRef = db.collection(`users/${userDoc.id}/notifications`);
+          await notificationsRef.add({
+            userId: userDoc.id,
+            title: "Time to check your finances!",
+            body: "Your daily check-in is ready. Open the app to see your latest insights.",
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            type: "login_reminder",
+            isRead: false,
+          });
+          console.log(`[Vantage Server] Sent login reminder to user ${userDoc.id}`);
+        }
+      }
+    } catch (error) {
+      console.error("[Vantage Server] Daily login reminder cron job failed:", error);
+    }
+  });
 
   app.listen(PORT, "0.0.0.0", () => {
     console.log(`[Vantage Server] Running on port ${PORT}`);

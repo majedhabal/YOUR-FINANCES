@@ -140,6 +140,10 @@ function AppContent() {
   }, [isMilestoneModalOpen]);
 
   useEffect(() => {
+    window.dispatchEvent(new CustomEvent('account-modal-toggled', { detail: { isOpen: isAccountModalOpen } }));
+  }, [isAccountModalOpen]);
+
+  useEffect(() => {
     window.dispatchEvent(new CustomEvent('debt-milestone-modal-toggled', { detail: { isOpen: isDebtMilestoneModalOpen } }));
   }, [isDebtMilestoneModalOpen]);
 

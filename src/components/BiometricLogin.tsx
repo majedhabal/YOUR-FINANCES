@@ -1,11 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'motion/react';
-import { Fingerprint, ShieldCheck, Lock as LockIcon, Unlock as UnlockIcon, AlertCircle, ArrowLeft, Laptop, Shield, Wallet, PiggyBank, Sparkles, Facebook, Sliders } from 'lucide-react';
+import { Fingerprint, ShieldCheck, Lock as LockIcon, Unlock as UnlockIcon, AlertCircle, ArrowLeft, Laptop, Shield, Wallet, PiggyBank, Sparkles, Sliders } from 'lucide-react';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { db, auth, getGoogleProvider } from '../lib/firebase';
 import { handleFirestoreError, OperationType } from '../lib/firebaseUtils';
-import { signInWithPopup, GoogleAuthProvider, FacebookAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
+import { signInWithPopup, GoogleAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { setCachedAccessToken } from '../lib/googleAuth';
 import { seedUserCustomCategories } from '../lib/categoryUtils';
 import { LanguageSelector } from './LanguageSelector';
@@ -83,95 +83,6 @@ export const BiometricLogin: React.FC<BiometricLoginProps> = ({ onSuccess }) => 
   const [activeModal, setActiveModal] = useState<'privacy' | 'terms' | null>(null);
   const lastTapRef = useRef<number>(0);
 
-  // Facebook credential states with auto environment listener support and local fallback caching
-  const [fbAppId, setFbAppId] = useState<string>(() => {
-    return ((import.meta as any).env?.VITE_FACEBOOK_APP_ID as string) || localStorage.getItem('vantage_facebook_app_id') || '';
-  });
-  const [fbAppSecret, setFbAppSecret] = useState<string>(() => {
-    return ((import.meta as any).env?.VITE_FACEBOOK_APP_SECRET as string) || localStorage.getItem('vantage_facebook_app_secret') || '';
-  });
-  const [showFbConfigModal, setShowFbConfigModal] = useState<boolean>(false);
-  const [fbModalStep, setFbModalStep] = useState<1 | 2>(1);
-
-  // Sync state with environment variables if they change
-  useEffect(() => {
-    const envAppId = ((import.meta as any).env?.VITE_FACEBOOK_APP_ID as string);
-    const envAppSecret = ((import.meta as any).env?.VITE_FACEBOOK_APP_SECRET as string);
-    if (envAppId) setFbAppId(envAppId);
-    if (envAppSecret) setFbAppSecret(envAppSecret);
-  }, []);
-
-  const handleSaveFacebookConfig = (appId: string, appSecret: string) => {
-    setFbAppId(appId);
-    setFbAppSecret(appSecret);
-    localStorage.setItem('vantage_facebook_app_id', appId);
-    localStorage.setItem('vantage_facebook_app_secret', appSecret);
-    setShowFbConfigModal(false);
-  };
-
-  const handleFacebookAuth = async () => {
-    if (!complianceChecked) return;
-    setStatus('scanning');
-    try {
-      if (!fbAppId || !fbAppSecret) {
-        setStatus('error');
-        setErrorMsg('Facebook credentials are not configured. Please click the credential settings icon to open the provider configuration panel.');
-        return;
-      }
-
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      const provider = new FacebookAuthProvider();
-      provider.addScope('email');
-      provider.addScope('public_profile');
-
-      try {
-        const userCred = await signInWithPopup(auth, provider);
-        const user = userCred.user;
-        
-        const userRef = doc(db, 'users', user.uid);
-        const userSnap = await getDoc(userRef);
-        const nowTs = serverTimestamp();
-
-        if (!userSnap.exists()) {
-          const newProfile = {
-            uid: user.uid,
-            email: user.email || 'vantage.fb.user@private.com',
-            displayName: user.displayName ? user.displayName.split(' ')[0] : 'Sara Spence',
-            fullName: user.displayName || 'Sara Spence',
-            subscriptionTier: 'free',
-            fingerprintLoginEnabled: false,
-            lastLogin: nowTs,
-            createdAt: nowTs,
-            isOnboarded: false,
-            geminiInsightsEnabled: true,
-            legalAcceptedAt: nowTs,
-            appPrivacyVersion: 'Version 1.0.0',
-            hasAcceptedTerms: true,
-          };
-          await setDoc(userRef, newProfile);
-          await seedUserCustomCategories(user.uid);
-          onSuccess({ ...newProfile, lastLogin: new Date().toISOString(), createdAt: new Date().toISOString() });
-        } else {
-          await setDoc(userRef, { lastLogin: nowTs }, { merge: true });
-          onSuccess({ ...userSnap.data(), lastLogin: new Date().toISOString() });
-        }
-        setStatus('success');
-      } catch (fbErr: any) {
-        console.error("Facebook OAuth authentication failed:", fbErr);
-        
-        setStatus('error');
-        setErrorMsg('Authentication failed: The authentication process could not be completed. Please try registering using a different method or provider.');
-        setView('landing'); // Redirect to Signup/SignIn interface
-        return; 
-      }
-    } catch (err: any) {
-      console.error(err);
-      setStatus('error');
-      setErrorMsg(`Facebook validation connection failed: ${err.message || err}`);
-    }
-  };
-
   const handleAdminBypass = () => {
     setStatus('scanning');
     setTimeout(() => {
@@ -215,12 +126,45 @@ export const BiometricLogin: React.FC<BiometricLoginProps> = ({ onSuccess }) => 
     }
     setStatus('scanning');
     try {
+      let userCredential;
       if (isSignUp) {
-        await createUserWithEmailAndPassword(auth, emailInput, passwordInput);
+        userCredential = await createUserWithEmailAndPassword(auth, emailInput, passwordInput);
       } else {
-        await signInWithEmailAndPassword(auth, emailInput, passwordInput);
+        userCredential = await signInWithEmailAndPassword(auth, emailInput, passwordInput);
       }
+      
+      const user = userCredential.user;
+      const userRef = doc(db, 'users', user.uid);
+      const userSnap = await getDoc(userRef);
+      const nowTs = serverTimestamp();
+
+      let profileData: any;
+      if (!userSnap.exists()) {
+        profileData = {
+          uid: user.uid,
+          email: user.email || emailInput,
+          displayName: emailInput.split('@')[0] || 'New User',
+          fullName: '',
+          subscriptionTier: 'free',
+          fingerprintLoginEnabled: false,
+          lastLogin: nowTs,
+          createdAt: nowTs,
+          isOnboarded: false,
+          geminiInsightsEnabled: true,
+          legalAcceptedAt: nowTs,
+          appPrivacyVersion: 'Version 1.0.0',
+          hasAcceptedTerms: true,
+          initialized: true,
+        };
+        await setDoc(userRef, profileData);
+        await seedUserCustomCategories(user.uid);
+      } else {
+        profileData = userSnap.data();
+        await setDoc(userRef, { lastLogin: nowTs }, { merge: true });
+      }
+
       setStatus('success');
+      onSuccess({ ...profileData, lastLogin: new Date().toISOString() });
     } catch (err: any) {
       console.error("Email/Password Auth failed:", err);
       setStatus('error');
@@ -286,6 +230,7 @@ export const BiometricLogin: React.FC<BiometricLoginProps> = ({ onSuccess }) => 
           legalAcceptedAt: nowTs,
           appPrivacyVersion: 'Version 1.0.0',
           hasAcceptedTerms: true,
+          initialized: true,
         };
         await setDoc(userRef, newProfile);
         await seedUserCustomCategories(user.uid);
@@ -394,46 +339,6 @@ export const BiometricLogin: React.FC<BiometricLoginProps> = ({ onSuccess }) => 
                     </button>
 
                     <button 
-                      onClick={handleFacebookAuth}
-                      disabled={!complianceChecked}
-                      className="w-full py-3 px-4 bg-[#1877F2] hover:bg-[#166FE5] disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl text-center text-xs font-bold shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
-                    >
-                      <Facebook size={16} />
-                      Continue with Facebook
-                    </button>
-
-                    <div className="flex items-center select-none py-0.5">
-                      <div className="flex-1 border-t border-neutral-200"></div>
-                      <span className="px-3 text-[10px] text-neutral-400 font-bold">Or use your email</span>
-                      <div className="flex-1 border-t border-neutral-200"></div>
-                    </div>
-
-                    <div className="flex flex-col gap-3 rounded-xl border border-[#E1E8ED] bg-[#F8FAFC] p-4 shadow-sm text-left">
-                      <label className="text-[11px] font-bold text-neutral-700" htmlFor="direct-email-field">
-                        Email
-                      </label>
-                      <input 
-                        id="direct-email-field"
-                        type="email"
-                        placeholder="name@company.com"
-                        value={emailInput}
-                        onChange={(e) => setEmailInput(e.target.value)}
-                        className="w-full bg-white border border-[#D1D8E0] rounded-lg px-3 py-2 text-xs font-bold text-neutral-800 outline-none focus:border-emerald-600 transition-colors placeholder:text-neutral-400 placeholder:font-normal"
-                      />
-                      <label className="text-[11px] font-bold text-neutral-700 mt-2" htmlFor="password-field">
-                        Password
-                      </label>
-                      <input 
-                        id="password-field"
-                        type="password"
-                        placeholder="••••••••"
-                        value={passwordInput}
-                        onChange={(e) => setPasswordInput(e.target.value)}
-                        className="w-full bg-white border border-[#D1D8E0] rounded-lg px-3 py-2 text-xs font-bold text-neutral-800 outline-none focus:border-emerald-600 transition-colors placeholder:text-neutral-400 placeholder:font-normal"
-                      />
-                    </div>
-                    
-                    <button
                       onClick={handleEmailAuth}
                       disabled={!complianceChecked || !emailInput || !passwordInput}
                       className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl text-center text-xs font-bold shadow-sm transition-all cursor-pointer"
@@ -639,219 +544,6 @@ export const BiometricLogin: React.FC<BiometricLoginProps> = ({ onSuccess }) => 
             </motion.div>
           )}
         </AnimatePresence>
-
-        <AnimatePresence>
-          {showFbConfigModal && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[300] bg-black/50 flex items-center justify-center p-4 text-[#57606F]"
-              id="fb-modal-overlay"
-              onClick={() => setShowFbConfigModal(false)}
-            >
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: 15 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: 15 }}
-                transition={{ type: 'spring', duration: 0.4 }}
-                className="bg-[#FFFFFF] rounded-2xl shadow-xl border border-neutral-200/80 w-full max-w-[600px] max-h-[85vh] flex flex-col overflow-hidden text-[#57606F]"
-                id="fb-modal-container"
-                onClick={(e) => e.stopPropagation()}
-                style={{ fontFamily: '"Google Sans", sans-serif' }}
-              >
-                {/* Header */}
-                <div className="px-6 py-5 border-b border-[#E1E8ED] bg-neutral-50 shrink-0 flex items-center justify-between">
-                  <h3 className="text-sm font-bold text-neutral-900 leading-none">
-                    Facebook OAuth Provider Configuration
-                  </h3>
-                  <div className="flex gap-2 text-[10px]">
-                    <button
-                      type="button"
-                      onClick={() => setFbModalStep(1)}
-                      className={`px-2.5 py-1 rounded font-bold transition-all ${fbModalStep === 1 ? 'bg-emerald-600 text-white' : 'bg-neutral-100 text-neutral-600'}`}
-                    >
-                      Step 1 of 2
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setFbModalStep(2)}
-                      className={`px-2.5 py-1 rounded font-bold transition-all ${fbModalStep === 2 ? 'bg-emerald-600 text-white' : 'bg-neutral-100 text-neutral-600'}`}
-                    >
-                      Step 2 of 2
-                    </button>
-                  </div>
-                </div>
-
-                {/* Body Content */}
-                <div className="p-6 overflow-y-auto flex-1 space-y-5 text-[#57606F] font-normal leading-relaxed text-xs">
-                  {fbModalStep === 1 ? (
-                    <div className="flex flex-col gap-4">
-                      <div className="p-4 bg-emerald-50/50 border border-emerald-100 rounded-xl">
-                        <p className="font-bold text-emerald-800 mb-1">Target Sourcing Objectives</p>
-                        <p className="font-normal text-[#57606F]">
-                          Follow these parameters to obtain authorized Facebook developer credentials.
-                        </p>
-                      </div>
-
-                      <div className="space-y-4">
-                        <div>
-                          <h4 className="font-bold text-neutral-800 text-xs mb-1">
-                            1. Access Meta developer workspace
-                          </h4>
-                          <p className="font-normal text-[#57606F]">
-                            Navigate to the official Meta for Developers workspace dashboard at:{' '}
-                            <a
-                              href="https://developers.facebook.com/"
-                              target="_blank"
-                              rel="noreferrer"
-                              className="text-emerald-700 font-bold hover:underline"
-                            >
-                              https://developers.facebook.com/
-                            </a>
-                          </p>
-                        </div>
-
-                        <div>
-                          <h4 className="font-bold text-neutral-800 text-xs mb-1">
-                            2. Create a Facebook Application
-                          </h4>
-                          <ul className="list-disc pl-5 font-normal text-[#57606F] space-y-1">
-                            <li>Log in with your verified Facebook developer identity.</li>
-                            <li>Select "Create App" inside the master portal header.</li>
-                            <li>Designate the application deployment use-case as "Authenticate or data sync users (Facebook Login)".</li>
-                          </ul>
-                        </div>
-
-                        <div>
-                          <h4 className="font-bold text-neutral-800 text-xs mb-1">
-                            3. Capture client credential parameters
-                          </h4>
-                          <ul className="list-disc pl-5 font-normal text-[#57606F] space-y-1">
-                            <li>Open your newly generated application cluster dashboard.</li>
-                            <li>Navigate via the sidebar menu track to "App Settings" &gt; "Basic".</li>
-                            <li>Capture the clear text "App ID" and hidden "App Secret" key matrices.</li>
-                          </ul>
-                        </div>
-
-                        <div className="p-3.5 bg-neutral-50 border border-neutral-200 rounded-lg">
-                          <h4 className="font-bold text-neutral-800 text-xs mb-1">
-                            4. Wire redirect URI resources
-                          </h4>
-                          <p className="font-normal text-[#57606F] mb-2">
-                            To authorize secure identity handshakes, copy our white-label OAuth redirect URI below:
-                          </p>
-                          <div className="bg-white border border-[#E1E8ED] rounded p-2 text-[11px] font-mono select-all text-neutral-800">
-                            https://gen-lang-client-0564104277.firebaseapp.com/__/auth/handler
-                          </div>
-                          <p className="font-normal text-[#57606F] mt-2">
-                            Paste this path directly inside the "Valid OAuth Redirect URIs" field under "Facebook Login" &gt; "Settings" workflow block.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col gap-5">
-                      <div className="p-4 bg-emerald-50/50 border border-emerald-100 rounded-xl">
-                        <p className="font-bold text-emerald-800 mb-1">Step 2: Provider Configuration & Credential Listeners</p>
-                        <p className="font-normal text-[#57606F]">
-                          Acquired alphanumeric strings are automatically checked via the environment configuration listeners. You can also paste them manually below. These will persist inside your secure local context container.
-                        </p>
-                      </div>
-
-                      {/* Display environmental listeners status */}
-                      <div className="space-y-3.5">
-                        <div className="flex items-center justify-between p-3.5 bg-neutral-50 border border-[#E1E8ED] rounded-xl">
-                          <div>
-                            <p className="font-bold text-neutral-800 text-xs">Environment variable listener</p>
-                            <p className="text-[10px] text-neutral-500 font-normal mt-0.5">
-                              Status of server-side VITE_FACEBOOK_* variable declarations
-                            </p>
-                          </div>
-                          <span className={`px-2.5 py-1 text-[10px] rounded font-bold ${((import.meta as any).env?.VITE_FACEBOOK_APP_ID) ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>
-                            {((import.meta as any).env?.VITE_FACEBOOK_APP_ID) ? 'Linked' : 'Listening'}
-                          </span>
-                        </div>
-
-                        {/* App ID Field */}
-                        <div className="flex flex-col gap-1.5">
-                          <label className="text-xs font-bold text-neutral-700" htmlFor="fb-app-id-field">
-                            Facebook App ID
-                          </label>
-                          <input
-                            id="fb-app-id-field"
-                            type="text"
-                            placeholder="e.g. 109283748293748"
-                            value={fbAppId}
-                            onChange={(e) => setFbAppId(e.target.value)}
-                            className="w-full bg-[#FFFFFF] border border-[#D1D8E0] rounded-xl px-4 py-3 text-xs font-normal text-neutral-800 outline-none focus:border-emerald-600 transition-colors placeholder:text-neutral-400"
-                          />
-                        </div>
-
-                        {/* App Secret Field */}
-                        <div className="flex flex-col gap-1.5">
-                          <label className="text-xs font-bold text-neutral-700" htmlFor="fb-app-secret-field">
-                            Facebook App Secret
-                          </label>
-                          <input
-                            id="fb-app-secret-field"
-                            type="password"
-                            placeholder="e.g. 8f9a2b5d7c3e1f0b9a8c7d6e5f4a3b2c"
-                            value={fbAppSecret}
-                            onChange={(e) => setFbAppSecret(e.target.value)}
-                            className="w-full bg-[#FFFFFF] border border-[#D1D8E0] rounded-xl px-4 py-3 text-xs font-normal text-neutral-800 outline-none focus:border-emerald-600 transition-colors placeholder:text-neutral-400"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Footer Buttons */}
-                <div className="px-6 py-4 border-t border-[#E1E8ED] bg-neutral-50 shrink-0 flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2">
-                    {fbModalStep === 2 && (
-                      <button
-                        type="button"
-                        onClick={() => setFbModalStep(1)}
-                        className="px-4 py-2 bg-neutral-100 hover:bg-neutral-200 text-neutral-800 rounded-xl text-xs font-bold transition-all cursor-pointer"
-                      >
-                        Back
-                      </button>
-                    )}
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setShowFbConfigModal(false)}
-                      className="px-4 py-2 bg-neutral-100 hover:bg-neutral-200 text-neutral-800 rounded-xl text-xs font-bold transition-all cursor-pointer"
-                    >
-                      Close
-                    </button>
-                    {fbModalStep === 1 ? (
-                      <button
-                        type="button"
-                        onClick={() => setFbModalStep(2)}
-                        className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm transition-all cursor-pointer"
-                      >
-                        Next Step
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => handleSaveFacebookConfig(fbAppId, fbAppSecret)}
-                        className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm transition-all cursor-pointer"
-                      >
-                        Save Configuration
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
     );
   }
@@ -917,20 +609,12 @@ export const BiometricLogin: React.FC<BiometricLoginProps> = ({ onSuccess }) => 
                     {t('onboarding_flow.auth_gateway.google_login', 'Secure Google credential lock')}
                   </button>
 
-                  <button 
-                    onClick={handleFacebookAuth}
-                    disabled={!complianceChecked}
-                    className="w-full py-3 px-4 bg-[#1877F2] hover:bg-[#166FE5] disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl text-center text-xs font-bold shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
-                  >
-                    <Facebook size={16} />
-                    {t('onboarding_flow.auth_gateway.facebook_login', 'Continue with Facebook')}
-                  </button>
-
                   <div className="flex items-center select-none py-0.5">
                     <div className="flex-1 border-t border-neutral-200"></div>
                     <span className="px-3 text-[10px] text-neutral-400 font-bold">{t('onboarding_flow.auth_gateway.or_direct_gateway', 'Or use your email')}</span>
                     <div className="flex-1 border-t border-neutral-200"></div>
                   </div>
+
 
                   <div className="flex flex-col gap-3 w-full">
                     <input 

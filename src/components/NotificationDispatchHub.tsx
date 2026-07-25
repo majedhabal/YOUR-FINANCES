@@ -7,11 +7,12 @@ import {
   CheckSquare, Square, Plus, ShieldCheck
 } from 'lucide-react';
 import { 
-  collection, query, where, onSnapshot, doc, updateDoc, deleteDoc, serverTimestamp, writeBatch, getDocs, increment, runTransaction
+  collection, query, where, onSnapshot, doc, updateDoc, deleteDoc, serverTimestamp, writeBatch, getDocs, increment, runTransaction, setDoc
 } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { handleFirestoreError, OperationType } from '../lib/firebaseUtils';
 import { SalaryBreakdownVerificationModal } from './SalaryBreakdownVerificationModal';
+import { ShoppingList } from './ShoppingList';
 
 interface NotificationDispatchHubProps {
   uid: string;
@@ -132,6 +133,7 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
 
   const [dbPayday, setDbPayday] = useState<number>(28);
   const [dbSalary, setDbSalary] = useState<number>(0);
+  const [activeHubTab, setActiveHubTab] = useState<'notifications' | 'shopping'>('notifications');
 
   useEffect(() => {
     if (!uid) return;
@@ -435,25 +437,9 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
     onConfirm: () => {}
   });
 
-  // Load and seed Checklist
+  // Load and seed budget alerts
   useEffect(() => {
     if (!uid) return;
-    const cacheKey = `vantage_dispatch_checklist_${uid}`;
-    const cached = localStorage.getItem(cacheKey);
-    if (cached) {
-      try {
-        const parsed = JSON.parse(cached);
-        const normalized = parsed.map((item: any) => ({
-          ...item,
-          status: item.status || (item.completed ? 'completed' : 'active')
-        }));
-        setChecklist(normalized);
-      } catch (_) {
-        seedChecklist(cacheKey);
-      }
-    } else {
-      seedChecklist(cacheKey);
-    }
 
     // Load budget alerts
     const cacheKeyAlerts = `vantage_budget_alerts_log_${uid}`;
@@ -468,16 +454,6 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
   const saveBudgetAlerts = (newAlerts: BudgetAlertNode[]) => {
     setBudgetAlerts(newAlerts);
     localStorage.setItem(`vantage_budget_alerts_log_${uid}`, JSON.stringify(newAlerts));
-  };
-
-  const seedChecklist = (cacheKey: string) => {
-    const defaultChecklist: ChecklistItem[] = [
-      { id: 'itm-1', text: 'Verify daily spending budgets', completed: false, status: 'active' },
-      { id: 'itm-2', text: 'Audit subscription schedules', completed: false, status: 'active' },
-      { id: 'itm-3', text: 'Optimize active investment tiers', completed: false, status: 'active' }
-    ];
-    setChecklist(defaultChecklist);
-    localStorage.setItem(cacheKey, JSON.stringify(defaultChecklist));
   };
 
   // Real-time Firestore Sync Streams
@@ -516,33 +492,82 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
       console.warn("Dispatched salary breakdowns offline fallback:", err);
     });
 
+    // 5. Listen to Checklist items
+    const unsubChecklist = onSnapshot(collection(db, `users/${uid}/checklist`), (snap) => {
+      if (snap.empty) {
+        // If empty, check if we can migrate from localStorage, or seed defaults
+        const cacheKey = `vantage_dispatch_checklist_${uid}`;
+        const cached = localStorage.getItem(cacheKey);
+        let itemsToSet: ChecklistItem[] = [];
+        if (cached) {
+          try {
+            itemsToSet = JSON.parse(cached);
+          } catch (_) {}
+        }
+        if (itemsToSet.length === 0) {
+          itemsToSet = [
+            { id: 'itm-1', text: 'Verify daily spending budgets', completed: false, status: 'active' },
+            { id: 'itm-2', text: 'Audit subscription schedules', completed: false, status: 'active' },
+            { id: 'itm-3', text: 'Optimize active investment tiers', completed: false, status: 'active' }
+          ];
+        }
+
+        // Write to Firestore
+        const batch = writeBatch(db);
+        itemsToSet.forEach(item => {
+          const docRef = doc(db, `users/${uid}/checklist/${item.id}`);
+          batch.set(docRef, {
+            id: item.id,
+            text: item.text,
+            completed: !!item.completed,
+            status: item.status || (item.completed ? 'completed' : 'active'),
+            scheduledAt: item.scheduledAt || null,
+            notified: !!item.notified,
+            date: item.date || null,
+            time: item.time || null,
+            createdAt: serverTimestamp()
+          });
+        });
+        batch.commit().catch(err => console.warn("Failed to seed/migrate checklist:", err));
+      } else {
+        const items = snap.docs.map(d => ({ id: d.id, ...d.data() as any }));
+        // Ensure status field is normalized
+        const normalized = items.map(item => ({
+          ...item,
+          status: item.status || (item.completed ? 'completed' : 'active')
+        }));
+        setChecklist(normalized);
+      }
+    }, (err) => {
+      console.warn("Dispatched checklist offline fallback:", err);
+    });
+
     return () => {
       unsubDrafts();
       unsubBudgets();
       unsubGoals();
       unsubSalary();
+      unsubChecklist();
     };
   }, [uid]);
 
-  // Helpers for Checklist Operations
-  const saveChecklist = (updatedList: ChecklistItem[]) => {
-    setChecklist(updatedList);
-    localStorage.setItem(`vantage_dispatch_checklist_${uid}`, JSON.stringify(updatedList));
-  };
+  const handleToggleChecklist = async (id: string) => {
+    if (!uid) return;
+    const item = checklist.find(c => c.id === id);
+    if (!item) return;
 
-  const handleToggleChecklist = (id: string) => {
-    const updated = checklist.map(item => {
-      if (item.id === id) {
-        const nextCompleted = !item.completed;
-        return {
-          ...item,
-          completed: nextCompleted,
-          status: nextCompleted ? 'completed' : 'active'
-        } as ChecklistItem;
-      }
-      return item;
-    });
-    saveChecklist(updated);
+    try {
+      const nextCompleted = !item.completed;
+      const itemRef = doc(db, `users/${uid}/checklist/${id}`);
+      await updateDoc(itemRef, {
+        completed: nextCompleted,
+        status: nextCompleted ? 'completed' : 'active',
+        updatedAt: serverTimestamp()
+      });
+    } catch (err) {
+      console.error("Failed to toggle checklist item:", err);
+      handleFirestoreError(err, OperationType.UPDATE, `users/${uid}/checklist/${id}`);
+    }
   };
 
   // Browser Notification native broadcast
@@ -695,17 +720,24 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
           toastEl.remove();
         }, 6000);
 
-        const updatedChecklist = checklist.map(c => c.id === item.id ? { ...c, notified: true } : c);
-        saveChecklist(updatedChecklist);
+        try {
+          const itemRef = doc(db, `users/${uid}/checklist/${item.id}`);
+          updateDoc(itemRef, {
+            notified: true,
+            updatedAt: serverTimestamp()
+          });
+        } catch (err) {
+          console.warn("Failed to set checklist notification status:", err);
+        }
       }
     }, 5000);
 
     return () => clearInterval(interval);
   }, [uid, checklist]);
 
-  const handleCreateChecklistItem = (e: React.FormEvent) => {
+  const handleCreateChecklistItem = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newItemText.trim()) return;
+    if (!newItemText.trim() || !uid) return;
 
     let scheduledAtStr: string | undefined = undefined;
     if (showScheduler && schedDate && schedTime) {
@@ -720,23 +752,31 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
       }
     }
 
-    const newItem: ChecklistItem = {
-      id: `itm-custom-${Date.now()}`,
+    const itemId = `itm-custom-${Date.now()}`;
+    const newItem = {
+      id: itemId,
       text: newItemText.trim(),
       completed: false,
       status: 'active',
-      scheduledAt: scheduledAtStr,
+      scheduledAt: scheduledAtStr || null,
       notified: false,
-      date: showScheduler ? schedDate : undefined,
-      time: showScheduler ? schedTime : undefined
+      date: showScheduler ? schedDate : null,
+      time: showScheduler ? schedTime : null,
+      createdAt: serverTimestamp()
     };
 
-    saveChecklist([...checklist, newItem]);
-    setNewItemText('');
-    setShowScheduler(false);
+    try {
+      const itemRef = doc(db, `users/${uid}/checklist/${itemId}`);
+      await setDoc(itemRef, newItem);
+      setNewItemText('');
+      setShowScheduler(false);
 
-    if (scheduledAtStr && 'Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission();
+      if (scheduledAtStr && 'Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission();
+      }
+    } catch (err) {
+      console.error("Failed to add checklist item:", err);
+      handleFirestoreError(err, OperationType.CREATE, `users/${uid}/checklist/${itemId}`);
     }
   };
 
@@ -744,9 +784,15 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
     setConfirmModal({
       isOpen: true,
       message: t('notification_dispatch_hub.delete_chk_confirm'),
-      onConfirm: () => {
-        const updated = checklist.filter(item => item.id !== id);
-        saveChecklist(updated);
+      onConfirm: async () => {
+        if (!uid) return;
+        try {
+          const itemRef = doc(db, `users/${uid}/checklist/${id}`);
+          await deleteDoc(itemRef);
+        } catch (err) {
+          console.error("Failed to delete checklist item:", err);
+          handleFirestoreError(err, OperationType.DELETE, `users/${uid}/checklist/${id}`);
+        }
       }
     });
   };
@@ -1311,13 +1357,7 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
                     className="text-neutral-900 text-sm font-bold"
                     style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
                   >
-                    {t('notification_dispatch_hub.hub_title')}
-                  </span>
-                  <span 
-                    className="text-[10px] text-neutral-500 mt-0.5 tracking-wide"
-                    style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
-                  >
-                    {t('notification_dispatch_hub.hub_subtitle')}
+                    {'Your Finances Hub'}
                   </span>
                 </div>
                 <button 
@@ -1328,9 +1368,39 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
                 </button>
               </div>
 
+              {/* Tabs */}
+              <div className="flex border-b border-neutral-150 px-4 gap-4">
+                <button 
+                  onClick={() => setActiveHubTab('notifications')} 
+                  className={`py-2 text-[10px] font-bold ${activeHubTab === 'notifications' ? 'text-[#A6DDB1] border-b-2 border-[#A6DDB1]' : 'text-neutral-500'}`} 
+                  style={{ fontFamily: "'Google Sans', sans-serif" }}
+                >
+                  {'Notifications'}
+                </button>
+                <button 
+                  onClick={() => setActiveHubTab('shopping')} 
+                  className={`py-2 text-[10px] font-bold ${activeHubTab === 'shopping' ? 'text-[#A6DDB1] border-b-2 border-[#A6DDB1]' : 'text-neutral-500'}`} 
+                  style={{ fontFamily: "'Google Sans', sans-serif" }}
+                >
+                  {'Shopping Cart'}
+                </button>
+              </div>
+
               {/* Scrollable list content */}
               <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4 [WebkitOverflowScrolling:touch]">
-                
+                <div style={{ display: activeHubTab === 'shopping' ? 'block' : 'none' }}>
+                  <div className="flex flex-col gap-2">
+                    <span 
+                      className="text-[10px] font-bold text-[#A6DDB1] dark:text-emerald-700"
+                      style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
+                    >
+                      {'Shopping Cart'}
+                    </span>
+                    <ShoppingList uid={uid} />
+                  </div>
+                </div>
+                <div style={{ display: activeHubTab === 'notifications' ? 'block' : 'none' }}>
+                  <div className="flex flex-col gap-4">
                  {/* UPCOMING PAYDAY ALERT & CONFIG SETUP */}
                  {showMissingSalaryAlert && (
                    <div className="flex flex-col gap-2">
@@ -2021,8 +2091,12 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
                     </AnimatePresence>
                   </div>
                 )}
-                </div>
-                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
               
               {/* Dispatch body close */}
             </motion.div>

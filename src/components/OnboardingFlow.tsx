@@ -31,7 +31,7 @@ import {
   TrendingUp
 } from 'lucide-react';
 import { doc, setDoc, collection, serverTimestamp, getDoc, updateDoc } from 'firebase/firestore';
-import { signInWithPopup, FacebookAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut } from 'firebase/auth';
+import { signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut } from 'firebase/auth';
 import { db, auth, getGoogleProvider } from '../lib/firebase';
 import { seedUserCustomCategories } from '../lib/categoryUtils';
 import { VantageLogo } from './VantageLogo';
@@ -250,6 +250,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
           appPrivacyVersion: 'Version 1.0.0',
           lastLoginDate: new Date().toISOString().split('T')[0],
           dailyStreak: 1,
+          initialized: true,
         };
         await setDoc(userRef, newProfile);
         await seedUserCustomCategories(user.uid);
@@ -264,55 +265,6 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
       console.error(err);
       setAuthStatus('error');
       setAuthErrorMsg(err.message || 'Google Auth Connection Failed');
-    }
-  };
-
-  const handleFacebookAuth = async () => {
-    setAuthStatus('loading');
-    setAuthErrorMsg('');
-    try {
-      const provider = new FacebookAuthProvider();
-      provider.addScope('email');
-      provider.addScope('public_profile');
-      
-      const userCred = await signInWithPopup(auth, provider);
-      const user = userCred.user;
-      
-      const userRef = doc(db, 'users', user.uid);
-      const userSnap = await getDoc(userRef);
-      const nowTs = serverTimestamp();
-
-      if (!userSnap.exists()) {
-        const newProfile = {
-          uid: user.uid,
-          email: user.email || 'vantage.fb.user@private.com',
-          displayName: user.displayName ? user.displayName.split(' ')[0] : 'Sara Spence',
-          fullName: user.displayName || 'Sara Spence',
-          subscriptionTier: 'free',
-          fingerprintLoginEnabled: false,
-          lastLogin: nowTs,
-          createdAt: nowTs,
-          isOnboarded: false,
-          geminiInsightsEnabled: true,
-          legalAcceptedAt: nowTs,
-          appPrivacyVersion: 'Version 1.0.0',
-          lastLoginDate: new Date().toISOString().split('T')[0],
-          dailyStreak: 1,
-        };
-        await setDoc(userRef, newProfile);
-        await seedUserCustomCategories(user.uid);
-      } else {
-        await setDoc(userRef, { lastLogin: nowTs }, { merge: true });
-      }
-      setAuthStatus('success');
-      setTimeout(() => {
-        setShowAuthGateway(false);
-      }, 500);
-    } catch (err: any) {
-      console.error("Facebook OAuth authentication failed:", err);
-      setAuthStatus('error');
-      setAuthErrorMsg(err.message || 'Authentication failed: The authentication process could not be completed. Please try registering using a different method or provider.');
-      return;
     }
   };
 
@@ -371,6 +323,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                 appPrivacyVersion: 'Version 1.0.0',
                 lastLoginDate: new Date().toISOString().split('T')[0],
                 dailyStreak: 1,
+                initialized: true,
               };
               await setDoc(userRef, newProfile);
               await seedUserCustomCategories(user.uid);
@@ -1546,16 +1499,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                     {t('onboarding_flow.auth_gateway.google_login', 'Secure Google credential lock')}
                   </button>
 
-                  <div className="flex gap-2">
-                    <button 
-                      onClick={handleFacebookAuth}
-                      type="button"
-                      className="flex-1 py-3 px-4 bg-[#1877F2] hover:bg-[#166FE5] text-white rounded-xl text-center text-xs font-bold shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
-                    >
-                      <Facebook size={16} />
-                      {t('onboarding_flow.auth_gateway.facebook_login', 'Continue with Facebook')}
-                    </button>
-                  </div>
+
 
                   <div className="flex items-center select-none py-1">
                     <div className="flex-1 border-t border-neutral-100"></div>

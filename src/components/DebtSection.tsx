@@ -63,10 +63,10 @@ export const DebtSection: React.FC<{
 
       <div className="flex flex-col gap-3">
         {debtAccounts.length > 0 ? (
-          debtAccounts.map(acc => {
+          debtAccounts.map((acc, index) => {
             const payoffProgress = Math.abs(acc.startingBalance || 0) > 0 ? ((Math.abs(acc.startingBalance || 0) - Math.abs(acc.currentBalance || 0)) / Math.abs(acc.startingBalance || 0)) * 100 : 0;
             return (
-              <div key={acc.accountId} className="p-4 bg-white rounded-xl border border-[#E1E8ED]">
+              <div key={`${acc.accountId}-${index}`} className="p-4 bg-white rounded-xl border border-[#E1E8ED]">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-lg bg-[#F0F3FF] flex items-center justify-center text-[#366945]">

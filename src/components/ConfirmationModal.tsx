@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ReactNode } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { AlertCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -8,7 +8,7 @@ interface ConfirmationModalProps {
   onClose: () => void;
   onConfirm: () => void;
   title?: string;
-  message?: string;
+  message?: string | ReactNode;
   confirmLabel?: string;
   cancelLabel?: string;
   isLoading?: boolean;
@@ -54,22 +54,6 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
       case "Destroy Record Segment":
         return t("confirmation_modal.destroy_record_segment_title", "Destroy Record Segment");
 
-      // Message/Bodies (exact or close checks)
-      case "Are you sure you want to perform this action? This cannot be undone.":
-        return t("confirmation_modal.confirm_body", "Are you sure you want to perform this action? This cannot be undone.");
-      case "Are you sure you want to stop this recurring schedule? Future iterations will no longer trigger, but historical transactions remain safe.":
-        return t("confirmation_modal.delete_schedule_body", "Are you sure you want to stop this recurring schedule? Future iterations will no longer trigger, but historical transactions remain safe.");
-      case "Your transaction history will remain safe. Deleting the budget card only removes the daily view shortcut.":
-        return t("confirmation_modal.delete_budget_body", "Your transaction history will remain safe. Deleting the budget card only removes the daily view shortcut.");
-      case "Are you sure you want to delete this active repayment milestone?":
-        return t("confirmation_modal.delete_debt_milestone_body", "Are you sure you want to delete this active repayment milestone?");
-      case "Are you sure you want to permanently erase this financial ledger transaction index statement entry?":
-        return t("confirmation_modal.purge_record_body", "Are you sure you want to permanently erase this financial ledger transaction index statement entry?");
-      case "Are you sure you want to reject this draft transaction? It will be removed from your pending queue.":
-        return t("confirmation_modal.reject_draft_body", "Are you sure you want to reject this draft transaction? It will be removed from your pending queue.");
-      case "Are you sure you want to delete this specific financial ledger line transaction index entry statement? This will recalculate balances.":
-        return t("confirmation_modal.destroy_record_segment_body", "Are you sure you want to delete this specific financial ledger line transaction index entry statement? This will recalculate balances.");
-
       // Confirm labels
       case "Confirm":
         return t("confirmation_modal.confirm", "Confirm");
@@ -96,7 +80,8 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   };
 
   const displayTitle = getTranslationOf(title, "confirmation_modal.confirm_action", "Confirm Action");
-  const displayMessage = getTranslationOf(message, "confirmation_modal.confirm_body", "Are you sure you want to perform this action? This cannot be undone.");
+  // Only translate if message is a string
+  const displayMessage = typeof message === 'string' ? getTranslationOf(message, "confirmation_modal.confirm_body", "Are you sure you want to perform this action? This cannot be undone.") : message;
   const displayConfirmLabel = getTranslationOf(confirmLabel, "confirmation_modal.confirm", "Confirm");
   const displayCancelLabel = getTranslationOf(cancelLabel, "confirmation_modal.cancel", "Cancel");
   const displayProcessing = t("confirmation_modal.processing", "Processing...");
@@ -128,19 +113,19 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
             }`}>
               <AlertCircle size={24} />
             </div>
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-2 w-full">
               <h3 
                 className="text-[#1F2937] tracking-tight leading-none"
                 style={{ fontSize: 'clamp(12px, 3.2vw, 15px)', fontFamily: '"Google Sans", system-ui, sans-serif', fontWeight: 700 }}
               >
                 {displayTitle}
               </h3>
-              <p 
+              <div 
                 className="text-neutral-500 leading-relaxed mt-2"
                 style={{ fontSize: 'clamp(11px, 2.8vw, 13px)', fontFamily: '"Google Sans", system-ui, sans-serif', fontWeight: 400 }}
               >
                 {displayMessage}
-              </p>
+              </div>
             </div>
             <div className="flex flex-col w-full gap-2 mt-2">
               <button

@@ -218,9 +218,9 @@ export const Accounts: React.FC<AccountsProps> = ({ profile, onNavigateToTransac
     return calculateAggregateTrend(activeAccIds, accounts, transactions);
   }, [activeAccIds, accounts, transactions]);
 
-  const totalCombinedBalance = React.useMemo(() => {
+  const totalAssets = React.useMemo(() => {
     return accounts
-      .filter(a => !a.isArchived)
+      .filter(a => !a.isArchived && !['credit', 'loan', 'mortgage', 'Credit Card', 'Personal Loan', 'Mortgage'].includes(a.type))
       .reduce((sum, account) => {
         const currentBalance = accountBalances[account.id] || 0;
         const rate = (exchangeRates && exchangeRates[account.currency]) || DEFAULT_RATES[account.currency as keyof typeof DEFAULT_RATES] || 1;
@@ -228,6 +228,43 @@ export const Accounts: React.FC<AccountsProps> = ({ profile, onNavigateToTransac
         return sum + translatedBalance;
       }, 0);
   }, [accounts, accountBalances, exchangeRates, baseRateToAED]);
+
+  const totalLiabilities = React.useMemo(() => {
+    return accounts
+      .filter(a => !a.isArchived && ['credit', 'loan', 'mortgage', 'Credit Card', 'Personal Loan', 'Mortgage'].includes(a.type))
+      .reduce((sum, account) => {
+        const currentBalance = accountBalances[account.id] || 0;
+        const rate = (exchangeRates && exchangeRates[account.currency]) || DEFAULT_RATES[account.currency as keyof typeof DEFAULT_RATES] || 1;
+        const translatedBalance = (currentBalance * rate) / baseRateToAED;
+        return sum + Math.abs(translatedBalance);
+      }, 0);
+  }, [accounts, accountBalances, exchangeRates, baseRateToAED]);
+
+  const totalLiquidCash = React.useMemo(() => {
+    return accounts
+      .filter(a => !a.isArchived && (a.type === 'cash' || a.type === 'bank' || a.type === 'Cash' || a.type === 'Bank'))
+      .reduce((sum, account) => {
+        const currentBalance = accountBalances[account.id] || 0;
+        const rate = (exchangeRates && exchangeRates[account.currency]) || DEFAULT_RATES[account.currency as keyof typeof DEFAULT_RATES] || 1;
+        const translatedBalance = (currentBalance * rate) / baseRateToAED;
+        return sum + translatedBalance;
+      }, 0);
+  }, [accounts, accountBalances, exchangeRates, baseRateToAED]);
+
+  const totalInvestmentAssets = React.useMemo(() => {
+    return accounts
+      .filter(a => !a.isArchived && (a.type === 'investment' || a.type === 'Investment'))
+      .reduce((sum, account) => {
+        const currentBalance = accountBalances[account.id] || 0;
+        const rate = (exchangeRates && exchangeRates[account.currency]) || DEFAULT_RATES[account.currency as keyof typeof DEFAULT_RATES] || 1;
+        const translatedBalance = (currentBalance * rate) / baseRateToAED;
+        return sum + translatedBalance;
+      }, 0);
+  }, [accounts, accountBalances, exchangeRates, baseRateToAED]);
+
+  const totalCombinedBalance = React.useMemo(() => {
+    return totalAssets - totalLiabilities;
+  }, [totalAssets, totalLiabilities]);
 
   const trendText = React.useMemo(() => {
     if (aggregateTrend.direction === 'up') {
@@ -428,19 +465,65 @@ export const Accounts: React.FC<AccountsProps> = ({ profile, onNavigateToTransac
         </h3>
       </div>
 
-      {/* Total Combined Balance Card (Ambient Design) */}
-      <div className="px-4 md:px-6 w-full">
-        <div className="relative overflow-hidden rounded-2xl p-6 bg-white border-0 shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-          <div className="absolute -right-16 -top-16 w-48 h-48 bg-[#0D9488]/5 rounded-full blur-3xl pointer-events-none"></div>
-          <div className="relative z-10">
-            <span className="text-[13px] text-neutral-500 font-medium font-g-sans uppercase tracking-wider">{t('accounts.total_combined_balance')}</span>
-            <div className="flex flex-wrap items-baseline gap-3 mt-1.5">
-              <span className="font-g-sans text-4xl font-bold text-neutral-900">
-                {activeBaseCurr} {totalCombinedBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+      {/* Dynamic Account Dashboard Grid */}
+      <div className="px-4 md:px-6 w-full flex flex-col gap-4">
+        {/* Main Card: Net Worth */}
+        <div className="bg-white border border-neutral-100 rounded-2xl p-6 relative overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.01)]">
+          <div className="absolute -right-12 -top-12 w-36 h-36 bg-[#0D9488]/5 rounded-full blur-2xl pointer-events-none"></div>
+          <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <span className="text-[13px] text-neutral-500 font-normal font-g-sans">{t('accounts.net_worth', 'Net Worth')}</span>
+              <div className="flex flex-wrap items-baseline gap-3 mt-1.5">
+                <span className="font-g-sans text-3xl font-bold text-neutral-900">
+                  {activeBaseCurr} {totalCombinedBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </span>
+                <span className={`text-[12px] px-2.5 py-1 rounded-full font-g-sans font-normal shrink-0 ${trendColorClass}`}>
+                  {trendText}
+                </span>
+              </div>
+            </div>
+            
+            {/* Split row info for total Assets and Liabilities */}
+            <div className="flex gap-6 border-t sm:border-t-0 sm:border-l border-neutral-100 pt-4 sm:pt-0 sm:pl-6 shrink-0">
+              <div className="flex flex-col">
+                <span className="text-[11px] text-neutral-400 font-normal font-g-sans">{t('accounts.total_assets', 'Total Assets')}</span>
+                <span className="text-[16px] font-bold text-[#0D9488] mt-0.5">
+                  {activeBaseCurr} {totalAssets.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[11px] text-neutral-400 font-normal font-g-sans">{t('accounts.total_liabilities', 'Total Liabilities')}</span>
+                <span className="text-[16px] font-bold text-neutral-700 mt-0.5">
+                  {activeBaseCurr} {totalLiabilities.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Secondary Sub-Metrics: Cash and Investments */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="bg-white border border-neutral-100 rounded-2xl p-5 flex items-center justify-between shadow-[0_1px_2px_rgba(0,0,0,0.01)]">
+            <div className="flex flex-col">
+              <span className="text-xs text-neutral-400 font-normal font-g-sans">{t('accounts.liquid_cash', 'Liquid Cash')}</span>
+              <span className="text-[18px] font-bold text-[#1C2C40] mt-1">
+                {activeBaseCurr} {totalLiquidCash.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
-              <span className={`text-[12px] px-2.5 py-1 rounded-full font-g-sans font-medium shrink-0 ${trendColorClass}`}>
-                {trendText}
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center text-[#0D9488]">
+              <Wallet size={18} />
+            </div>
+          </div>
+
+          <div className="bg-white border border-neutral-100 rounded-2xl p-5 flex items-center justify-between shadow-[0_1px_2px_rgba(0,0,0,0.01)]">
+            <div className="flex flex-col">
+              <span className="text-xs text-neutral-400 font-normal font-g-sans">{t('accounts.investment_assets', 'Investment Assets')}</span>
+              <span className="text-[18px] font-bold text-[#1C2C40] mt-1">
+                {activeBaseCurr} {totalInvestmentAssets.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600">
+              <TrendingUp size={18} />
             </div>
           </div>
         </div>

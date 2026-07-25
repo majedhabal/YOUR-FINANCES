@@ -18,6 +18,8 @@ import { AIConversationsHistoryView } from './AIConversationsHistoryView';
 import { ReferralProgramView } from './ReferralProgramView';
 import { StatementVaultModal } from './StatementVaultModal';
 import { Mail, ShieldCheck, FileText, Gift } from 'lucide-react';
+import { ConfirmationModal } from './ConfirmationModal';
+import { SetReminderTimeModal } from './SetReminderTimeModal';
 
 const ALL_CURRENCIES = [
   'AED', 'AFN', 'ALL', 'AMD', 'ANG', 'AOA', 'ARS', 'AUD', 'AWG', 'AZN',
@@ -90,6 +92,11 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
   const [tasksSyncEnabled, setTasksSyncEnabled] = useState(profile?.tasksSyncEnabled || false);
   const [geminiInsightsEnabled, setGeminiInsightsEnabled] = useState(profile?.geminiInsightsEnabled || false);
   const [fingerprintLoginEnabled, setFingerprintLoginEnabled] = useState(profile?.fingerprintLoginEnabled || false);
+  const [dailyLoginReminderEnabled, setDailyLoginReminderEnabled] = useState(profile?.dailyLoginReminderEnabled || false);
+  const [dailyLoginReminderHour, setDailyLoginReminderHour] = useState(profile?.dailyLoginReminderHour || 20);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [isReminderModalOpen, setIsReminderModalOpen] = useState(false);
+  const [pendingHour, setPendingHour] = useState<number | null>(null);
   const [monthlyStatementEnabled, setMonthlyStatementEnabled] = useState(profile?.monthlyStatementEnabled || false);
   const [isStatementVaultOpen, setIsStatementVaultOpen] = useState(false);
   const [showConsentModal, setShowConsentModal] = useState(false);
@@ -149,6 +156,8 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
       setTasksSyncEnabled(profile.tasksSyncEnabled || false);
       setGeminiInsightsEnabled(profile.geminiInsightsEnabled || false);
       setFingerprintLoginEnabled(profile.fingerprintLoginEnabled || false);
+      setDailyLoginReminderEnabled(profile.dailyLoginReminderEnabled || false);
+      setDailyLoginReminderHour(profile.dailyLoginReminderHour || 20);
       setMonthlyStatementEnabled(profile.monthlyStatementEnabled || false);
       setTheme(profile.theme || 'dark');
       if (profile.fontSize) {
@@ -374,18 +383,22 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
     }
   };
 
-  const setFeatureState = async (featureKey: string, nextValue: boolean) => {
+  const setSettingValue = async (key: string, value: any) => {
     setIsSaving(true);
     try {
       const userRef = doc(db, 'users', profile.uid);
-      const updates = { [featureKey]: nextValue };
+      const updates = { [key]: value };
       await updateDoc(userRef, updates);
       onUpdateProfile({ ...profile, ...updates });
     } catch (err) {
-      console.error(`Failed to toggle ${featureKey}`, err);
+      console.error(`Failed to update ${key}`, err);
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const setFeatureState = async (featureKey: string, nextValue: boolean) => {
+    await setSettingValue(featureKey, nextValue);
   };
 
   const handleToggleFeature = async (featureKey: string, currentValue: boolean) => {
@@ -685,6 +698,12 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
           toggleValue: geminiInsightsEnabled,
           action: () => handleToggleFeature('geminiInsightsEnabled', geminiInsightsEnabled),
           disabled: !isPremium
+        },
+        {
+          icon: Bell,
+          label: `${t('settings.daily_login_reminder_new')} (${dailyLoginReminderEnabled ? `${dailyLoginReminderHour}:00` : t('settings.disabled')})`,
+          isInlineToggle: false,
+          action: () => setIsReminderModalOpen(true),
         },
         {
           icon: Mail,
@@ -1142,6 +1161,7 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
                             {item.isInlineToggle ? (
                               <div className={`flex items-center gap-1.5 shrink-0 ${item.disabled ? 'opacity-40' : ''}`}>
                                  {item.disabled && <Lock size={10} className="text-vantage-muted" />}
+                                {item.children}
                                 <button
                                   type="button"
                                   onClick={(e) => {
@@ -1498,6 +1518,36 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
         isOpen={isBadgesModalOpen}
         onClose={() => setIsBadgesModalOpen(false)}
         currentStreak={profile?.dailyStreak || 0}
+      />
+      <ConfirmationModal
+        isOpen={isConfirmModalOpen}
+        onClose={() => {
+          setIsConfirmModalOpen(false);
+          setPendingHour(null);
+        }}
+        onConfirm={async () => {
+          if (pendingHour !== null) {
+            setDailyLoginReminderHour(pendingHour);
+            await setSettingValue('dailyLoginReminderHour', pendingHour);
+            setIsConfirmModalOpen(false);
+            setPendingHour(null);
+          }
+        }}
+        title="Update Daily Reminder Time"
+        message={`Are you sure you want to set the daily reminder to ${pendingHour}:00?`}
+        type="mint"
+      />
+      <SetReminderTimeModal
+        isOpen={isReminderModalOpen}
+        onClose={() => setIsReminderModalOpen(false)}
+        onSave={async (enabled, hour) => {
+          setDailyLoginReminderEnabled(enabled);
+          setDailyLoginReminderHour(hour);
+          await setSettingValue('dailyLoginReminderEnabled', enabled);
+          await setSettingValue('dailyLoginReminderHour', hour);
+        }}
+        initialEnabled={dailyLoginReminderEnabled}
+        initialHour={dailyLoginReminderHour}
       />
     </div>
   );

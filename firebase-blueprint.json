@@ -207,6 +207,35 @@
         }
       },
       "required": ["defaultCategoryMap"]
+    },
+    "ChecklistItem": {
+      "title": "Checklist Item",
+      "description": "User personal financial checklist item.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "text": { "type": "string" },
+        "completed": { "type": "boolean" },
+        "status": { "type": "string" },
+        "scheduledAt": { "type": "string" },
+        "notified": { "type": "boolean" },
+        "date": { "type": "string" },
+        "time": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["text", "completed"]
+    },
+    "ShoppingItem": {
+      "title": "Shopping Item",
+      "description": "User personal shopping list item.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "text": { "type": "string" },
+        "completed": { "type": "boolean" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["text", "completed"]
     }
   },
   "firestore": {
@@ -253,6 +282,14 @@
     "/users/{userId}/milestones/{milestoneId}": {
       "schema": "Milestone",
       "description": "Collection of user-specific long-term targets and milestone goals."
+    },
+    "/users/{userId}/checklist/{checklistId}": {
+      "schema": "ChecklistItem",
+      "description": "Collection of user-specific financial checklist items."
+    },
+    "/users/{userId}/shoppingList/{itemId}": {
+      "schema": "ShoppingItem",
+      "description": "Collection of user-specific shopping list items."
     }
   }
 }
