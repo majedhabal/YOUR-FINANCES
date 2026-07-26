@@ -90,14 +90,14 @@ export const SpendingTrends: React.FC<SpendingTrendsProps> = ({
             </div>
             <div className="flex flex-col">
               <h4 className="text-sm font-bold text-white m-0 tracking-tight lowercase">spending trends</h4>
-              <span className="text-[10px] text-neutral-400 font-medium mt-0.5">Rolling 30-day allocation timeline</span>
+              <span className="text-[12px] text-neutral-400 font-medium mt-0.5">Rolling 30-day allocation timeline</span>
             </div>
           </div>
           <div className="text-right flex flex-col items-end">
             <span className="text-sm font-mono font-bold text-white tracking-tight">
               {totalPeriodBurn.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {baseCurrency}
             </span>
-            <span className="text-[9px] font-mono tracking-widest text-neutral-500 uppercase mt-0.5">Aggregated burn</span>
+            <span className="text-[12px] font-mono tracking-widest text-neutral-500 uppercase mt-0.5">Aggregated burn</span>
           </div>
         </div>
 
@@ -129,8 +129,8 @@ export const SpendingTrends: React.FC<SpendingTrendsProps> = ({
                   backdropFilter: 'blur(16px)',
                   border: '1px solid rgba(255,255,255,0.1)',
                   borderRadius: '12px',
-                  boxShadow: '0 8px 32px 0 rgba(0,0,0,0.3)',
-                  padding: '8px 12px'
+                  boxShadow: '0 12px 32px 0 rgba(0,0,0,0.3)',
+                  padding: '12px 12px'
                 }}
                 labelStyle={{ fontSize: 10, fontWeight: 600, color: '#94A3B8', marginBottom: '4px' }}
                 itemStyle={{ fontSize: 11, fontWeight: 700, color: '#F43F5E' }}

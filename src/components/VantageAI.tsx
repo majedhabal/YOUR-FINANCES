@@ -261,7 +261,7 @@ export const VantageAI: React.FC<VantageAIProps> = ({
           className="relative w-full max-w-[440px] h-[calc(100vh-2rem)] flex flex-col overflow-hidden box-border bg-white"
           style={{
             borderRadius: '24px',
-            boxShadow: '0px 10px 30px rgba(0, 0, 0, 0.05)',
+            boxShadow: '0px 12px 30px rgba(0, 0, 0, 0.05)',
             border: '1px solid #E1E8ED'
           }}
         >
@@ -272,12 +272,12 @@ export const VantageAI: React.FC<VantageAIProps> = ({
               <div className="flex flex-col">
                 <h3 className="font-headline-md text-base text-neutral-800 m-0" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{t('vantage_ai.title')}</h3>
                 <div className="flex flex-col gap-1 mt-0.5">
-                  <span className="text-[10px] text-[#366945] font-normal" style={{ fontFamily: "'Google Sans', sans-serif" }}>
+                  <span className="text-[12px] text-[#366945] font-normal" style={{ fontFamily: "'Google Sans', sans-serif" }}>
                     {t('vantage_ai.tokens', { count: typeof profile?.vantageAiTokens === 'number' ? profile.vantageAiTokens.toLocaleString() : '0' })}
                   </span>
                   <button
                     onClick={handleClaimSandboxTokens}
-                    className="px-2 py-0.5 text-[9px] font-bold text-[#366945] bg-[#366945]/10 border border-[#366945]/25 rounded-full hover:bg-[#366945]/20 transition-colors cursor-pointer w-fit"
+                    className="px-2 py-0.5 text-[12px] font-bold text-[#366945] bg-[#366945]/10 border border-[#366945]/25 rounded-full hover:bg-[#366945]/20 transition-colors cursor-pointer w-fit"
                     style={{ fontFamily: "'Google Sans', sans-serif" }}
                   >
                     {t('vantage_ai.claim_sandbox_tokens')}
@@ -290,7 +290,7 @@ export const VantageAI: React.FC<VantageAIProps> = ({
               {(messages.length > 0 || activeQuery) && (
                 <button
                   onClick={handleResetChat}
-                  className="mr-2 px-3 py-1.5 text-[10px] font-bold text-neutral-500 hover:text-neutral-800 bg-neutral-50 border border-neutral-100 rounded-full transition-all active:scale-95 flex items-center gap-1 cursor-pointer"
+                  className="mr-2 px-3 py-1.5 text-[12px] font-bold text-neutral-500 hover:text-neutral-800 bg-neutral-50 border border-neutral-100 rounded-full transition-all active:scale-95 flex items-center gap-1 cursor-pointer"
                   style={{ fontFamily: "'Google Sans', sans-serif" }}
                 >
                   <RefreshCw size={10} />

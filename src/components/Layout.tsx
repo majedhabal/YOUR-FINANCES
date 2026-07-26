@@ -154,7 +154,7 @@ export const Layout: React.FC<LayoutProps> = ({
   const isAnyModalOpen = isSalaryModalOpen || isTxDetailModalOpen || isAccountModalOpen || isAccountDetailModalOpen || isBreakdownModalOpen || isDebtModalOpen || isTxModalOpen || isMilestoneModalOpen || isDebtMilestoneModalOpen || isGoalTxModalOpen || isDebtTxModalOpen || isAIModalOpen || isPremiumModalOpen || isStatementVaultOpen || isBudgetDetailOpen || isSettingsSubViewOpen || isBudgetTxModalOpen;
   
   const isGoalOrDebtTxModalOpen = isGoalTxModalOpen || isDebtTxModalOpen;
-  const shouldHideHeaderFooter = isAccountModalOpen || isGoalOrDebtTxModalOpen || ((isAnyModalOpen || activeTab === 'ai') && activeTab !== 'accounts');
+  const shouldHideHeaderFooter = isAccountModalOpen || isGoalOrDebtTxModalOpen || isAccountDetailModalOpen || ((isAnyModalOpen || activeTab === 'ai') && activeTab !== 'accounts');
 
   console.log('Layout debug:', { isPremiumModalOpen, shouldHideHeaderFooter });
 

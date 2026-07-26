@@ -169,7 +169,7 @@ export const ReferralProgramView: React.FC<ReferralProgramViewProps> = ({
           >
             <ChevronLeft size={20} />
           </button>
-          <span className="text-[10px] sm:text-xs font-normal text-vantage-muted">{t('settings.referrals_rewards')}</span>
+          <span className="text-[12px] sm:text-xs font-normal text-vantage-muted">{t('settings.referrals_rewards')}</span>
         </div>
       </div>
 
@@ -187,7 +187,7 @@ export const ReferralProgramView: React.FC<ReferralProgramViewProps> = ({
           <Sparkles className="text-emerald-600 shrink-0 mt-0.5" size={18} />
           <div className="flex flex-col gap-0.5">
             <span className="text-xs font-bold text-emerald-800">Referral Promotion Active</span>
-            <span className="text-[11px] text-emerald-700 font-normal leading-relaxed">
+            <span className="text-[12px] text-emerald-700 font-normal leading-relaxed">
               Vantage AI is premium-unlocked for you. You have {daysRemaining} {daysRemaining === 1 ? 'day' : 'days'} remaining of complimentary intelligence logs!
             </span>
           </div>
@@ -208,7 +208,7 @@ export const ReferralProgramView: React.FC<ReferralProgramViewProps> = ({
           <p className="text-xs text-vantage-muted font-normal leading-relaxed">
             {t('referral_program.your_code_description')}
           </p>
-          <p className="text-[10px] italic text-vantage-muted font-normal mt-1">
+          <p className="text-[12px] italic text-vantage-muted font-normal mt-1">
             {t('referral_program.paid_user_hint')}
           </p>
 

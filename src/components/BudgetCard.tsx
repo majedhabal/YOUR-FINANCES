@@ -165,7 +165,7 @@ export const BudgetCard: React.FC<BudgetCardProps> = ({
       </div>
 
       {/* Progress slider bar at the bottom */}
-      <div className="text-[10px] text-neutral-400 mb-1" style={{ fontFamily: "'Google Sans', sans-serif" }}>{t('budget_card.used', 'Used')}</div>
+      <div className="text-[12px] text-neutral-400 mb-1" style={{ fontFamily: "'Google Sans', sans-serif" }}>{t('budget_card.used', 'Used')}</div>
       <div className={uiOverrides?.progressBarContainer || "w-full h-1.5 bg-neutral-100 rounded-full overflow-hidden"}>
         <div 
           style={{ width: `${progress}%` }}

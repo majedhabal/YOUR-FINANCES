@@ -110,7 +110,7 @@ export const AIConversationsHistoryView: React.FC<AIConversationsHistoryViewProp
         >
           <ChevronLeft size={20} />
         </button>
-        <span className="text-[10px] sm:text-xs font-normal text-vantage-muted">{t('ai_history.archived_dialogues')}</span>
+        <span className="text-[12px] sm:text-xs font-normal text-vantage-muted">{t('ai_history.archived_dialogues')}</span>
       </div>
 
       <div className="w-full max-w-2xl mx-auto px-6 flex-1 flex flex-col gap-6">
@@ -129,7 +129,7 @@ export const AIConversationsHistoryView: React.FC<AIConversationsHistoryViewProp
             </div>
             <div className="flex flex-col gap-1">
               <h3 className="text-sm font-bold text-vantage-text dark:text-neutral-200">{t('ai_history.no_conversations_found')}</h3>
-              <p className="text-[11px] text-vantage-muted max-w-xs font-normal leading-relaxed">
+              <p className="text-[12px] text-vantage-muted max-w-xs font-normal leading-relaxed">
                 {t('ai_history.no_conversations_desc')}
               </p>
             </div>
@@ -162,7 +162,7 @@ export const AIConversationsHistoryView: React.FC<AIConversationsHistoryViewProp
                         <span className="font-bold text-vantage-text dark:text-neutral-150 text-xs sm:text-sm truncate pr-2 group-hover:text-emerald-600 dark:group-hover:text-vantage-green transition-colors">
                           {convo.title}
                         </span>
-                        <div className="flex items-center gap-1.5 text-neutral-400 dark:text-neutral-500 font-normal text-[9px]">
+                        <div className="flex items-center gap-1.5 text-neutral-400 dark:text-neutral-500 font-normal text-[12px]">
                           <Calendar size={10} />
                           <span>{dateStr}</span>
                           <span className="w-1 h-1 rounded-full bg-neutral-300 dark:bg-neutral-700"></span>

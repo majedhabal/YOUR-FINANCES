@@ -327,7 +327,7 @@ export const RecurringTransactionsView: React.FC<RecurringTransactionsViewProps>
             <span className="text-xs font-bold text-neutral-800">{t('recurring_transactions_view.google_sync')}</span>
             <div className="flex items-center gap-1.5 mt-1">
               <span className={`w-1.5 h-1.5 rounded-full ${googleToken ? 'bg-emerald-500 animate-pulse' : 'bg-neutral-400'}`} />
-              <span className="text-[10px] font-normal text-neutral-500">
+              <span className="text-[12px] font-normal text-neutral-500">
                 {googleToken ? t('recurring_transactions_view.sync_active') : t('recurring_transactions_view.sync_disconnected')}
               </span>
             </div>
@@ -453,7 +453,7 @@ export const RecurringTransactionsView: React.FC<RecurringTransactionsViewProps>
                         <span className={`text-sm font-bold ${isIncome ? 'text-emerald-600' : 'text-neutral-900'}`}>
                           {isIncome ? '' : '-'}{acc?.currency || 'AED'} {(rec.amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
-                        <span className="text-[10px] text-neutral-400 font-normal mt-0.5 truncate max-w-[120px]">
+                        <span className="text-[12px] text-neutral-400 font-normal mt-0.5 truncate max-w-[120px]">
                           {acc?.name || 'Vantage wallet'}
                         </span>
                       </div>
@@ -494,13 +494,13 @@ export const RecurringTransactionsView: React.FC<RecurringTransactionsViewProps>
                             return `Next payout: ${formatted}`;
                           })()}
                         </span>
-                        <span className="text-[10px] text-neutral-400 font-normal">
+                        <span className="text-[12px] text-neutral-400 font-normal">
                           Confirmed
                         </span>
                       </div>
                       
                       <div className="p-3 bg-neutral-50 rounded-xl flex flex-col gap-0.5 col-span-2 border border-neutral-100">
-                        <span className="text-[10px] font-normal text-neutral-400 flex items-center gap-1">
+                        <span className="text-[12px] font-normal text-neutral-400 flex items-center gap-1">
                           <Clock size={10} className="text-neutral-400" /> Reminder offset
                         </span>
                         <span className="text-xs font-bold text-neutral-700 mt-0.5">
@@ -515,11 +515,11 @@ export const RecurringTransactionsView: React.FC<RecurringTransactionsViewProps>
                     <div className="flex items-center justify-between p-3 bg-neutral-50 rounded-xl mt-3 border border-neutral-100">
                       <div className="flex items-center gap-2">
                         <Calendar size={12} className={rec.isSyncedToCalendar ? 'text-emerald-500' : 'text-neutral-400'} />
-                        <span className="text-[10px] font-normal text-neutral-600">Google calendar sync</span>
+                        <span className="text-[12px] font-normal text-neutral-600">Google calendar sync</span>
                       </div>
                       <button 
                         onClick={() => handleToggleSyncToCalendar(rec)}
-                        className={`flex items-center gap-1.5 py-1 px-2.5 rounded-lg text-[10px] font-bold transition-all ${
+                        className={`flex items-center gap-1.5 py-1 px-2.5 rounded-lg text-[12px] font-bold transition-all ${
                           rec.isSyncedToCalendar 
                             ? 'text-emerald-700 bg-emerald-50 border border-emerald-200' 
                             : 'text-neutral-600 border border-neutral-200 bg-white hover:bg-neutral-50 hover:text-neutral-900'
@@ -580,7 +580,7 @@ export const RecurringTransactionsView: React.FC<RecurringTransactionsViewProps>
             {fetchingEvents ? (
               <div className="py-12 flex flex-col items-center gap-3">
                 <RefreshCw className="text-neutral-400 animate-spin" size={16} />
-                <span className="text-[10px] text-neutral-400 font-normal">{t('recurring_transactions_view.accessing_stream')}</span>
+                <span className="text-[12px] text-neutral-400 font-normal">{t('recurring_transactions_view.accessing_stream')}</span>
               </div>
             ) : !googleToken ? (
               <div className="py-8 flex flex-col items-center text-center gap-3">
@@ -589,21 +589,21 @@ export const RecurringTransactionsView: React.FC<RecurringTransactionsViewProps>
                 </div>
                 <div className="flex flex-col gap-1 max-w-[200px]">
                   <span className="text-xs font-bold text-neutral-700">{t('recurring_transactions_view.calendar_inactive')}</span>
-                  <p className="text-[10px] text-neutral-400 leading-normal font-normal">
+                  <p className="text-[12px] text-neutral-400 leading-normal font-normal">
                     {t('recurring_transactions_view.connect_workspace_desc')}
                   </p>
                 </div>
                 <button
                   onClick={handleLinkGoogle}
-                  className="mt-2 py-1.5 px-3 bg-neutral-900 hover:bg-neutral-800 rounded-lg text-[10px] font-bold text-white transition-all min-h-[28px]"
+                  className="mt-2 py-1.5 px-3 bg-neutral-900 hover:bg-neutral-800 rounded-lg text-[12px] font-bold text-white transition-all min-h-[28px]"
                 >
                   {t('recurring_transactions_view.sync_authorize')}
                 </button>
               </div>
             ) : previewEvents.length === 0 ? (
               <div className="py-8 flex flex-col items-center text-center gap-2">
-                <span className="text-[10px] font-bold text-neutral-500 italic">{t('recurring_transactions_view.no_events_mapped')}</span>
-                <p className="text-[10px] text-neutral-400 leading-relaxed max-w-[190px] font-normal">
+                <span className="text-[12px] font-bold text-neutral-500 italic">{t('recurring_transactions_view.no_events_mapped')}</span>
+                <p className="text-[12px] text-neutral-400 leading-relaxed max-w-[190px] font-normal">
                   {t('recurring_transactions_view.no_events_desc')}
                 </p>
               </div>
@@ -618,7 +618,7 @@ export const RecurringTransactionsView: React.FC<RecurringTransactionsViewProps>
                       <span className="text-xs font-bold text-neutral-700 truncate max-w-[140px]">
                         {event.summary}
                       </span>
-                      <span className="text-[9px] text-neutral-400 font-normal shrink-0">
+                      <span className="text-[12px] text-neutral-400 font-normal shrink-0">
                         {event.start?.dateTime 
                           ? new Date(event.start.dateTime).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
                           : event.start?.date 
@@ -628,7 +628,7 @@ export const RecurringTransactionsView: React.FC<RecurringTransactionsViewProps>
                       </span>
                     </div>
                     {event.description && (
-                      <p className="text-[10px] text-neutral-400 font-normal leading-normal line-clamp-2">
+                      <p className="text-[12px] text-neutral-400 font-normal leading-normal line-clamp-2">
                         {event.description}
                       </p>
                     )}
@@ -671,7 +671,7 @@ export const RecurringTransactionsView: React.FC<RecurringTransactionsViewProps>
                <div className="p-6 border-b border-neutral-100 flex justify-between items-center bg-neutral-50">
                   <div className="flex flex-col">
                      <h3 className="text-base font-bold text-neutral-900">Edit schedule configuration</h3>
-                     <p className="text-[11px] text-neutral-500 font-normal mt-0.5">Modify parameters for upcoming automation generation</p>
+                     <p className="text-[12px] text-neutral-500 font-normal mt-0.5">Modify parameters for upcoming automation generation</p>
                   </div>
                   <button onClick={() => setEditingItem(null)} className="p-2 bg-neutral-100 hover:bg-neutral-200 rounded-xl transition-colors">
                      <X size={16} className="text-neutral-500" />
@@ -680,7 +680,7 @@ export const RecurringTransactionsView: React.FC<RecurringTransactionsViewProps>
 
                <div className="flex-1 overflow-y-auto p-6 space-y-5 scrollbar-hide">
                   <div className="flex flex-col items-center gap-1">
-                     <span className="text-[10px] font-bold text-neutral-400">Transaction amount</span>
+                     <span className="text-[12px] font-bold text-neutral-400">Transaction amount</span>
                      <div className="flex items-baseline gap-1.5">
                         <span className="text-lg font-bold text-neutral-400">
                           {accounts?.find(a => a.id === (editingItem.sourceAccountId || editingItem.accountId))?.currency || 'AED'}
@@ -697,7 +697,7 @@ export const RecurringTransactionsView: React.FC<RecurringTransactionsViewProps>
 
                   <div className="grid grid-cols-2 gap-4">
                      <div className="flex flex-col gap-1.5">
-                        <label className="text-[10px] font-bold text-neutral-400 px-1">Category</label>
+                        <label className="text-[12px] font-bold text-neutral-400 px-1">Category</label>
                         <div className="relative">
                            <select 
                               value={editCategory}
@@ -714,7 +714,7 @@ export const RecurringTransactionsView: React.FC<RecurringTransactionsViewProps>
                         </div>
                      </div>
                      <div className="flex flex-col gap-1.5">
-                        <label className="text-[10px] font-bold text-neutral-400 px-1">Subcategory</label>
+                        <label className="text-[12px] font-bold text-neutral-400 px-1">Subcategory</label>
                         <div className="relative">
                            <select 
                               value={editSubcategory}
@@ -734,7 +734,7 @@ export const RecurringTransactionsView: React.FC<RecurringTransactionsViewProps>
 
                   <div className="grid grid-cols-2 gap-4">
                      <div className="flex flex-col gap-1.5">
-                        <label className="text-[10px] font-bold text-neutral-400 px-1">Frequence type</label>
+                        <label className="text-[12px] font-bold text-neutral-400 px-1">Frequence type</label>
                         <div className="relative">
                            <select 
                               value={editRecurrency}
@@ -748,7 +748,7 @@ export const RecurringTransactionsView: React.FC<RecurringTransactionsViewProps>
                         </div>
                      </div>
                      <div className="flex flex-col gap-1.5">
-                        <label className="text-[10px] font-bold text-neutral-400 px-1">Multiplier index</label>
+                        <label className="text-[12px] font-bold text-neutral-400 px-1">Multiplier index</label>
                         <input 
                            type="number"
                            min="1"
@@ -760,7 +760,7 @@ export const RecurringTransactionsView: React.FC<RecurringTransactionsViewProps>
                   </div>
 
                   <div className="flex flex-col gap-1.5">
-                     <label className="text-[10px] font-bold text-neutral-400 px-1">Schedule label notes</label>
+                     <label className="text-[12px] font-bold text-neutral-400 px-1">Schedule label notes</label>
                      <textarea 
                         value={editNotes}
                         onChange={(e) => setEditNotes(e.target.value)}
@@ -770,7 +770,7 @@ export const RecurringTransactionsView: React.FC<RecurringTransactionsViewProps>
                   </div>
 
                   <div className="flex flex-col gap-1.5">
-                     <label className="text-[10px] font-bold text-neutral-400 px-1">Schedule index date</label>
+                     <label className="text-[12px] font-bold text-neutral-400 px-1">Schedule index date</label>
                      <div className="relative">
                         <input 
                            type="date"

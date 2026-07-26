@@ -165,8 +165,8 @@ export const BudgetSection: React.FC<{
               className="overflow-hidden bg-neutral-50 rounded-xl border border-neutral-100 p-4"
             >
                <div className="mb-3 flex items-center justify-between">
-                  <span className="text-[10px] font-bold text-neutral-400 tracking-wider" style={{ fontFamily: "'Google Sans', sans-serif" }}>{t('budget_section.spending_trend_14_days', 'Spending Trend (Last 14 Days)')}</span>
-                  <span className="text-[10px] font-bold text-[#366945]" style={{ fontFamily: "'Google Sans', sans-serif" }}>{b.currency || 'AED'}</span>
+                  <span className="text-[12px] font-bold text-neutral-400 tracking-wider" style={{ fontFamily: "'Google Sans', sans-serif" }}>{t('budget_section.spending_trend_14_days', 'Spending Trend (Last 14 Days)')}</span>
+                  <span className="text-[12px] font-bold text-[#366945]" style={{ fontFamily: "'Google Sans', sans-serif" }}>{b.currency || 'AED'}</span>
                </div>
                <div className="h-32 w-full">
                   <ResponsiveContainer width="100%" height="100%">
@@ -279,7 +279,7 @@ export const BudgetSection: React.FC<{
              />
            </svg>
            <div className="absolute text-center">
-             <div className="text-[10px] text-neutral-400" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}>{t('budget_section.spent_percent', '{{percent}}% spent', { percent: spentPercentage.toFixed(0) })}</div>
+             <div className="text-[12px] text-neutral-400" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}>{t('budget_section.spent_percent', '{{percent}}% spent', { percent: spentPercentage.toFixed(0) })}</div>
              <div className="text-lg font-bold text-[#111C2D]" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}>{baseCurrency} {totalSpent.toLocaleString()}</div>
            </div>
         </div>

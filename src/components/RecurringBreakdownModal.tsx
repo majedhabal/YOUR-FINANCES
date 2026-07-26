@@ -125,7 +125,7 @@ export const RecurringBreakdownModal: React.FC<RecurringBreakdownModalProps> = (
               {/* Top Overview Cards Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 shrink-0">
                 <div className="p-3 rounded-xl bg-[#A6DDB1]/10 border border-[#A6DDB1]/20 flex flex-col gap-0.5">
-                  <span style={{ fontWeight: 400, color: '#1E2229' }} className="text-[10px]">{t('recurring_breakdown_modal.income')}</span>
+                  <span style={{ fontWeight: 400, color: '#1E2229' }} className="text-[12px]">{t('recurring_breakdown_modal.income')}</span>
                   <span 
                     style={{ 
                       fontWeight: 600, 
@@ -139,7 +139,7 @@ export const RecurringBreakdownModal: React.FC<RecurringBreakdownModalProps> = (
                 </div>
                 
                 <div className="p-3 rounded-xl bg-white/40 border border-neutral-100/50 flex flex-col gap-0.5">
-                  <span style={{ fontWeight: 400, color: '#1E2229' }} className="text-[10px]">{t('recurring_breakdown_modal.expense')}</span>
+                  <span style={{ fontWeight: 400, color: '#1E2229' }} className="text-[12px]">{t('recurring_breakdown_modal.expense')}</span>
                   <span 
                     style={{ 
                       fontWeight: 600, 
@@ -155,7 +155,7 @@ export const RecurringBreakdownModal: React.FC<RecurringBreakdownModalProps> = (
                 <div className={`p-3 rounded-xl border flex flex-col gap-0.5 ${
                   netSurplus >= 0 ? 'bg-[#A6DDB1]/10 border-[#A6DDB1]/20 text-[#1E2229]' : 'bg-rose-500/10 border-rose-500/20 text-[#1E2229]'
                 }`}>
-                  <span style={{ fontWeight: 400 }} className="text-[10px]">{t('recurring_breakdown_modal.surplus')}</span>
+                  <span style={{ fontWeight: 400 }} className="text-[12px]">{t('recurring_breakdown_modal.surplus')}</span>
                   <span 
                     style={{ 
                       fontWeight: 600, 
@@ -173,13 +173,13 @@ export const RecurringBreakdownModal: React.FC<RecurringBreakdownModalProps> = (
               <div className="px-4 py-2 bg-white/40 border border-neutral-100/50 rounded-xl flex items-center justify-between shrink-0">
                 <div className="flex items-center gap-2">
                   <Info size={14} className="text-neutral-400" />
-                  <span style={{ fontWeight: 400, color: '#1E2229' }} className="text-[11px]">{t('recurring_breakdown_modal.health_rate')}</span>
+                  <span style={{ fontWeight: 400, color: '#1E2229' }} className="text-[12px]">{t('recurring_breakdown_modal.health_rate')}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span style={{ fontWeight: 600, color: '#1E2229' }} className="text-[12px]">{ratio.toFixed(1)}%</span>
                   <span 
                     style={{ fontWeight: 600, fontFamily: "'Google Sans', sans-serif" }}
-                    className={`px-2 py-0.5 text-[9px] rounded-full ${
+                    className={`px-2 py-0.5 text-[12px] rounded-full ${
                       status === 'Elite' ? 'bg-[#A6DDB1]/25 text-emerald-800' :
                       status === 'Stable' ? 'bg-amber-100/60 text-amber-800' :
                       'bg-rose-100/60 text-rose-800'
@@ -206,12 +206,12 @@ export const RecurringBreakdownModal: React.FC<RecurringBreakdownModalProps> = (
                     >
                       {t('recurring_breakdown_modal.incomes_list')}
                     </span>
-                    <span className="text-[10px] text-neutral-400 font-normal">({incomes.length})</span>
+                    <span className="text-[12px] text-neutral-400 font-normal">({incomes.length})</span>
                   </div>
 
                   <div className="space-y-1.5">
                     {incomes.length === 0 ? (
-                      <div className="text-neutral-400 text-[11px] py-4 text-center border border-dashed border-neutral-100/50 rounded-xl font-normal">
+                      <div className="text-neutral-400 text-[12px] py-4 text-center border border-dashed border-neutral-100/50 rounded-xl font-normal">
                         {t('recurring_breakdown_modal.no_incomes')}
                       </div>
                     ) : (
@@ -325,12 +325,12 @@ export const RecurringBreakdownModal: React.FC<RecurringBreakdownModalProps> = (
                     >
                       {t('recurring_breakdown_modal.expenses_list')}
                     </span>
-                    <span className="text-[10px] text-neutral-400 font-normal">({expenses.length})</span>
+                    <span className="text-[12px] text-neutral-400 font-normal">({expenses.length})</span>
                   </div>
 
                   <div className="space-y-1.5">
                     {expenses.length === 0 ? (
-                      <div className="text-neutral-400 text-[11px] py-4 text-center border border-dashed border-neutral-100/50 rounded-xl font-normal">
+                      <div className="text-neutral-400 text-[12px] py-4 text-center border border-dashed border-neutral-100/50 rounded-xl font-normal">
                         {t('recurring_breakdown_modal.no_expenses')}
                       </div>
                     ) : (
@@ -432,7 +432,7 @@ export const RecurringBreakdownModal: React.FC<RecurringBreakdownModalProps> = (
               </div>
 
               {/* Disclaimer text footer */}
-              <div style={{ fontWeight: 400, fontFamily: "'Google Sans', sans-serif" }} className="text-[10px] text-neutral-400 text-center border-t border-neutral-200/55 pt-2 leading-tight shrink-0">
+              <div style={{ fontWeight: 400, fontFamily: "'Google Sans', sans-serif" }} className="text-[12px] text-neutral-400 text-center border-t border-neutral-200/55 pt-2 leading-tight shrink-0">
                 {t('recurring_breakdown_modal.disclaimer')}
               </div>
             </motion.div>

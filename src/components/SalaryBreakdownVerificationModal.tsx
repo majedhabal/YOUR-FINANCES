@@ -295,7 +295,7 @@ export const SalaryBreakdownVerificationModal: React.FC<SalaryBreakdownVerificat
                 <span className="text-neutral-800 text-base font-bold tracking-tight" style={{ fontWeight: 700 }}>
                   {t('salary_breakdown_verification.verify_allocations', 'Verify monthly budget allocations')}
                 </span>
-                <span className="text-[11px] text-neutral-400 font-normal">
+                <span className="text-[12px] text-neutral-400 font-normal">
                   {t('salary_breakdown_verification.configure_lock_entries', 'Configure and lock payroll entries for')} {monthName} {year}
                 </span>
               </div>
@@ -324,16 +324,16 @@ export const SalaryBreakdownVerificationModal: React.FC<SalaryBreakdownVerificat
                 }}
               >
                 <div className="flex items-center justify-between gap-1 mb-3">
-                  <span className="text-neutral-500 text-[11px] font-normal" style={{ fontWeight: 400 }}>
+                  <span className="text-neutral-500 text-[12px] font-normal" style={{ fontWeight: 400 }}>
                     {t('salary_breakdown_verification.tier1_validation', 'Tier 1: Parent payroll validation')}
                   </span>
                   
                   {isTier1Approved ? (
-                    <span className="text-[10px] bg-emerald-50 text-emerald-650 border border-emerald-100 px-2.5 py-0.5 rounded-full font-bold">
+                    <span className="text-[12px] bg-emerald-50 text-emerald-650 border border-emerald-100 px-2.5 py-0.5 rounded-full font-bold">
                       {t('salary_breakdown_verification.payout_confirmed', 'Payout confirmed')}
                     </span>
                   ) : (
-                    <span className="text-[10px] bg-indigo-50 text-indigo-650 border border-indigo-100 px-2.5 py-0.5 rounded-full font-bold animate-pulse">
+                    <span className="text-[12px] bg-indigo-50 text-indigo-650 border border-indigo-100 px-2.5 py-0.5 rounded-full font-bold animate-pulse">
                       {t('salary_breakdown_verification.awaiting_payout', 'Awaiting payout')}
                     </span>
                   )}
@@ -411,8 +411,8 @@ export const SalaryBreakdownVerificationModal: React.FC<SalaryBreakdownVerificat
                     />
                   </div>
                   <div className="flex justify-between items-center mt-1.5">
-                    <span className="text-[10px] text-neutral-400 font-normal">{t('salary_breakdown_verification.completion_percent', 'Completion percentage')}</span>
-                    <span className="text-[10px] text-indigo-650 font-bold" style={{ fontWeight: 700 }}>{currentProgressPercent}%</span>
+                    <span className="text-[12px] text-neutral-400 font-normal">{t('salary_breakdown_verification.completion_percent', 'Completion percentage')}</span>
+                    <span className="text-[12px] text-indigo-650 font-bold" style={{ fontWeight: 700 }}>{currentProgressPercent}%</span>
                   </div>
                 </div>
               </div>
@@ -422,10 +422,10 @@ export const SalaryBreakdownVerificationModal: React.FC<SalaryBreakdownVerificat
             {/* RIGHT SIDE COLUMN (col-span-12 on mobile, col-span-7 on desktop): Active itemized checklist queue */}
             <div className="md:col-span-7 flex flex-col gap-3">
               <div className="flex items-center justify-between mb-0.5">
-                <span className="text-neutral-500 text-[11px] font-bold tracking-tight" style={{ fontWeight: 700, textTransform: 'none' }}>
+                <span className="text-neutral-500 text-[12px] font-bold tracking-tight" style={{ fontWeight: 700, textTransform: 'none' }}>
                   {t('salary_breakdown_verification.itemized_checklist', 'Itemized allocation checklist')}
                 </span>
-                <span className="text-[10px] bg-neutral-50 text-neutral-500 border border-neutral-150 px-2 py-0.5 rounded-full font-sans">
+                <span className="text-[12px] bg-neutral-50 text-neutral-500 border border-neutral-150 px-2 py-0.5 rounded-full font-sans">
                   {totalItemsCount - confirmedItemsCount} {t('salary_breakdown_verification.remaining', 'remaining')}
                 </span>
               </div>
@@ -434,7 +434,7 @@ export const SalaryBreakdownVerificationModal: React.FC<SalaryBreakdownVerificat
               <div 
                 className="flex-1 flex flex-col gap-2 relative"
                 style={{
-                  gap: 'clamp(6px, 1.1vw, 10px)'
+                  gap: 'clamp(6px, 1.1vw, 12px)'
                 }}
               >
                 {!isTier1Approved && (
@@ -468,7 +468,7 @@ export const SalaryBreakdownVerificationModal: React.FC<SalaryBreakdownVerificat
                         key={`modal-item-row-${item.key}`}
                         className="border border-neutral-150/90 rounded-2xl flex items-center justify-between bg-[#FFFFFF] hover:border-neutral-250 transition-colors"
                         style={{
-                          padding: 'clamp(8px, 1.3vw, 16px)'
+                          padding: 'clamp(12px, 1.3vw, 16px)'
                         }}
                       >
                         {/* Title, Emoji, Type with layout clamping */}
@@ -478,10 +478,10 @@ export const SalaryBreakdownVerificationModal: React.FC<SalaryBreakdownVerificat
                           </div>
                           
                           <div className="flex flex-col min-w-0">
-                            <span className="text-neutral-800 font-bold truncate tracking-tight" style={{ fontSize: 'clamp(11px, 1.25vw, 13px)', fontWeight: 700 }}>
+                            <span className="text-neutral-800 font-bold truncate tracking-tight" style={{ fontSize: 'clamp(12px, 1.25vw, 13px)', fontWeight: 700 }}>
                               {item.label}
                             </span>
-                            <span className="text-[9px] text-neutral-400 font-normal" style={{ textTransform: 'none' }}>
+                            <span className="text-[12px] text-neutral-400 font-normal" style={{ textTransform: 'none' }}>
                               {isTransfer ? t('salary_breakdown_verification.account_transfer', 'Account transfer') : t('salary_breakdown_verification.budget_envelope', 'Budget envelope')}
                             </span>
                           </div>
@@ -489,12 +489,12 @@ export const SalaryBreakdownVerificationModal: React.FC<SalaryBreakdownVerificat
 
                         {/* Amount/Confirm triggers alignment */}
                         <div className="flex items-center gap-3 shrink-0 ml-2">
-                          <span className="text-neutral-900 font-bold tracking-tight text-right font-mono" style={{ fontSize: 'clamp(11px, 1.2vw, 13.5px)', fontWeight: 700 }}>
+                          <span className="text-neutral-900 font-bold tracking-tight text-right font-mono" style={{ fontSize: 'clamp(12px, 1.2vw, 13.5px)', fontWeight: 700 }}>
                             {sb.currency || 'AED'} {allocatedAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </span>
 
                           {isItemConfirmed ? (
-                            <div className="flex items-center justify-center w-[120px] py-1.5 bg-emerald-50 border border-emerald-150 rounded-xl text-emerald-700 text-[10px] font-bold gap-1 font-sans select-none" style={{ fontWeight: 700 }}>
+                            <div className="flex items-center justify-center w-[120px] py-1.5 bg-emerald-50 border border-emerald-150 rounded-xl text-emerald-700 text-[12px] font-bold gap-1 font-sans select-none" style={{ fontWeight: 700 }}>
                               <Check size={11} className="stroke-[2.5]" />
                               {t('salary_breakdown_verification.confirmed', 'Confirmed')}
                             </div>
@@ -502,7 +502,7 @@ export const SalaryBreakdownVerificationModal: React.FC<SalaryBreakdownVerificat
                             <button
                               disabled={!isTier1Approved || isItemLoading}
                               onClick={() => handleApproveTier2(item)}
-                              className="w-[120px] py-1.5 bg-neutral-900 hover:bg-neutral-800 disabled:opacity-30 text-[#FFFFFF] rounded-xl text-[10px] font-bold transition-all flex items-center justify-center gap-1 cursor-pointer font-sans"
+                              className="w-[120px] py-1.5 bg-neutral-900 hover:bg-neutral-800 disabled:opacity-30 text-[#FFFFFF] rounded-xl text-[12px] font-bold transition-all flex items-center justify-center gap-1 cursor-pointer font-sans"
                               style={{ fontWeight: 700 }}
                             >
                               {isItemLoading ? (

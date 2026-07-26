@@ -294,7 +294,7 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, uid
                           }`}
                         >
                           {plan.badge && (
-                            <span className="absolute right-4 top-4 bg-emerald-50 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                            <span className="absolute right-4 top-4 bg-emerald-50 text-emerald-700 text-[12px] font-bold px-2 py-0.5 rounded-full">
                               {plan.badge}
                             </span>
                           )}
@@ -307,7 +307,7 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, uid
                               <span className="text-sm font-bold text-neutral-800 flex items-center gap-1.5">
                                 {plan.name}
                                 {isUserCurrent && (
-                                  <span className="text-[9px] bg-neutral-100 text-neutral-600 px-1.5 py-0.5 rounded-full font-bold">
+                                  <span className="text-[12px] bg-neutral-100 text-neutral-600 px-1.5 py-0.5 rounded-full font-bold">
                                     Current
                                   </span>
                                 )}
@@ -320,7 +320,7 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, uid
 
                           {/* Currency Conversions Equivalent */}
                           {plan.priceAED > 0 && (
-                            <div className="text-[10px] text-neutral-500 font-normal pl-1 px-1 bg-neutral-50 rounded py-1 border border-neutral-100/50">
+                            <div className="text-[12px] text-neutral-500 font-normal pl-1 px-1 bg-neutral-50 rounded py-1 border border-neutral-100/50">
                               {plan.priceAED} AED
                             </div>
                           )}
@@ -378,7 +378,7 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, uid
                             {isProcessing ? 'Processing...' : 'Cancel Subscription'}
                         </button>
                     )}
-                    <p className="text-[10px] text-center text-neutral-500 font-normal">
+                    <p className="text-[12px] text-center text-neutral-500 font-normal">
                       Cancel anytime. Subscription values converted securely based on official exchange index rates.
                     </p>
                   </div>
@@ -401,13 +401,13 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, uid
 
                   <div className="flex flex-col gap-5">
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-[10px] font-bold text-neutral-500 tracking-wider">PAYMENT INSTRUMENT</label>
+                      <label className="text-[12px] font-bold text-neutral-500 tracking-wider">PAYMENT INSTRUMENT</label>
                       <div className="p-4 rounded-xl bg-neutral-50 border border-neutral-200 flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <CreditCard className="text-neutral-500" size={20} />
                           <span className="text-sm font-bold text-neutral-800">•••• •••• •••• 8812</span>
                         </div>
-                        <span className="text-[10px] font-bold text-neutral-400">Mock card</span>
+                        <span className="text-[12px] font-bold text-neutral-400">Mock card</span>
                       </div>
                     </div>
 

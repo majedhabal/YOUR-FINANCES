@@ -259,13 +259,13 @@ export const Transactions: React.FC<TransactionsProps> = ({
           <div className="flex gap-2">
             <button 
               onClick={() => setViewMode('future')}
-              className={`p-[6px] rounded-[20px] h-[40px] text-[14px] w-[150px] transition-all font-bold flex items-center justify-center ${viewMode === 'future' ? 'text-[#111C2D] bg-[#A6DDB1]' : 'text-[#57606F]'}`}
+              className={`p-[6px] rounded-[20px] h-[40px] text-[12px] w-[150px] transition-all font-bold flex items-center justify-center ${viewMode === 'future' ? 'text-[#111C2D] bg-[#A6DDB1]' : 'text-[#57606F]'}`}
             >
               {t('activity.future_transactions')}
             </button>
             <button 
               onClick={() => setViewMode('current')}
-              className={`p-[6px] rounded-[20px] h-[40px] text-[14px] w-[150px] transition-all font-bold flex items-center justify-center ${viewMode === 'current' ? 'text-[#111C2D] bg-[#A6DDB1]' : 'text-[#57606F]'}`}
+              className={`p-[6px] rounded-[20px] h-[40px] text-[12px] w-[150px] transition-all font-bold flex items-center justify-center ${viewMode === 'current' ? 'text-[#111C2D] bg-[#A6DDB1]' : 'text-[#57606F]'}`}
             >
               {t('activity.current_transactions')}
             </button>
@@ -513,19 +513,19 @@ const TransactionRow: React.FC<{ tx: Transaction; accounts: any[]; onClick: () =
           {getCatIcon()}
         </div>
         <div className="flex flex-col min-w-0 flex-1">
-          <span className="text-[14px] font-normal text-[#111C2D] truncate font-sans">
+          <span className="text-[12px] font-normal text-[#111C2D] truncate font-sans">
             {tx.isUpcoming ? `${displayLabel} — ${new Date(tx.date).toLocaleDateString(i18nextInstance.language, { month: 'short', day: 'numeric', year: 'numeric' })}` : displayLabel}
           </span>
-          <div className="flex items-center gap-1.5 text-[14px] text-neutral-400 font-bold mt-0.5 font-sans">
+          <div className="flex items-center gap-1.5 text-[12px] text-neutral-400 font-bold mt-0.5 font-sans">
             <span className="truncate">{targetAccount?.name || t('common.checking_account')}</span>
           </div>
         </div>
       </div>
       <div className="shrink-0 pl-4 text-right flex flex-col items-end">
-        <span className={`text-[14px] font-bold font-sans ${isInflow ? 'text-[#366945]' : 'text-[#111C2D]'}`}>
+        <span className={`text-[12px] font-bold font-sans ${isInflow ? 'text-[#366945]' : 'text-[#111C2D]'}`}>
           {isInflow ? '+' : '-'}{targetAccount?.currency || 'AED'} {tx.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </span>
-        <span className="text-[11px] text-neutral-400 font-bold font-sans mt-0.5">
+        <span className="text-[12px] text-neutral-400 font-bold font-sans mt-0.5">
           {tx.time || '10:42 AM'}
         </span>
       </div>

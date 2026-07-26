@@ -1145,7 +1145,7 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
                       <select
                         value={newIncomeAccountId}
                         onChange={(e) => setNewIncomeAccountId(e.target.value)}
-                        className="w-[273px] ml-0 bg-[#FFFFFF] border border-[#E5E7EB] text-[#1E2229] p-3 pl-[10px] pr-[10px] rounded-[12px] outline-none breakdown-secondary-text cursor-pointer appearance-none"
+                        className="w-[273px] ml-0 bg-[#FFFFFF] border border-[#E5E7EB] text-[#1E2229] p-3 pl-[12px] pr-[12px] rounded-[12px] outline-none breakdown-secondary-text cursor-pointer appearance-none"
                       >
                         <option value="" disabled>{t('salary_breakdown_modal.select_account', 'Select Target Account...')}</option>
                         {uniqueDbAccounts.map((acc, index) => (
@@ -1206,7 +1206,7 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
                   <button
                     type="button"
                     onClick={() => setIsCreatingSchedule(false)}
-                    className="flex-1 py-2.5 bg-white border border-[#E1E8ED] text-[#1E2229] breakdown-secondary-text rounded-[10px] hover:bg-neutral-50 transition-all cursor-pointer font-normal text-center"
+                    className="flex-1 py-2.5 bg-white border border-[#E1E8ED] text-[#1E2229] breakdown-secondary-text rounded-[12px] hover:bg-neutral-50 transition-all cursor-pointer font-normal text-center"
                   >
                     {t('salary_breakdown_modal.cancel', 'Cancel')}
                   </button>
@@ -1393,7 +1393,7 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
                               <div className="pt-4 space-y-3">
                                 <div className="flex items-center gap-2 px-1">
                                   <div className="h-1 w-1 rounded-full bg-[#A6DDB1]" />
-                                  <span className="text-[10px] font-normal text-[#57606F]">{t('detected_recent_incomes', 'Detected Recent Incomes')}</span>
+                                  <span className="text-[12px] font-normal text-[#57606F]">{t('detected_recent_incomes', 'Detected Recent Incomes')}</span>
                                 </div>
                                 
                                 {recentIncomeTransactions.filter(tx => !dbRecurringIncomes.some(inc => inc.title === tx.notes || inc.notes === tx.notes)).map((tx, index) => (
@@ -1409,7 +1409,7 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
                                         <p className="text-sm font-bold text-[#111C2D]" style={{ fontFamily: "'Google Sans', sans-serif" }}>
                                           {tx.notes || t('income_transaction', 'Income Transaction')}
                                         </p>
-                                        <p className="text-[10px] text-[#57606F]" style={{ fontFamily: "'Google Sans', sans-serif" }}>
+                                        <p className="text-[12px] text-[#57606F]" style={{ fontFamily: "'Google Sans', sans-serif" }}>
                                           {t('recorded_on', 'Recorded on')} {new Date(tx.date).toLocaleDateString()}
                                         </p>
                                       </div>
@@ -1421,7 +1421,7 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
                                         setNewIncomeAccountId(tx.accountId);
                                         setIsCreatingSchedule(true);
                                       }}
-                                      className="px-3 py-1.5 bg-white border border-[#E5E7EB] text-[#111C2D] rounded-lg text-[10px] font-bold hover:border-[#A6DDB1] hover:text-[#366945] transition-all"
+                                      className="px-3 py-1.5 bg-white border border-[#E5E7EB] text-[#111C2D] rounded-lg text-[12px] font-bold hover:border-[#A6DDB1] hover:text-[#366945] transition-all"
                                     >
                                       {t('link_source', 'Link Source')}
                                     </button>
@@ -1440,12 +1440,12 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
                     
                     {/* Header with link button to manage active categories precisely */}
                     <div className="flex items-center justify-between px-0.5">
-                      <span className="text-[clamp(10px,2.5vw,12px)] text-neutral-400 font-normal">{t('salary_breakdown_modal.budget_allocation', 'Budget Allocation')}</span>
+                      <span className="text-[clamp(12px,2.5vw,12px)] text-neutral-400 font-normal">{t('salary_breakdown_modal.budget_allocation', 'Budget Allocation')}</span>
                       <button
                         type="button"
                         onClick={() => setIsManageCategoriesOpen(true)}
                         style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
-                        className="text-[#A6DDB1] hover:brightness-110 active:scale-95 text-[clamp(10px,2.5vw,11.5px)] pl-2 font-normal transition-all cursor-pointer bg-white border-none outline-none select-none"
+                        className="text-[#A6DDB1] hover:brightness-110 active:scale-95 text-[clamp(12px,2.5vw,12px)] pl-2 font-normal transition-all cursor-pointer bg-white border-none outline-none select-none"
                       >
                         <span>{t('salary_overview.browse_all_categories', 'Browse All Categories & Sub-Categories')}</span>
                       </button>
@@ -1466,16 +1466,24 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
                           >
                             <div className="flex items-center gap-2 min-w-0 flex-1">
                               <span className="text-sm shrink-0">{emoji}</span>
-                              <span 
-                                style={{ fontFamily: "'Google Sans', sans-serif" }}
-                                className="text-[14px] leading-[14px] text-slate-800 font-normal truncate"
-                              >
-                                {label}
-                              </span>
+                              <div className="flex flex-col justify-center min-w-0 flex-1">
+                                <span 
+                                  style={{ fontFamily: "'Google Sans', sans-serif" }}
+                                  className="text-[14px] leading-[14px] text-slate-800 font-normal truncate"
+                                >
+                                  {t(`categories.${cat.category}`, formatLabel(cat.category))}
+                                </span>
+                                <span 
+                                  style={{ fontFamily: "'Google Sans', sans-serif" }}
+                                  className="text-[12px] leading-[14px] text-slate-500 font-normal truncate"
+                                >
+                                  {t(`subcategories.${cat.subcategory}`, formatLabel(cat.subcategory))}
+                                </span>
+                              </div>
                               {isFuturePeriod && (
                                 <span 
                                   style={{ fontFamily: "'Google Sans', sans-serif" }}
-                                  className="text-[9px] text-[#2E7D32] leading-none shrink-0 border border-[#A6DDB1] px-1 py-0.5 rounded-[4px] bg-[#E8F5E9]"
+                                  className="text-[12px] text-[#2E7D32] leading-none shrink-0 border border-[#A6DDB1] px-1 py-0.5 rounded-[4px] bg-[#E8F5E9]"
                                 >
                                   Sch
                                 </span>
@@ -1483,14 +1491,14 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
                             </div>
 
                             <div className="relative flex items-center w-[80px] shrink-0 h-[30px]">
-                              <span className="absolute left-2 text-[9px] text-zinc-400 font-normal leading-none pointer-events-none">{activeBaseCurrency}</span>
+                              <span className="absolute left-2 text-[12px] text-zinc-400 font-normal leading-none pointer-events-none">{activeBaseCurrency}</span>
                               <input 
                                 type="number"
                                 placeholder="0"
                                 min="0"
                                 value={(allocations[envelopeKey] === undefined || isNaN(allocations[envelopeKey])) ? '' : allocations[envelopeKey]}
                                 onChange={(e) => handleAllocationChange(envelopeKey, e.target.value)}
-                                className="w-full h-full bg-[#ffffff] rounded-[10px] border border-[#E1E8ED] text-right focus:border-[#A6DDB1] pr-1.5 pl-6 text-[13px] text-[#1E2229] outline-none font-bold transition-all"
+                                className="w-full h-full bg-[#ffffff] rounded-[12px] border border-[#E1E8ED] text-right focus:border-[#A6DDB1] pr-1.5 pl-6 text-[13px] text-[#1E2229] outline-none font-bold transition-all"
                               />
                             </div>
                           </div>
@@ -1525,7 +1533,7 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
                       </span>
                     </div>
                     <div className="flex flex-col gap-1 border-l border-[#D1D5DB]">
-                      <span className="text-[10px] text-[#57606F] font-normal" style={{ fontFamily: "'Google Sans', sans-serif" }}>{t("salary_breakdown_modal.remaining")}</span>
+                      <span className="text-[12px] text-[#57606F] font-normal" style={{ fontFamily: "'Google Sans', sans-serif" }}>{t("salary_breakdown_modal.remaining")}</span>
                       <span className="text-[16px] text-[#1E2229] font-bold" style={{ fontFamily: "'Google Sans', sans-serif" }}>
                         {unallocatedBalance.toLocaleString(undefined, { minimumFractionDigits: 0 })}
                       </span>
@@ -1681,7 +1689,7 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
                                     isActive ? 'bg-[#f0f9f1] text-[#111c2d]' : 'bg-[#FFFFFF] text-neutral-400 hover:bg-neutral-100'
                                   }`}
                                 >
-                                  <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[10px] font-normal leading-none">
+                                  <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[12px] font-normal leading-none">
                                     {acc.name} ({acc.institution || 'Direct'})
                                   </span>
 
@@ -1814,7 +1822,7 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
                     type="button"
                     onClick={() => setIsManageCategoriesOpen(false)}
                     style={{ backgroundColor: '#A6DDB1', color: '#1E293B', fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
-                    className="px-4 py-2 text-[10px] rounded-xl font-normal hover:brightness-105 active:scale-95 transition-all cursor-pointer text-center w-full"
+                    className="px-4 py-2 text-[12px] rounded-xl font-normal hover:brightness-105 active:scale-95 transition-all cursor-pointer text-center w-full"
                   >
                     {t('salary_breakdown_modal.save_category_configuration', 'Save Category Configuration (Active: {{count}})', { count: activeEnvelopes.length })}
                   </button>

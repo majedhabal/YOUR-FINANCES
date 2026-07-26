@@ -36,8 +36,8 @@ class VantageDataErrorBoundaryClass extends Component<Props & WithTranslation, S
       return this.props.fallback || (
         <div className="w-full h-full min-h-[150px] flex flex-col items-center justify-center bg-luxury-grey/20 rounded-[2rem] border border-dashed border-neutral-800 p-6 text-center">
           <AlertCircle size={24} className="text-neutral-700 mb-2" />
-          <span className="text-[10px] font-bold text-neutral-600 tracking-wide">{this.props.t('vantage_data_error_boundary.data_node_unavailable')}</span>
-          <p className="text-[8px] text-neutral-500 mt-1 max-w-[150px]">{this.props.t('vantage_data_error_boundary.stream_sync_failed')}</p>
+          <span className="text-[12px] font-bold text-neutral-600 tracking-wide">{this.props.t('vantage_data_error_boundary.data_node_unavailable')}</span>
+          <p className="text-[12px] text-neutral-500 mt-1 max-w-[150px]">{this.props.t('vantage_data_error_boundary.stream_sync_failed')}</p>
         </div>
       );
     }

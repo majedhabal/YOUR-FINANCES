@@ -615,7 +615,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                 isEditMode
                   ? 'max-w-[92%] md:max-w-2xl p-4 md:p-6 gap-4 md:gap-6'
                   : isManageMode 
-                    ? 'max-w-[360px] md:max-w-[420px] p-[clamp(14px,3.5vw,18px)] gap-[clamp(8px,2.2vw,12px)]' 
+                    ? 'max-w-[360px] md:max-w-[420px] p-[clamp(14px,3.5vw,18px)] gap-[clamp(12px,2.2vw,12px)]' 
                     : 'max-w-full md:w-[35%] md:max-w-[35%] md:min-w-[35%] lg:w-[35%] lg:max-w-[35%] lg:min-w-[35%] gap-2.5'
               }`}
             >
@@ -677,7 +677,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                       <h4 style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[14px] text-neutral-800 leading-tight truncate">
                         {editName || account!.name}
                       </h4>
-                      <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[11px] text-neutral-500 truncate mt-0.5 font-normal">
+                      <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[12px] text-neutral-500 truncate mt-0.5 font-normal">
                         {editType === 'bank' ? (bankAccountType === 'Savings' ? 'Savings Account' : 'Checking Account') : (editType.charAt(0).toUpperCase() + editType.slice(1) + ' Account')} •••• {account!.id ? account!.id.substring(account!.id.length - 4) : '4292'}
                       </p>
                     </div>
@@ -687,7 +687,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                   <div className="flex flex-col gap-4 w-full">
                     <div className="flex flex-col gap-1 w-full" id="edit-name-group">
                       <label 
-                        className="text-neutral-500 font-normal text-[11.5px] px-1"
+                        className="text-neutral-500 font-normal text-[12px] px-1"
                         style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
                       >
                         {t('account_detail.nickname')}
@@ -704,7 +704,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
 
                     <div className="flex flex-col gap-1 w-full" id="edit-type-group">
                       <label 
-                        className="text-neutral-500 font-normal text-[11.5px] px-1"
+                        className="text-neutral-500 font-normal text-[12px] px-1"
                         style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
                       >
                         {t('account_detail.type')}
@@ -743,7 +743,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
 
                     <div className="flex flex-col gap-1 w-full" id="edit-balance-group">
                       <label 
-                        className="text-neutral-500 font-normal text-[11.5px] px-1"
+                        className="text-neutral-500 font-normal text-[12px] px-1"
                         style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
                       >
                         {t('account_detail.balance_adjustment')}
@@ -762,7 +762,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                           style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
                         />
                       </div>
-                      <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[10px] text-neutral-400 px-1 mt-0.5 font-normal italic">
+                      <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[12px] text-neutral-400 px-1 mt-0.5 font-normal italic">
                         {syncMessage}
                       </p>
                     </div>
@@ -770,7 +770,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                     {((['credit', 'Credit Card', 'loan', 'Personal Loan', 'mortgage', 'Mortgage'].includes(editType))) && (
                       <div className="grid grid-cols-2 gap-3 w-full" id="edit-liability-extra-fields">
                         <div className="flex flex-col gap-1">
-                          <label className="text-neutral-500 font-normal text-[11px] px-1" style={{ fontFamily: "'Google Sans', sans-serif" }}>
+                          <label className="text-neutral-500 font-normal text-[12px] px-1" style={{ fontFamily: "'Google Sans', sans-serif" }}>
                             {t('account_detail.interest')}
                           </label>
                           <input 
@@ -782,7 +782,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                           />
                         </div>
                         <div className="flex flex-col gap-1">
-                          <label className="text-neutral-500 font-normal text-[11px] px-1" style={{ fontFamily: "'Google Sans', sans-serif" }}>
+                          <label className="text-neutral-500 font-normal text-[12px] px-1" style={{ fontFamily: "'Google Sans', sans-serif" }}>
                             {t('account_detail.due_date')}
                           </label>
                           <input 
@@ -799,7 +799,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
 
                   {/* DISPLAY PREFERENCES block matching mockup overlay with beautiful layout */}
                   <fieldset className="bg-[#f0f3ff]/50 hover:bg-[#f0f3ff]/70 border border-[#E1E8ED] rounded-[1.25rem] p-4 flex flex-col gap-3 transition-colors" id="edit-display-preferences">
-                    <legend style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[10.5px] text-neutral-600 uppercase tracking-widest font-bold px-1 mb-1">
+                    <legend style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[12px] text-neutral-600 uppercase tracking-widest font-bold px-1 mb-1">
                       {t('account_detail.display')}
                     </legend>
                     
@@ -808,7 +808,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                         <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[13px] text-neutral-800 font-bold">
                           {t('account_detail.show_balance')}
                         </span>
-                        <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[10px] text-neutral-500 font-normal leading-normal">
+                        <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[12px] text-neutral-500 font-normal leading-normal">
                           {t('account_detail.show_balance_desc')}
                         </p>
                       </div>
@@ -832,7 +832,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                         <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[13px] text-neutral-800 font-bold">
                           {t('account_detail.show_analytics')}
                         </span>
-                        <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[10px] text-neutral-500 font-normal leading-normal">
+                        <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[12px] text-neutral-500 font-normal leading-normal">
                           {t('account_detail.show_analytics_desc')}
                         </p>
                       </div>
@@ -905,7 +905,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                   </div>
                 </div>
               ) : (
-                <div className={isManageMode ? 'p-0 pb-4 flex flex-col gap-[clamp(8px,2.2vw,12px)] w-full' : 'p-3 md:p-5 pb-4 flex flex-col gap-y-2 md:gap-y-3.5 w-full'}>
+                <div className={isManageMode ? 'p-0 pb-4 flex flex-col gap-[clamp(12px,2.2vw,12px)] w-full' : 'p-3 md:p-5 pb-4 flex flex-col gap-y-2 md:gap-y-3.5 w-full'}>
                   <div className="flex justify-between items-center w-full px-1 py-1.5 select-none">
                     <div className="flex items-center gap-4">
                       <div 
@@ -973,7 +973,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                         <div className="grid grid-cols-2 gap-2">
                            <div className="p-2.5 rounded-xl bg-[#edc091]/5 border border-[#edc091]/25 flex flex-col gap-y-1">
                                <div className="flex justify-between items-center">
-                                  <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[8px] text-[#b16f39] flex items-center gap-1 leading-none">
+                                  <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[12px] text-[#b16f39] flex items-center gap-1 leading-none">
                                      <Wallet size={10} style={{ display: 'inline' }} /> {t('account_detail.liquid_assets')}
                                   </span>
                                   {unallocatedCash > 0 && (
@@ -988,14 +988,14 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                                </div>
                                <div className="flex items-baseline gap-1 mt-0.5">
                                   <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: "clamp(18px, 5.5vw, 24px)", lineHeight: "1.1" }} className="text-neutral-800">{ (unallocatedCash || 0).toLocaleString(undefined, { minimumFractionDigits: 2 }) }</span>
-                                  <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[8px] text-neutral-400">{account.currency}</span>
+                                  <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[12px] text-neutral-400">{account.currency}</span>
                                 </div>
                                <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[7px] text-[#b16f39]/80 leading-none mt-0.5">{t('account_detail.unallocated_cash_desc')}</span>
                            </div>
                            
                            <div className="p-2.5 rounded-xl bg-neutral-50 border border-[#E1E8ED] flex flex-col gap-y-1">
                                <div className="flex justify-between items-center">
-                                  <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[8px] text-neutral-500 flex items-center gap-1 leading-none">
+                                  <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[12px] text-neutral-500 flex items-center gap-1 leading-none">
                                      <HistoryIcon size={10} style={{ display: 'inline' }} /> {t('account_detail.non_liquid_assets')}
                                   </span>
                                 </div>
@@ -1003,7 +1003,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                                   <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: "clamp(18px, 5.5vw, 24px)", lineHeight: "1.1" }} className="text-neutral-800">
                                     { (nonLiquidAssets || 0).toLocaleString(undefined, { minimumFractionDigits: 2 }) }
                                   </span>
-                                  <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[8px] text-neutral-400">{account.currency}</span>
+                                  <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[12px] text-neutral-400">{account.currency}</span>
                                 </div>
                                <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[7px] text-neutral-500 leading-none mt-0.5">{t('account_detail.deployed_capital_desc')}</span>
                            </div>
@@ -1045,13 +1045,13 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                                <div className="grid grid-cols-2 gap-2">
                                   <div className="p-2.5 rounded-xl bg-neutral-50 border border-[#E1E8ED] flex flex-col gap-1 shadow-xs">
                                     <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[7.5px] text-[#57606F] leading-none">{t('account_detail.account_type_label')}</span>
-                                    <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[10px] text-neutral-800 mt-0.5 leading-none">{account.bankAccountType || 'Checking'}</span>
+                                    <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[12px] text-neutral-800 mt-0.5 leading-none">{account.bankAccountType || 'Checking'}</span>
                                   </div>
                                   <div className="p-2.5 rounded-xl bg-neutral-50 border border-[#E1E8ED] flex flex-col gap-1 shadow-xs">
                                     <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[7.5px] text-[#57606F] leading-none">{t('account_detail.min_balance_floor_label')}</span>
                                     <div className="flex items-center gap-1 mt-0.5 leading-none">
                                       <ShieldCheck size={10} className={currentBalance < (account.minBalanceFloor || 0) ? "text-[#b16f39]" : "text-emerald-600"} />
-                                      <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className={`text-[9px] ml-1 ${currentBalance < (account.minBalanceFloor || 0) ? 'text-[#b16f39]' : 'text-neutral-800'}`}>
+                                      <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className={`text-[12px] ml-1 ${currentBalance < (account.minBalanceFloor || 0) ? 'text-[#b16f39]' : 'text-neutral-800'}`}>
                                         {account.currency} {(account.minBalanceFloor || 0).toLocaleString()}
                                       </span>
                                     </div>
@@ -1077,19 +1077,19 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                             <div className="grid grid-cols-3 gap-3">
                            <div className="p-2.5 rounded-xl bg-neutral-50 border border-[#E1E8ED] flex flex-col gap-0.5">
                              <span className="text-[7.5px] text-neutral-500 font-normal" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}>{t('account_detail.total_invested')}</span>
-                             <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[9.5px] text-neutral-800 font-normal mt-0.5 leading-none">
+                             <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[12px] text-neutral-800 font-normal mt-0.5 leading-none">
                                {account.currency} {(account.subAssets?.reduce((sum, sa) => sum + sa.principalInvested, 0) || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                              </span>
                            </div>
                            <div className="p-2.5 rounded-xl bg-neutral-50 border border-[#E1E8ED] flex flex-col gap-0.5">
                              <span className="text-[7.5px] text-neutral-500 font-normal" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}>{t('account_detail.current_value')}</span>
-                             <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[9.5px] text-neutral-800 font-normal mt-0.5 leading-none">
+                             <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[12px] text-neutral-800 font-normal mt-0.5 leading-none">
                                {account.currency} {(account.subAssets?.reduce((sum, sa) => sum + sa.currentValue, 0) || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                              </span>
                            </div>
                            <div className="p-2.5 rounded-xl bg-emerald-50 border border-emerald-100 flex flex-col gap-0.5">
                              <span className="text-[7.5px] text-emerald-850 font-normal" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}>{t('account_detail.total_return')}</span>
-                             <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[9.5px] text-emerald-800 font-bold mt-0.5 leading-none">
+                             <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[12px] text-emerald-800 font-bold mt-0.5 leading-none">
                                {(() => {
                                   const totalInv = account.subAssets?.reduce((sum, sa) => sum + sa.principalInvested, 0) || 0;
                                   const totalVal = account.subAssets?.reduce((sum, sa) => sum + sa.currentValue, 0) || 0;
@@ -1103,7 +1103,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                         
                         <div className="flex flex-col gap-2 mt-2">
                            <div className="flex justify-between items-center px-1">
-                              <span className="text-[8px] text-neutral-500 font-normal" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}>{t('account_detail.sub_asset_performance')}</span>
+                              <span className="text-[12px] text-neutral-500 font-normal" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}>{t('account_detail.sub_asset_performance')}</span>
                            </div>
                             <div className="flex flex-col gap-1.5">
                                {account.subAssets?.map((sa, idx) => {
@@ -1113,7 +1113,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                                   <div key={`sa-detail-${sa.id || 'none'}-${idx}`} className="p-2.5 rounded-xl bg-neutral-50 border border-[#E1E8ED] flex flex-col gap-1 shadow-xs">
                                      <div className="flex justify-between items-center">
                                         <div className="flex flex-col">
-                                           <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[10px] text-neutral-800">{sa.name}</span>
+                                           <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[12px] text-neutral-800">{sa.name}</span>
                                            <button 
                                              onClick={() => setSubAssetTransactionModal({ saId: sa.id, saName: sa.name })}
                                              style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[7px] text-emerald-800 flex items-center gap-1 mt-0.5 cursor-pointer leading-none"
@@ -1122,7 +1122,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                                            </button>
                                         </div>
                                         <div className="flex items-center gap-1.5">
-                                           <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className={`text-[9px] ${gain >= 0 ? 'text-emerald-800' : 'text-[#b16f39]'}`}>
+                                           <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className={`text-[12px] ${gain >= 0 ? 'text-emerald-800' : 'text-[#b16f39]'}`}>
                                               {gain >= 0 ? '+' : ''}{gain.toLocaleString(undefined, { minimumFractionDigits: 0 })} {account.currency}
                                            </span>
                                            <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className={`text-[7px] px-1.5 py-0.5 rounded leading-none ${gain >= 0 ? 'bg-emerald-50 text-emerald-850' : 'bg-[#edc091]/15 text-[#b16f39]'}`}>
@@ -1134,7 +1134,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                                         <div className="flex flex-col">
                                            <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[6px] text-neutral-400 leading-none">{t('account_detail.projected_future')}</span>
                                            <div className="flex items-center gap-1 mt-0.5 leading-none">
-                                              <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className={`text-[10px] ${(sa.estimatedYield || 0) < 0 ? 'text-[#b16f39]' : 'text-emerald-800'}`}>
+                                              <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className={`text-[12px] ${(sa.estimatedYield || 0) < 0 ? 'text-[#b16f39]' : 'text-emerald-800'}`}>
                                                  {((sa.estimatedYield || 0) >= 0 ? '+' : '')}{(sa.estimatedYield || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                                               </span>
                                               <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[6px] text-neutral-400">/ {sa.yieldPeriod || 'mo'}</span>
@@ -1142,7 +1142,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                                         </div>
                                         <div className="flex flex-col items-end">
                                            <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[6px] text-neutral-400 leading-none">{t('account_detail.received_current')}</span>
-                                           <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[10px] text-emerald-800 mt-0.5 leading-none font-normal">{(sa.passiveIncome || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                                           <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[12px] text-emerald-800 mt-0.5 leading-none font-normal">{(sa.passiveIncome || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                                         </div>
                                      </div>
                                   </div>
@@ -1156,7 +1156,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                              <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[7.5px] text-neutral-400">{t('account_detail.asset_allocation_status')}</span>
                               <div className="flex items-center gap-1.5 mt-1 leading-none">
                                 {unallocatedCash > 0 ? <AlertCircle size={10} className="text-[#b16f39]" /> : <ShieldCheck size={10} className="text-emerald-600" />}
-                                <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[9px] text-neutral-800">
+                                <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[12px] text-neutral-800">
                                    {unallocatedCash > 0 ? t('account_detail.liquid_assets_present') : t('account_detail.fully_allocated_assets')}
                                 </span>
                               </div>
@@ -1169,7 +1169,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                            <div className="grid grid-cols-2 gap-2">
                               <div className="p-2.5 rounded-xl bg-neutral-50 border border-[#E1E8ED] flex flex-col gap-0.5">
                                 <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[7.5px] text-neutral-400 leading-none">{t('account_detail.credit_limit_label')}</span>
-                                <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[10px] text-neutral-800 mt-1 leading-none font-normal">
+                                <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[12px] text-neutral-800 mt-1 leading-none font-normal">
                                   {account.currency} { (account.creditLimit || 0).toLocaleString() }
                                 </span>
                               </div>
@@ -1177,7 +1177,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                                 <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[7.5px] text-neutral-400 leading-none">{t('account_detail.payment_due_date_label')}</span>
                                 <div className="flex items-center gap-1 mt-1 leading-none">
                                   <CalendarDays size={10} className="text-emerald-600" />
-                                  <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[9px] text-neutral-800 ml-1">{account.paymentDueDate || t('account_detail.not_set')}</span>
+                                  <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[12px] text-neutral-800 ml-1">{account.paymentDueDate || t('account_detail.not_set')}</span>
                                 </div>
                               </div>
                            </div>
@@ -1189,12 +1189,12 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                                 <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[7.5px] text-neutral-400 leading-none">{t('account_detail.interest_rate_label')}</span>
                                 <div className="flex items-center gap-1 mt-1 leading-none">
                                   <Percent size={10} className="text-emerald-600" />
-                                  <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[9px] text-neutral-800 ml-1">{account.interestRate}% APR</span>
+                                  <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[12px] text-neutral-800 ml-1">{account.interestRate}% APR</span>
                                 </div>
                               </div>
                               <div className="p-2.5 rounded-xl bg-neutral-50 border border-[#E1E8ED] flex flex-col gap-0.5">
                                 <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[7.5px] text-neutral-400 leading-none">{t('account_detail.payment_protocol_label')}</span>
-                                <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[9px] text-neutral-800 mt-1.5 leading-none font-normal">{account.recurringProtocol || t('account_detail.manual')}</span>
+                                <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[12px] text-neutral-800 mt-1.5 leading-none font-normal">{account.recurringProtocol || t('account_detail.manual')}</span>
                               </div>
                            </div>
                          )}
@@ -1211,7 +1211,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                                 </div>
                                <div className="flex items-baseline gap-1 mt-1 leading-none">
                                   <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-2xl text-neutral-800 tracking-tight font-normal">{(projectedBalance || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
-                                  <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[9.5px] text-neutral-400 font-normal">{account.currency}</span>
+                                  <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[12px] text-neutral-400 font-normal">{account.currency}</span>
                                </div>
                            </div>
                          )}
@@ -1241,26 +1241,26 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                            </div>
                          {auditData && (
                             <div className="p-5 rounded-2xl bg-white border border-[#E1E8ED] flex flex-col gap-4 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
-                               <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[11px] text-neutral-800 tracking-wider flex items-center gap-2">
+                               <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[12px] text-neutral-800 tracking-wider flex items-center gap-2">
                                   <HistoryIcon size={16} className="text-[#1C2C40]/70 shrink-0" />
                                   <span>{t('account_detail.balance_audit')}</span>
                                </span>
                                <div className="h-px bg-neutral-100" />
                                <div className="space-y-3">
-                                 <div style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="flex justify-between items-center text-[10px] text-neutral-500">
+                                 <div style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="flex justify-between items-center text-[12px] text-neutral-500">
                                    <span>{t('account_detail.starting_equilibrium')}</span>
                                    <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-neutral-800 font-bold">+{Number(auditData.starting).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                                  </div>
-                                 <div style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="flex justify-between items-center text-[10px] text-neutral-500">
+                                 <div style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="flex justify-between items-center text-[12px] text-neutral-500">
                                    <span>{t('account_detail.gross_inflow', { count: auditData.count })}</span>
                                    <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[#34A853] font-bold">+{Number(auditData.totalIn).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                                  </div>
-                                 <div style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="flex justify-between items-center text-[10px] text-neutral-500">
+                                 <div style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="flex justify-between items-center text-[12px] text-neutral-500">
                                    <span>{t('account_detail.gross_outflow')}</span>
                                    <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-amber-500 font-bold">-{Number(auditData.totalOut).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                                  </div>
                                  <div className="border-t border-dashed border-neutral-200 my-1" />
-                                 <div style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="flex justify-between items-center text-[11px]">
+                                 <div style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="flex justify-between items-center text-[12px]">
                                    <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-neutral-700 font-bold">{t('account_detail.net_liquidity_result')}:</span>
                                    <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-neutral-900 font-bold">{(Number(auditData.starting) + Number(auditData.totalIn) - Number(auditData.totalOut)).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
                                  </div>
@@ -1268,7 +1268,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                                  {Math.abs((Number(auditData.starting) + Number(auditData.totalIn) - Number(auditData.totalOut)) - currentBalance) > 0.01 && (
                                    <div className="mt-2 p-2 bg-amber-500/10 rounded-lg flex items-center gap-2">
                                      <AlertCircle size={12} className="text-amber-500" />
-                                     <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[9px] text-amber-500 font-bold">{t('account_detail.sync_divergence_detected')}</span>
+                                     <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[12px] text-amber-500 font-bold">{t('account_detail.sync_divergence_detected')}</span>
                                    </div>
                                  )}
                                </div>
@@ -1283,7 +1283,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                             setIsEditMode(true);
                             setIsManageMode(false);
                           }}
-                          style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, height: '38px' }} className="w-full bg-[#10B981] hover:bg-emerald-500 text-black text-[10px] rounded-xl transition-all flex items-center justify-center gap-3 active:scale-98 cursor-pointer"
+                          style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, height: '38px' }} className="w-full bg-[#10B981] hover:bg-emerald-500 text-black text-[12px] rounded-xl transition-all flex items-center justify-center gap-3 active:scale-98 cursor-pointer"
                           id="detail-edit-account-button"
                         >
                           <Edit3 size={16} /> {t('account_detail.edit_account', 'Edit Account')}
@@ -1296,29 +1296,29 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                               onClose();
                             }
                           }}
-                          style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, height: '38px' }} className="w-full bg-[#edc091] text-white text-[10px] rounded-xl transition-all flex items-center justify-center gap-3 active:scale-98 shadow-lg shadow-[#edc091]/20 hover:bg-[#edc091]/90"
+                          style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, height: '38px' }} className="w-full bg-[#edc091] text-white text-[12px] rounded-xl transition-all flex items-center justify-center gap-3 active:scale-98 shadow-lg shadow-[#edc091]/20 hover:bg-[#edc091]/90"
                         >
                           <TrendingUp size={16} /> {t('account_detail.view_account_details', 'View Account Details')}
                         </button>
                       </div>
                     </>
                   ) : (
-                    <div className="flex flex-col gap-[clamp(10px,2.5vw,14px)] w-full">
+                    <div className="flex flex-col gap-[clamp(12px,2.5vw,14px)] w-full">
                       {/* Left configuration pane */}
-                      <div className="flex flex-col gap-[clamp(10px,2.5vw,14px)] w-full">
-                        <div className="p-[clamp(12px,3vw,16px)] rounded-xl bg-white border border-neutral-200 flex flex-col gap-y-[clamp(8px,2.2vw,12px)] shadow-sm w-full">
+                      <div className="flex flex-col gap-[clamp(12px,2.5vw,14px)] w-full">
+                        <div className="p-[clamp(12px,3vw,16px)] rounded-xl bg-white border border-neutral-200 flex flex-col gap-y-[clamp(12px,2.2vw,12px)] shadow-sm w-full">
                           <span 
                             className="text-[#1F2937] uppercase tracking-[0.2em] flex items-center gap-2"
-                            style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700, fontSize: 'clamp(10px, 2.8vw, 12px)' }}
+                            style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700, fontSize: 'clamp(12px, 2.8vw, 12px)' }}
                           >
                              <Edit3 size={12} className="text-[#1F2937]" /> ACCOUNT SETTINGS
                           </span>
                           
-                          <div className="flex flex-col gap-y-[clamp(8px,2.2vw,12px)] w-full">
+                          <div className="flex flex-col gap-y-[clamp(12px,2.2vw,12px)] w-full">
                             <div className="flex flex-col gap-[clamp(2px,0.8vw,4px)] w-full">
                               <label 
                                 className="text-[#1F2937]/75 uppercase tracking-wider pl-1"
-                                style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 500, fontSize: 'clamp(8.5px, 2.2vw, 10.5px)' }}
+                                style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 500, fontSize: 'clamp(12px, 2.2vw, 12px)' }}
                               >
                                 Name
                               </label>
@@ -1327,8 +1327,8 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                                 disabled={account.isArchived}
                                 value={editName}
                                 onChange={(e) => setEditName(e.target.value)}
-                                className={`w-full bg-white border border-neutral-300 rounded-xl px-[clamp(10px,2.5vw,14px)] py-1.5 text-[#1F2937] focus:border-vantage-green outline-none transition-all ${account.isArchived ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: 'clamp(11px, 2.6vw, 13px)', height: 'clamp(32px, 8vw, 38px)' }}
+                                className={`w-full bg-white border border-neutral-300 rounded-xl px-[clamp(12px,2.5vw,14px)] py-1.5 text-[#1F2937] focus:border-vantage-green outline-none transition-all ${account.isArchived ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: 'clamp(12px, 2.6vw, 13px)', height: 'clamp(32px, 8vw, 38px)' }}
                               />
                             </div>
 
@@ -1337,7 +1337,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                                 <div className="flex flex-col gap-1">
                                   <label 
                                     className="text-[#1F2937]/75 uppercase tracking-wider pl-1"
-                                    style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: 'clamp(10px, 2.5vw, 12px)' }}
+                                    style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: 'clamp(12px, 2.5vw, 12px)' }}
                                   >
                                     Credit Limit
                                   </label>
@@ -1348,13 +1348,13 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                                     value={creditLimit}
                                     onChange={(e) => setCreditLimit(e.target.value)}
                                     className={`w-full bg-white border border-neutral-300 rounded-xl px-3 py-2 font-mono text-[#1F2937]/90 focus:border-vantage-green outline-none transition-all ${account.isArchived ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                    style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: 'clamp(11px, 2.8vw, 13px)', height: '38px', maxHeight: '38px' }}
+                                    style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: 'clamp(12px, 2.8vw, 13px)', height: '38px', maxHeight: '38px' }}
                                   />
                                 </div>
                                 <div className="flex flex-col gap-1">
                                   <label 
                                     className="text-[#1F2937]/75 uppercase tracking-wider pl-1"
-                                    style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: 'clamp(10px, 2.5vw, 12px)' }}
+                                    style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: 'clamp(12px, 2.5vw, 12px)' }}
                                   >
                                     Payment Due Date
                                   </label>
@@ -1364,7 +1364,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                                     value={paymentDueDate}
                                     onChange={(e) => setPaymentDueDate(e.target.value)}
                                     className={`w-full bg-white border border-neutral-300 rounded-xl px-3 py-2 text-[#1F2937] focus:border-vantage-green outline-none transition-all [color-scheme:light] ${account.isArchived ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                    style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: 'clamp(11px, 2.8vw, 13px)', height: '38px', maxHeight: '38px' }}
+                                    style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: 'clamp(12px, 2.8vw, 13px)', height: '38px', maxHeight: '38px' }}
                                   />
                                 </div>
                               </div>
@@ -1375,7 +1375,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                                  <div className="flex flex-col gap-1 w-full">
                                     <label 
                                       className="text-[#1F2937]/75 uppercase tracking-wider pl-1"
-                                      style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: 'clamp(10px, 2.5vw, 12px)' }}
+                                      style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: 'clamp(12px, 2.5vw, 12px)' }}
                                     >
                                       Account Sub-Type
                                     </label>
@@ -1387,7 +1387,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                                            disabled={account.isArchived}
                                            onClick={() => setBankAccountType(t as any)}
                                            style={{ height: '34px', fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
-                                           className={`py-0 flex items-center justify-center rounded-xl border uppercase tracking-[0.1em] text-[clamp(9.5px,2.5vw,11.5px)] transition-all ${bankAccountType === t ? 'bg-vantage-green/10 border-vantage-green text-[#065F46]' : 'bg-neutral-50 border-neutral-200 text-[#1F2937]/80'} ${account.isArchived ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                           className={`py-0 flex items-center justify-center rounded-xl border uppercase tracking-[0.1em] text-[clamp(12px,2.5vw,12px)] transition-all ${bankAccountType === t ? 'bg-vantage-green/10 border-vantage-green text-[#065F46]' : 'bg-neutral-50 border-neutral-200 text-[#1F2937]/80'} ${account.isArchived ? 'opacity-50 cursor-not-allowed' : ''}`}
                                          >
                                            {t}
                                          </button>
@@ -1398,7 +1398,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                                     <div className="flex flex-col gap-1">
                                       <label 
                                         className="text-[#1F2937]/75 uppercase tracking-wider pl-1"
-                                        style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: 'clamp(10px, 2.5vw, 12px)' }}
+                                        style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: 'clamp(12px, 2.5vw, 12px)' }}
                                       >
                                         Min Balance
                                       </label>
@@ -1409,13 +1409,13 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                                         value={minBalanceFloor}
                                         onChange={(e) => setMinBalanceFloor(e.target.value)}
                                         className={`w-full bg-white border border-neutral-300 rounded-xl px-3 py-2 font-mono text-[#1F2937] focus:border-vantage-green outline-none transition-all ${account.isArchived ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                        style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: 'clamp(11px, 2.8vw, 13px)', height: '38px', maxHeight: '38px' }}
+                                        style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: 'clamp(12px, 2.8vw, 13px)', height: '38px', maxHeight: '38px' }}
                                       />
                                     </div>
                                     <div className="flex flex-col gap-1">
                                       <label 
                                         className="text-[#1F2937]/75 uppercase tracking-wider pl-1"
-                                        style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: 'clamp(10px, 2.5vw, 12px)' }}
+                                        style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: 'clamp(12px, 2.5vw, 12px)' }}
                                       >
                                         Transfer Fee
                                       </label>
@@ -1426,7 +1426,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                                         value={defaultTransferFee}
                                         onChange={(e) => setDefaultTransferFee(e.target.value)}
                                         className={`w-full bg-white border border-neutral-300 rounded-xl px-3 py-2 font-mono text-[#1F2937] focus:border-vantage-green outline-none transition-all ${account.isArchived ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                        style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: 'clamp(11px, 2.8vw, 13px)', height: '38px', maxHeight: '38px' }}
+                                        style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: 'clamp(12px, 2.8vw, 13px)', height: '38px', maxHeight: '38px' }}
                                       />
                                     </div>
                                  </div>
@@ -1435,7 +1435,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                             <div className="flex flex-col gap-1 w-full">
                               <label 
                                 className="text-[#1F2937]/75 uppercase tracking-wider pl-1"
-                                style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: 'clamp(10px, 2.5vw, 12px)' }}
+                                style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: 'clamp(12px, 2.5vw, 12px)' }}
                               >
                                 {t('add_account.starting_balance')}
                               </label>
@@ -1446,24 +1446,24 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                                 value={editBalance}
                                 onChange={(e) => setEditBalance(e.target.value)}
                                 className={`w-full bg-white border border-neutral-300 rounded-xl px-4 py-2 font-mono text-sm text-[#065F46] focus:border-vantage-green outline-none transition-all ${account.isArchived ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: 'clamp(11px, 2.8vw, 13px)', height: '38px', maxHeight: '38px' }}
+                                style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: 'clamp(12px, 2.8vw, 13px)', height: '38px', maxHeight: '38px' }}
                               />
                               {errorMessage && (
                                 <div className="mt-2 p-2 bg-[#edc091]/10 border border-[#edc091]/20 rounded-xl flex items-center gap-2">
                                    <X size={14} className="text-[#edc091]" />
-                                   <span className="text-[9px] font-normal text-[#edc091] uppercase tracking-tight" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}>{errorMessage}</span>
+                                   <span className="text-[12px] font-normal text-[#edc091] uppercase tracking-tight" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}>{errorMessage}</span>
                                 </div>
                               )}
                               <div className="flex flex-col gap-1 mt-1 pl-1">
                                  <span 
                                    className="uppercase tracking-widest text-[#1F2937]/85"
-                                   style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: 'clamp(10px, 2.6vw, 11.5px)' }}
+                                   style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: 'clamp(12px, 2.6vw, 12px)' }}
                                  >
                                    Calculated Balance: <span className="text-[#065F46] font-normal" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}>{currentBalance.toLocaleString(undefined, { minimumFractionDigits: 2 })} {account.currency}</span>
                                  </span>
                                  <p 
                                    className="text-neutral-500 uppercase tracking-wide leading-tight mt-0.5"
-                                   style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: 'clamp(9px, 2.3vw, 10.5px)' }}
+                                   style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: 'clamp(12px, 2.3vw, 12px)' }}
                                  >
                                    New Projection: {(parseFloat(editBalance || '0') + (auditData?.totalIn || 0) - (auditData?.totalOut || 0)).toLocaleString(undefined, { minimumFractionDigits: 2 })} {account.currency}
                                  </p>
@@ -1477,11 +1477,11 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                       <div className="flex flex-col gap-3.5 w-full">
                         <div className="flex flex-col gap-3.5 w-full">
                           {account.type === 'investment' && (
-                            <div className="p-[clamp(12px,3vw,16px)] rounded-xl bg-white border border-neutral-200 flex flex-col gap-y-[clamp(6px,1.8vw,10px)] shadow-sm w-full">
+                            <div className="p-[clamp(12px,3vw,16px)] rounded-xl bg-white border border-neutral-200 flex flex-col gap-y-[clamp(6px,1.8vw,12px)] shadow-sm w-full">
                                <div className="flex justify-between items-center px-1">
                                   <span 
                                     className="text-[#1F2937] uppercase tracking-widest font-semibold"
-                                    style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 600, fontSize: 'clamp(10px, 2.6vw, 12px)' }}
+                                    style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 600, fontSize: 'clamp(12px, 2.6vw, 12px)' }}
                                   >
                                     SUB-ASSET MANAGER
                                   </span>
@@ -1503,14 +1503,14 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                                       } as any]);
                                     }}
                                     style={{ height: 'clamp(28px, 7vw, 32px)', fontFamily: "'Google Sans', sans-serif", fontWeight: 500 }}
-                                    className="text-[clamp(8.5px, 2.2vw, 10px)] text-vantage-green uppercase tracking-widest flex items-center gap-1 hover:text-[#1F2937] transition-colors cursor-pointer"
+                                    className="text-[clamp(12px, 2.2vw, 12px)] text-vantage-green uppercase tracking-widest flex items-center gap-1 hover:text-[#1F2937] transition-colors cursor-pointer"
                                   >
                                     <Plus size={8} /> ADD ASSET
                                   </button>
                                </div>
                                <div className="flex flex-col gap-2 max-h-[220px] overflow-y-auto pr-1">
                                   {subAssets.map((sa, idx) => (
-                                    <div key={`sa-detail-edit-${sa.id || 'none'}-${idx}`} className="p-[clamp(8px,2.2vw,12px)] bg-neutral-50 border border-neutral-200 rounded-xl flex flex-col gap-[clamp(6px,1.8vw,10px)]">
+                                    <div key={`sa-detail-edit-${sa.id || 'none'}-${idx}`} className="p-[clamp(12px,2.2vw,12px)] bg-neutral-50 border border-neutral-200 rounded-xl flex flex-col gap-[clamp(6px,1.8vw,12px)]">
                                        <div className="flex justify-between items-center">
                                           <input 
                                             type="text"
@@ -1523,7 +1523,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                                               setSubAssets(newAssets);
                                             }}
                                             className="bg-transparent border-none font-normal text-[#1F2937] outline-none placeholder:text-neutral-400 w-full"
-                                            style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: 'clamp(11px, 3.2vw, 13px)' }}
+                                            style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: 'clamp(12px, 3.2vw, 13px)' }}
                                           />
                                           <button 
                                             type="button"
@@ -1537,7 +1537,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                                           <div className="flex flex-col gap-1">
                                              <label 
                                                className="font-bold text-neutral-500 uppercase tracking-widest pl-0.5"
-                                               style={{ fontSize: 'clamp(8px, 2vw, 9px)' }}
+                                               style={{ fontSize: 'clamp(12px, 2vw, 12px)' }}
                                              >
                                                Principal
                                              </label>
@@ -1550,13 +1550,13 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                                                  setSubAssets(newAssets);
                                                }}
                                                className="bg-white border border-neutral-300 rounded-lg p-1 font-mono text-[#1F2937] outline-none w-full"
-                                               style={{ fontSize: 'clamp(10px, 2.5vw, 11px)' }}
+                                               style={{ fontSize: 'clamp(12px, 2.5vw, 12px)' }}
                                              />
                                           </div>
                                           <div className="flex flex-col gap-1">
                                              <label 
                                                className="font-bold text-neutral-500 uppercase tracking-widest pl-0.5"
-                                               style={{ fontSize: 'clamp(8px, 2vw, 9px)' }}
+                                               style={{ fontSize: 'clamp(12px, 2vw, 12px)' }}
                                              >
                                                Value
                                              </label>
@@ -1569,13 +1569,13 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                                                  setSubAssets(newAssets);
                                                }}
                                                className="bg-white border border-neutral-300 rounded-lg p-1 font-mono text-[#1F2937] outline-none w-full"
-                                               style={{ fontSize: 'clamp(10px, 2.5vw, 11px)' }}
+                                               style={{ fontSize: 'clamp(12px, 2.5vw, 12px)' }}
                                              />
                                           </div>
                                           <div className="flex flex-col gap-1">
                                              <label 
                                                className="font-bold text-neutral-500 uppercase tracking-widest pl-0.5"
-                                               style={{ fontSize: 'clamp(8px, 2vw, 9px)' }}
+                                               style={{ fontSize: 'clamp(12px, 2vw, 12px)' }}
                                              >
                                                Yield
                                              </label>
@@ -1589,13 +1589,13 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                                                }}
                                                placeholder="Yield"
                                                className="bg-white border border-neutral-300 rounded-lg p-1 font-mono text-[#1F2937] outline-none w-full"
-                                               style={{ fontSize: 'clamp(10px, 2.5vw, 11px)' }}
+                                               style={{ fontSize: 'clamp(12px, 2.5vw, 12px)' }}
                                              />
                                           </div>
                                           <div className="flex flex-col gap-1">
                                              <label 
                                                className="font-bold text-neutral-500 uppercase tracking-widest pl-0.5"
-                                               style={{ fontSize: 'clamp(8px, 2vw, 9px)' }}
+                                               style={{ fontSize: 'clamp(12px, 2vw, 12px)' }}
                                              >
                                                Period
                                              </label>
@@ -1607,7 +1607,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                                                  setSubAssets(newAssets);
                                                }}
                                                className="bg-white border border-neutral-300 rounded-lg p-0.5 font-mono text-[#1F2937] outline-none appearance-none w-full h-[25px] text-center"
-                                               style={{ fontSize: 'clamp(10px, 2.5vw, 11px)' }}
+                                               style={{ fontSize: 'clamp(12px, 2.5vw, 12px)' }}
                                              >
                                                 <option value="daily">Daily</option>
                                                 <option value="weekly">Weekly</option>
@@ -1619,7 +1619,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                                        <div className="flex flex-col gap-1">
                                          <label 
                                            className="font-bold text-[#1F2937]/70 uppercase tracking-widest pl-0.5"
-                                           style={{ fontSize: 'clamp(9px, 2.2vw, 10px)' }}
+                                           style={{ fontSize: 'clamp(12px, 2.2vw, 12px)' }}
                                          >
                                            Received (Realized) Income
                                          </label>
@@ -1632,7 +1632,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                                              setSubAssets(newAssets);
                                            }}
                                            className="bg-white border border-neutral-300 rounded-lg p-1 font-mono text-[#1F2937] outline-none w-full"
-                                           style={{ fontSize: 'clamp(10px, 2.5vw, 11px)' }}
+                                           style={{ fontSize: 'clamp(12px, 2.5vw, 12px)' }}
                                          />
                                        </div>
                                     </div>
@@ -1642,10 +1642,10 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                           )}
  
                           {(account.type === 'cash' || account.type === 'Cash') && (
-                            <div className="flex flex-col gap-y-[clamp(10px,2.5vw,14px)] p-[clamp(12px,3vw,16px)] bg-white border border-neutral-200 rounded-xl shadow-sm text-[#1F2937]">
+                            <div className="flex flex-col gap-y-[clamp(12px,2.5vw,14px)] p-[clamp(12px,3vw,16px)] bg-white border border-neutral-200 rounded-xl shadow-sm text-[#1F2937]">
                                <span 
                                  className="font-normal uppercase tracking-[0.2em] flex items-center gap-2"
-                                 style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: 'clamp(11px, 3.2vw, 13px)' }}
+                                 style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: 'clamp(12px, 3.2vw, 13px)' }}
                                >
                                   <Sparkles size={12} className="text-[#1F2937]" /> AUTOMATION FEATURES
                                 </span>
@@ -1654,13 +1654,13 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                                   <div className="flex flex-col gap-0.5">
                                      <span 
                                        className="font-normal text-[#1F2937] uppercase tracking-tight"
-                                       style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: 'clamp(11px, 3.2vw, 13px)' }}
+                                       style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: 'clamp(12px, 3.2vw, 13px)' }}
                                      >
                                        ATM Auto-Sync
                                      </span>
                                      <p 
                                        className="text-neutral-500 font-normal uppercase tracking-wide leading-tight"
-                                       style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: 'clamp(10px, 2.8vw, 11px)' }}
+                                       style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: 'clamp(12px, 2.8vw, 12px)' }}
                                      >
                                        Auto-transfer on ATM checkouts
                                      </p>
@@ -1681,13 +1681,13 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                                   <div className="flex flex-col gap-0.5">
                                      <span 
                                        className="font-normal text-[#1F2937] uppercase tracking-tight"
-                                       style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: 'clamp(11px, 3.2vw, 13px)' }}
+                                       style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: 'clamp(12px, 3.2vw, 13px)' }}
                                      >
                                        Daily Spend Reminder
                                      </span>
                                      <p 
                                        className="text-neutral-500 font-normal uppercase tracking-wide leading-tight"
-                                       style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: 'clamp(10px, 2.8vw, 11px)' }}
+                                       style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: 'clamp(12px, 2.8vw, 12px)' }}
                                      >
                                        Receive GST reminders
                                      </p>
@@ -1708,8 +1708,8 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                         </div>
  
                         {/* Interactive setting actions and decision button bars */}
-                        <div className="flex flex-col gap-[clamp(8px,2.2vw,12px)] mt-2">
-                          <div className="grid grid-cols-2 gap-[clamp(8px,2vw,12px)]">
+                        <div className="flex flex-col gap-[clamp(12px,2.2vw,12px)] mt-2">
+                          <div className="grid grid-cols-2 gap-[clamp(12px,2vw,12px)]">
                             <button 
                               onClick={() => {
                                 if (account.isArchived) {
@@ -1718,7 +1718,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                                   setConfirmModalConfig({ isOpen: true, type: 'archive' });
                                 }
                               }}
-                              style={{ height: 'clamp(32px, 8vw, 38px)', fontSize: 'clamp(9px, 2.2vw, 11px)', fontFamily: "'Google Sans', sans-serif", fontWeight: 500 }}
+                              style={{ height: 'clamp(32px, 8vw, 38px)', fontSize: 'clamp(12px, 2.2vw, 12px)', fontFamily: "'Google Sans', sans-serif", fontWeight: 500 }}
                               className={`rounded-xl uppercase tracking-[0.1em] transition-all flex items-center justify-center gap-2 border ${
                                 account.isArchived 
                                 ? 'bg-[#1F2937]/10 border-[#1F2937] text-[#1F2937]' 
@@ -1732,17 +1732,17 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                                  setConfirmModalConfig({ isOpen: true, type: 'delete' });
                                }}
                                className="bg-[#edc091]/10 border border-[#edc091]/30 text-[#edc091] hover:bg-[#edc091]/25 uppercase tracking-[0.1em] rounded-xl transition-all flex items-center justify-center gap-2"
-                               style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 500, height: 'clamp(32px, 8vw, 38px)', fontSize: 'clamp(9px, 2.2vw, 11px)' }}
+                               style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 500, height: 'clamp(32px, 8vw, 38px)', fontSize: 'clamp(12px, 2.2vw, 12px)' }}
                             >
                               <Trash2 size={11} /> Remove Account
                             </button>
                           </div>
  
-                          <div className="flex gap-[clamp(8px,2.2vw,12px)]">
+                          <div className="flex gap-[clamp(12px,2.2vw,12px)]">
                             {!account.isArchived && (
                               <button 
                                 onClick={handleUpdateAccount}
-                                style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 500, height: 'clamp(32px, 8vw, 38px)', fontSize: 'clamp(9px, 2.2vw, 11px)' }}
+                                style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 500, height: 'clamp(32px, 8vw, 38px)', fontSize: 'clamp(12px, 2.2vw, 12px)' }}
                                 className="flex-1 bg-[#10B981] hover:bg-[#059669] text-white uppercase tracking-[0.15em] rounded-xl active:scale-95 transition-all flex items-center justify-center"
                               >
                                 Apply Changes
@@ -1753,7 +1753,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                                 setIsEditMode(false);
                                 setIsManageMode(false);
                               }}
-                              style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 500, height: 'clamp(32px, 8vw, 38px)', fontSize: 'clamp(9px, 2.2vw, 11px)' }}
+                              style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 500, height: 'clamp(32px, 8vw, 38px)', fontSize: 'clamp(12px, 2.2vw, 12px)' }}
                               className={`${account.isArchived ? 'w-full' : 'px-4'} bg-neutral-100 border border-neutral-300 text-[#1F2937]/70 uppercase tracking-[0.15em] rounded-xl hover:bg-neutral-200 hover:text-[#1F2937] transition-all flex items-center justify-center`}
                             >
                               {account.isArchived ? 'Go Back' : 'Cancel'}
@@ -1802,7 +1802,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
 
                {/* Bounding inner canvas prompt text - font weight 400 Google Sans */}
                <p 
-                 className="text-neutral-500 leading-relaxed text-[clamp(11.5px,2.8vw,13.5px)] px-1"
+                 className="text-neutral-500 leading-relaxed text-[clamp(12px,2.8vw,13.5px)] px-1"
                  style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
                  id="confirm-modal-warning-text"
                >
@@ -1828,7 +1828,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                    style={{ 
                      fontFamily: "'Google Sans', sans-serif", 
                      fontWeight: 400,
-                     fontSize: 'clamp(11px, 2.8vw, 13px)'
+                     fontSize: 'clamp(12px, 2.8vw, 13px)'
                    }}
                    className="w-full h-[38px] md:h-[42px] bg-[#A6DDB1] hover:bg-[#86CA93] active:scale-95 text-neutral-800 transition-all rounded-xl uppercase tracking-wider flex items-center justify-center cursor-pointer disabled:opacity-50"
                    id="confirm-modal-proceed-button"
@@ -1842,7 +1842,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                    style={{ 
                      fontFamily: "'Google Sans', sans-serif", 
                      fontWeight: 400,
-                     fontSize: 'clamp(11px, 2.8vw, 13px)'
+                     fontSize: 'clamp(12px, 2.8vw, 13px)'
                    }}
                    className="w-full text-neutral-400 hover:text-neutral-600 transition-colors uppercase tracking-wider text-center cursor-pointer py-1 disabled:opacity-50"
                    id="confirm-modal-cancel-button"
@@ -1873,33 +1873,33 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
              >
                 <div className="flex flex-col gap-1">
                    <h3 className="text-xl font-bold text-white uppercase tracking-tight">Add Asset Transaction</h3>
-                   <p className="text-[10px] text-gold uppercase tracking-widest">{subAssetTransactionModal.saName}</p>
+                   <p className="text-[12px] text-gold uppercase tracking-widest">{subAssetTransactionModal.saName}</p>
                 </div>
 
                 <div className="flex flex-col gap-4">
                    <div className="grid grid-cols-3 gap-2">
                       <button 
                         onClick={() => setSaTxType('income')}
-                        className={`py-3 rounded-xl border text-[8px] font-black uppercase tracking-widest transition-all ${saTxType === 'income' ? 'bg-emerald-500/10 border-emerald-500 text-emerald-500' : 'bg-white/5 border-white/10 text-neutral-500'}`}
+                        className={`py-3 rounded-xl border text-[12px] font-black uppercase tracking-widest transition-all ${saTxType === 'income' ? 'bg-emerald-500/10 border-emerald-500 text-emerald-500' : 'bg-white/5 border-white/10 text-neutral-500'}`}
                       >
                          Rent/Div
                       </button>
                       <button 
                         onClick={() => setSaTxType('appreciation')}
-                        className={`py-3 rounded-xl border text-[8px] font-black uppercase tracking-widest transition-all ${saTxType === 'appreciation' ? 'bg-blue-500/10 border-blue-500 text-blue-500' : 'bg-white/5 border-white/10 text-neutral-500'}`}
+                        className={`py-3 rounded-xl border text-[12px] font-black uppercase tracking-widest transition-all ${saTxType === 'appreciation' ? 'bg-blue-500/10 border-blue-500 text-blue-500' : 'bg-white/5 border-white/10 text-neutral-500'}`}
                       >
                          Value Up
                       </button>
                       <button 
                         onClick={() => setSaTxType('expense')}
-                        className={`py-3 rounded-xl border text-[8px] font-black uppercase tracking-widest transition-all ${saTxType === 'expense' ? 'bg-rose-500/10 border-rose-500 text-rose-500' : 'bg-white/5 border-white/10 text-neutral-500'}`}
+                        className={`py-3 rounded-xl border text-[12px] font-black uppercase tracking-widest transition-all ${saTxType === 'expense' ? 'bg-rose-500/10 border-rose-500 text-rose-500' : 'bg-white/5 border-white/10 text-neutral-500'}`}
                       >
                          Expense
                       </button>
                    </div>
 
                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[8px] font-black text-neutral-500 uppercase tracking-wider pl-1">Amount</label>
+                      <label className="text-[12px] font-black text-neutral-500 uppercase tracking-wider pl-1">Amount</label>
                       <input 
                         type="number"
                         value={saTxAmount}
@@ -1910,7 +1910,7 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                    </div>
 
                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[8px] font-black text-neutral-500 uppercase tracking-wider pl-1">Note (Optional)</label>
+                      <label className="text-[12px] font-black text-neutral-500 uppercase tracking-wider pl-1">Note (Optional)</label>
                       <input 
                         type="text"
                         value={saTxNote}
@@ -1925,13 +1925,13 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                    <button 
                      onClick={handleSubAssetTransaction}
                      disabled={isLoading || !saTxAmount}
-                     className="w-full py-4 bg-gold text-black font-black uppercase tracking-[0.2em] text-[10px] rounded-2xl shadow-lg shadow-gold/20 active:scale-95 transition-all disabled:opacity-50"
+                     className="w-full py-4 bg-gold text-black font-black uppercase tracking-[0.2em] text-[12px] rounded-2xl shadow-lg shadow-gold/20 active:scale-95 transition-all disabled:opacity-50"
                    >
                      {isLoading ? "Processing..." : "Commit Transaction"}
                    </button>
                    <button 
                      onClick={() => setSubAssetTransactionModal(null)}
-                     className="w-full py-4 text-neutral-500 font-black uppercase tracking-[0.2em] text-[10px] hover:text-white transition-colors"
+                     className="w-full py-4 text-neutral-500 font-black uppercase tracking-[0.2em] text-[12px] hover:text-white transition-colors"
                    >
                      Cancel
                    </button>
@@ -1960,13 +1960,13 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                 <div className="flex flex-col gap-1">
                    <h3 className="text-xl font-bold text-white uppercase tracking-tight">Allocate Sourced Funds</h3>
                    <div className="flex items-center gap-2">
-                      <p className="text-[10px] text-gold uppercase tracking-widest font-bold">Unallocated: {unallocatedCash.toLocaleString()} {account.currency}</p>
+                      <p className="text-[12px] text-gold uppercase tracking-widest font-bold">Unallocated: {unallocatedCash.toLocaleString()} {account.currency}</p>
                    </div>
                 </div>
 
                 <div className="flex flex-col gap-4">
                    <div className="flex flex-col gap-2">
-                      <label className="text-[8px] font-black text-neutral-500 uppercase tracking-wider pl-1 font-bold">Transfer Amount to Asset</label>
+                      <label className="text-[12px] font-black text-neutral-500 uppercase tracking-wider pl-1 font-bold">Transfer Amount to Asset</label>
                       <input 
                         type="number"
                         value={allocationAmount}
@@ -1978,13 +1978,13 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                    </div>
 
                    <div className="flex flex-col gap-2">
-                      <label className="text-[8px] font-black text-neutral-500 uppercase tracking-wider pl-1 font-bold">Select Destination Asset</label>
+                      <label className="text-[12px] font-black text-neutral-500 uppercase tracking-wider pl-1 font-bold">Select Destination Asset</label>
                       <div className="flex flex-col gap-2">
                          {account.subAssets?.map((sa, idx) => (
                            <button
                              key={`sa-alloc-${sa.id || 'none'}-${idx}`}
                              onClick={() => setAllocationSaId(sa.id)}
-                             className={`p-4 rounded-xl border text-[10px] font-black uppercase text-left transition-all ${allocationSaId === sa.id ? 'bg-gold/10 border-gold text-gold' : 'bg-white/5 border-white/10 text-neutral-500'}`}
+                             className={`p-4 rounded-xl border text-[12px] font-black uppercase text-left transition-all ${allocationSaId === sa.id ? 'bg-gold/10 border-gold text-gold' : 'bg-white/5 border-white/10 text-neutral-500'}`}
                            >
                              {sa.name}
                            </button>
@@ -1997,13 +1997,13 @@ export const AccountDetailModal: React.FC<AccountDetailModalProps> = ({
                    <button 
                      onClick={handleAllocate}
                      disabled={isLoading || !allocationAmount || !allocationSaId || parseFloat(allocationAmount) > unallocatedCash}
-                     className="w-full py-5 bg-gold text-black font-black uppercase tracking-[0.2em] text-[10px] rounded-2xl shadow-lg shadow-gold/20 active:scale-95 transition-all disabled:opacity-50"
+                     className="w-full py-5 bg-gold text-black font-black uppercase tracking-[0.2em] text-[12px] rounded-2xl shadow-lg shadow-gold/20 active:scale-95 transition-all disabled:opacity-50"
                    >
                      {isLoading ? "Processing..." : "Assign to Principal"}
                    </button>
                    <button 
                      onClick={() => setIsAllocationOpen(false)}
-                     className="w-full py-4 text-neutral-500 font-black uppercase tracking-[0.2em] text-[10px] hover:text-white transition-colors"
+                     className="w-full py-4 text-neutral-500 font-black uppercase tracking-[0.2em] text-[12px] hover:text-white transition-colors"
                    >
                      Keep in Wallet
                    </button>

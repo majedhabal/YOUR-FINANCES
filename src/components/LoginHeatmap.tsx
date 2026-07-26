@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { motion } from 'motion/react';
+import { getSimulatedDate } from '../lib/dateSimulator';
 
 interface LoginHeatmapProps {
   userLogins: any[];
@@ -8,7 +9,7 @@ interface LoginHeatmapProps {
 export const LoginHeatmap: React.FC<LoginHeatmapProps> = ({ userLogins }) => {
   const last30Days = useMemo(() => {
     const days = [];
-    const today = new Date();
+    const today = getSimulatedDate();
     for (let i = 29; i >= 0; i--) {
       const date = new Date(today);
       date.setDate(today.getDate() - i);
@@ -20,7 +21,9 @@ export const LoginHeatmap: React.FC<LoginHeatmapProps> = ({ userLogins }) => {
   const loginDates = useMemo(() => {
     const dates = new Set();
     userLogins.forEach(login => {
-      const date = login.timestamp.toDate ? login.timestamp.toDate() : new Date(login.timestamp);
+      const timestamp = login.timestamp;
+      const date = timestamp?.toDate ? timestamp.toDate() : new Date(timestamp);
+      // Ensure we use the date as represented in UTC for consistency with the heatmap generation
       dates.add(date.toISOString().split('T')[0]);
     });
     return dates;

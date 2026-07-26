@@ -1316,11 +1316,11 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
                     <div className="absolute bottom-[105%] mb-2 bg-slate-900 border border-slate-800 text-white p-2.5 rounded-xl shadow-xl flex flex-col gap-1 z-30 min-w-[140px] text-left">
                       <p 
                         style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
-                        className="text-[11px] text-slate-400 border-b border-slate-800 pb-1 mb-1 font-bold"
+                        className="text-[12px] text-slate-400 border-b border-slate-800 pb-1 mb-1 font-bold"
                       >
                         {t('months_short.' + d.month, d.month)} {t('analytics.performance')}
                       </p>
-                      <div className="flex items-center justify-between gap-3 text-[10px]">
+                      <div className="flex items-center justify-between gap-3 text-[12px]">
                         <span className="flex items-center gap-1 font-sans text-slate-300">
                           <span className="w-1.5 h-1.5 rounded-full bg-[#a6ddb1]" />
                           {t('analytics.inflow')}:
@@ -1332,7 +1332,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
                           {formatCurrency(d.income)}
                         </span>
                       </div>
-                      <div className="flex items-center justify-between gap-3 text-[10px]">
+                      <div className="flex items-center justify-between gap-3 text-[12px]">
                         <span className="flex items-center gap-1 font-sans text-slate-300">
                           <span className="w-1.5 h-1.5 rounded-full bg-[#c1c9bf]/40" />
                           {t('analytics.outflow')}:
@@ -1817,12 +1817,12 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
           fill: #1E2229 !important;
         }
         .recharts-tooltip-label, .recharts-tooltip-item {
-          font-size: clamp(9px, 2vw, 11px) !important;
+          font-size: clamp(12px, 2vw, 12px) !important;
           font-weight: 400 !important;
         }
         .recharts-default-tooltip {
           border-radius: 12px !important;
-          padding: 6px 10px !important;
+          padding: 6px 12px !important;
           border: 1px solid #E1E8ED !important;
           box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05) !important;
         }
@@ -1910,7 +1910,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
         div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) {
           width: 150px !important;
           border-color: #7a7a7a !important;
-          border-radius: 10px !important;
+          border-radius: 12px !important;
         }
         div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div#analytics-sticky-selector-row:nth-of-type(2) {
           margin-left: 0px !important;
@@ -1918,7 +1918,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
           margin-bottom: 0px !important;
           margin-top: -20px !important;
           border-width: 1px !important;
-          border-radius: 10px !important;
+          border-radius: 12px !important;
           border-color: #7a7a7a !important;
         }
         div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div#analytics-sticky-selector-row:nth-of-type(2) > button#analytics-switcher-btn-now:nth-of-type(1) {
@@ -1932,16 +1932,16 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
           font-size: 12px !important;
         }
         div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(1) > div#analytics-networth-card:nth-of-type(1) {
-          border-radius: 10px !important;
+          border-radius: 12px !important;
           border-color: #7a7a7a !important;
           border-style: ridge !important;
         }
         div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(1) > div:nth-of-type(2) > div#analytics-cashavailable-card:nth-of-type(1) {
-          border-radius: 10px !important;
+          border-radius: 12px !important;
           border-color: #7a7a7a !important;
         }
         div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(1) > div:nth-of-type(2) > div#analytics-totaldebt-card:nth-of-type(2) {
-          border-radius: 10px !important;
+          border-radius: 12px !important;
           border-color: #7a7a7a !important;
         }
         div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(1) > div#analytics-networth-card:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1) {
@@ -1955,7 +1955,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
           border-radius: 0px !important;
         }
         div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div#analytics-recurring-card:nth-of-type(2) {
-          border-radius: 10px !important;
+          border-radius: 12px !important;
           border-color: #7a7a7a !important;
         }
         div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div#analytics-recurring-card:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1) {
@@ -2024,7 +2024,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
           padding-top: 5px !important;
           padding-right: 5px !important;
           padding-bottom: 5px !important;
-          margin-left: -9px !important;
+          margin-left: -12px !important;
           height: 130px !important;
         }
         div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1) {
@@ -2034,16 +2034,16 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
           padding-right: 0px !important;
           margin-top: -5px !important;
           margin-left: 0px !important;
-          margin-right: 10px !important;
+          margin-right: 12px !important;
           border-radius: 30px !important;
         }
         div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(2) > span:nth-of-type(1) {
           padding-left: 0px !important;
-          margin-left: 10px !important;
+          margin-left: 12px !important;
         }
         div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) {
-          padding-top: 10px !important;
-          margin-top: 10px !important;
+          padding-top: 12px !important;
+          margin-top: 12px !important;
           border-radius: 30px !important;
           margin-left: 5px !important;
         }
@@ -2110,17 +2110,17 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
           width: 330px !important;
         }
         div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(1) > div:nth-of-type(2) > div#analytics-cashavailable-card:nth-of-type(1) {
-          margin-left: 8px !important;
+          margin-left: 12px !important;
           height: 100px !important;
           width: 330px !important;
         }
         div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(1) > div:nth-of-type(2) > div#analytics-totaldebt-card:nth-of-type(2) {
           width: 330px !important;
           height: 100px !important;
-          margin-left: 8px !important;
+          margin-left: 12px !important;
         }
         div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div#analytics-sticky-selector-row:nth-of-type(3) {
-          margin-left: 8px !important;
+          margin-left: 12px !important;
         }
         div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(1) > div#analytics-networth-card:nth-of-type(1) > div:nth-of-type(1) {
           height: 0px !important;
@@ -2138,10 +2138,10 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
         div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > div#analytics-recurring-card:nth-of-type(2) {
           height: 150px !important;
           width: 330px !important;
-          margin-left: 8px !important;
+          margin-left: 12px !important;
         }
         div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(3) {
-          margin-left: 8px !important;
+          margin-left: 12px !important;
           margin-top: 0px !important;
           margin-right: 0px !important;
           margin-bottom: 0px !important;
@@ -2185,7 +2185,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
           font-size: 12px !important;
         }
         div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(1) > div#analytics-networth-card:nth-of-type(1) {
-          margin-left: 8px !important;
+          margin-left: 12px !important;
         }
         div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > button:nth-of-type(1) {
           height: 30px !important;
@@ -2275,7 +2275,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
         div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2),
         div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) {
           margin-right: 0px !important;
-          margin-left: -10px !important;
+          margin-left: -12px !important;
         }
         div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(5) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(3) > button:nth-of-type(1),
         div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(5) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(3) > button:nth-of-type(1),
@@ -2325,10 +2325,13 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
         }
         div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(2) > div:nth-of-type(4),
         div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(2) > div:nth-of-type(4) {
-          padding-bottom: 10px !important;
-          padding-top: 10px !important;
+          padding-bottom: 12px !important;
+          padding-top: 12px !important;
         }
         div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(3) > div:nth-of-type(2) {
+        }
+        div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) {
+          height: 60px !important;
         }
       `}</style>
       <div className="analytics-ambient-background">
@@ -2452,13 +2455,13 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
               {/* Stats Row */}
               <div className="grid grid-cols-2 gap-4 pt-6 mt-auto border-t border-[#E1E8ED]">
                 <div>
-                  <p className="text-[10px] font-bold text-[#8c8c99] mb-1">{t('analytics.total_inflow')}</p>
+                  <p className="text-[12px] font-bold text-[#8c8c99] mb-1">{t('analytics.total_inflow')}</p>
                   <p className="text-xl font-bold text-[#366945]">
                     {profile?.baseCurrency || profile?.currency || 'AED'} {totalInflow < 0 ? '-' : ''}{Math.abs(totalInflow).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </p>
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold text-[#8c8c99] mb-1">{t('analytics.burn_rate')}</p>
+                  <p className="text-[12px] font-bold text-[#8c8c99] mb-1">{t('analytics.burn_rate')}</p>
                   <p className="text-xl font-bold text-[#111c2d]">
                     {profile?.baseCurrency || profile?.currency || 'AED'} {burnRate < 0 ? '-' : ''}{Math.abs(burnRate).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </p>
@@ -2476,7 +2479,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
               >
                 <div className="flex justify-between items-start mb-2">
                   <span className="text-sm text-[#8c8c99]">{t('analytics.net_worth')}</span>
-                  <span className="bg-[#A6DDB1]/20 text-[#366945] text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                  <span className="bg-[#A6DDB1]/20 text-[#366945] text-[12px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
                     <TrendingUp size={12} /> {netWorthChangePct.toFixed(1)}%
                   </span>
                 </div>
@@ -2508,7 +2511,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
               >
                 <div className="flex justify-between items-start mb-2">
                   <span className="text-sm text-[#8c8c99]">{t('analytics.cash_available')}</span>
-                  <span className="bg-[#A6DDB1]/20 text-[#366945] text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                  <span className="bg-[#A6DDB1]/20 text-[#366945] text-[12px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
                     <TrendingUp size={12} /> +100.0%
                   </span>
                 </div>
@@ -2546,7 +2549,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
               >
                 <div className="flex justify-between items-start mb-2">
                   <span className="text-sm text-[#8c8c99]">{t('analytics.total_debts')}</span>
-                  <span className="bg-[#ba1a1a]/10 text-[#ba1a1a] text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                  <span className="bg-[#ba1a1a]/10 text-[#ba1a1a] text-[12px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
                     <TrendingDown size={12} />
                   </span>
                 </div>
@@ -2567,7 +2570,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
                 <div className="flex flex-col gap-4">
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-[#8c8c99]">{t('analytics.monthly_recurring_income')}</span>
-                    <span className="bg-[#366945]/10 text-[#366945] text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                    <span className="bg-[#366945]/10 text-[#366945] text-[12px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
                       <TrendingUp size={12} />
                     </span>
                   </div>
@@ -2582,7 +2585,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
                   
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-[#8c8c99]">{t('analytics.monthly_recurring_expenses')}</span>
-                    <span className="bg-[#ba1a1a]/10 text-[#ba1a1a] text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                    <span className="bg-[#ba1a1a]/10 text-[#ba1a1a] text-[12px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
                       <TrendingDown size={12} />
                     </span>
                   </div>
@@ -2800,7 +2803,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
                       <div className="bg-white/10 rounded-xl p-4 border border-white/5">
                         <span 
                           style={{ fontFamily: "'Google Sans', sans-serif" }}
-                          className="text-[10px] text-white/70 block mb-1 font-normal"
+                          className="text-[12px] text-white/70 block mb-1 font-normal"
                         >
                           {t('analytics.capital_impact')}
                         </span>
@@ -2829,7 +2832,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -10 }}
-                            className="bg-emerald-950/80 border border-[#a6ddb1]/30 p-2.5 rounded-lg text-center text-[10px] text-white/90"
+                            className="bg-emerald-950/80 border border-[#a6ddb1]/30 p-2.5 rounded-lg text-center text-[12px] text-white/90"
                           >
                             {applyBudgetFeedback}
                           </motion.div>
@@ -2864,7 +2867,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
                             <span className="w-2 h-2 rounded-full bg-[#366945]" />
                             <span 
                               style={{ fontFamily: "'Google Sans', sans-serif" }}
-                              className="text-[10px] text-gray-500 font-normal"
+                              className="text-[12px] text-gray-500 font-normal"
                             >
                               {t('analytics.income')}
                             </span>
@@ -2873,7 +2876,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
                             <span className="w-2.5 h-2.5 rounded-full bg-[#c1c9bf]" />
                             <span 
                               style={{ fontFamily: "'Google Sans', sans-serif" }}
-                              className="text-[10px] text-gray-500 font-normal"
+                              className="text-[12px] text-gray-500 font-normal"
                             >
                               {t('analytics.expenses')}
                             </span>
@@ -2913,7 +2916,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
                                 borderColor: 'rgba(30,34,41,0.08)',
                                 borderRadius: '12px',
                                 fontFamily: "'Google Sans', sans-serif",
-                                fontSize: '11px'
+                                fontSize: '12px'
                               }}
                             />
                             <Area 
@@ -2940,7 +2943,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
                       <div className="select-none">
                         <span 
                           style={{ fontFamily: "'Google Sans', sans-serif" }}
-                          className="text-[10px] text-gray-500 block font-normal"
+                          className="text-[12px] text-gray-500 block font-normal"
                         >
                           {t('analytics.avg_net_surplus')}
                         </span>
@@ -2954,7 +2957,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
                       <div className="select-none">
                         <span 
                           style={{ fontFamily: "'Google Sans', sans-serif" }}
-                          className="text-[10px] text-gray-500 block font-normal"
+                          className="text-[12px] text-gray-500 block font-normal"
                         >
                           {t('analytics.liquidity_score')}
                         </span>
@@ -2974,7 +2977,7 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
                   <div className="md:col-span-12 text-center mt-4">
                     <p 
                       style={{ fontFamily: "'Google Sans', sans-serif" }}
-                      className="text-[10px] text-gray-400 leading-relaxed font-normal"
+                      className="text-[12px] text-gray-400 leading-relaxed font-normal"
                     >
                       {t('analytics.forecast_disclaimer')}
                     </p>

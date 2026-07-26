@@ -54,7 +54,7 @@ export const Budgets: React.FC<BudgetsProps> = ({ profile }) => {
           <ListTodo size={18} className="text-[#A6DDB1]" />
           <div className="flex flex-col">
             <h4 className="text-sm font-bold text-white m-0 lowercase">{t('budgets.envelope_budget_pools')}</h4>
-            <span className="text-[10px] text-neutral-400 font-medium mt-0.5">{t('budgets.automated_salary_breakdowns')}</span>
+            <span className="text-[12px] text-neutral-400 font-medium mt-0.5">{t('budgets.automated_salary_breakdowns')}</span>
           </div>
         </div>
         <button 

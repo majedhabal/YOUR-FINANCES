@@ -35,10 +35,10 @@ export const PremiumMarketingCard: React.FC<PremiumMarketingCardProps> = ({ feat
         <h3 style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[clamp(14px,4.5vw,18px)] text-[#00FF88] tracking-wide leading-none">
           {t('premium_marketing_card.title', 'Vantage insights')}
         </h3>
-        <h4 style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[clamp(11px,3vw,13px)] text-white tracking-wide leading-snug mt-1 opacity-90">
+        <h4 style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[clamp(12px,3vw,13px)] text-white tracking-wide leading-snug mt-1 opacity-90">
           {t('premium_marketing_card.unlock', 'Unlock {{featureName}}', { featureName })}
         </h4>
-        <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[clamp(10px,2.5vw,12px)] text-slate-300 max-w-[280px] leading-relaxed mx-auto tracking-wide mt-1.5">
+        <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[clamp(12px,2.5vw,12px)] text-slate-300 max-w-[280px] leading-relaxed mx-auto tracking-wide mt-1.5">
           {description}
         </p>
       </div>
@@ -50,7 +50,7 @@ export const PremiumMarketingCard: React.FC<PremiumMarketingCardProps> = ({ feat
         ].map((item, i) => (
           <div key={i} className="flex flex-col items-center gap-1.5 p-2.5 rounded-xl bg-white/5 border border-white/10 shadow-sm">
             <item.icon size={14} className="text-vantage-green shrink-0" />
-            <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[clamp(9px,2.2vw,11px)] text-slate-200 tracking-wide">{item.label}</span>
+            <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[clamp(12px,2.2vw,12px)] text-slate-200 tracking-wide">{item.label}</span>
           </div>
         ))}
       </div>
@@ -63,12 +63,12 @@ export const PremiumMarketingCard: React.FC<PremiumMarketingCardProps> = ({ feat
           backgroundColor: '#A6DDB1',
           color: '#1E293B'
         }}
-        className="w-full h-[40px] md:h-[44px] rounded-xl text-[clamp(11px,2.8vw,13px)] tracking-wide shadow-sm hover:brightness-95 active:scale-95 transition-all relative z-10 flex items-center justify-center cursor-pointer border border-transparent outline-none select-none"
+        className="w-full h-[40px] md:h-[44px] rounded-xl text-[clamp(12px,2.8vw,13px)] tracking-wide shadow-sm hover:brightness-95 active:scale-95 transition-all relative z-10 flex items-center justify-center cursor-pointer border border-transparent outline-none select-none"
       >
         {t('premium_marketing_card.initialize', 'Join the premium club')}
       </button>
 
-      <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[clamp(8px,2vw,10px)] text-neutral-400 tracking-wide leading-none mt-1">
+      <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[clamp(12px,2vw,12px)] text-neutral-400 tracking-wide leading-none mt-1">
         {t('premium_marketing_card.footer', 'Powered by Google Gemini // Access restricted to premium level nodes')}
       </p>
     </motion.div>

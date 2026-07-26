@@ -136,7 +136,7 @@ export const BudgetTransactionModal: React.FC<{
             </h4>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="flex flex-col gap-1">
-                <label className="text-[10px] font-bold text-[#8c8c99] px-1" style={{ fontFamily: "'Google Sans', sans-serif" }}>
+                <label className="text-[12px] font-bold text-[#8c8c99] px-1" style={{ fontFamily: "'Google Sans', sans-serif" }}>
                   {t("budget_modal.transaction_type", "Transaction Type")}
                 </label>
                 <select value={type} onChange={e => setType(e.target.value as 'expense' | 'transfer')} className="w-full bg-[#f4f4f8] border border-[#d8d8e5] rounded-xl px-4 py-3 text-sm focus:border-[#a6ddb1] outline-none" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}>
@@ -146,7 +146,7 @@ export const BudgetTransactionModal: React.FC<{
               </div>
 
               <div className="flex flex-col gap-1">
-                <label className="text-[10px] font-bold text-[#8c8c99] px-1" style={{ fontFamily: "'Google Sans', sans-serif" }}>
+                <label className="text-[12px] font-bold text-[#8c8c99] px-1" style={{ fontFamily: "'Google Sans', sans-serif" }}>
                   {t("budget_modal.source_account", "Source Account")}
                 </label>
                 <select value={sourceAccountId} onChange={e => setSourceAccountId(e.target.value)} className="w-full bg-[#f4f4f8] border border-[#d8d8e5] rounded-xl px-4 py-3 text-sm focus:border-[#a6ddb1] outline-none" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}>
@@ -156,7 +156,7 @@ export const BudgetTransactionModal: React.FC<{
 
               {type === 'transfer' && (
                 <div className="flex flex-col gap-1">
-                  <label className="text-[10px] font-bold text-[#8c8c99] px-1" style={{ fontFamily: "'Google Sans', sans-serif" }}>
+                  <label className="text-[12px] font-bold text-[#8c8c99] px-1" style={{ fontFamily: "'Google Sans', sans-serif" }}>
                     {t("budget_modal.destination_account", "Destination Account")}
                   </label>
                   <select value={destinationAccountId} onChange={e => setDestinationAccountId(e.target.value)} className="w-full bg-[#f4f4f8] border border-[#d8d8e5] rounded-xl px-4 py-3 text-sm focus:border-[#a6ddb1] outline-none" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}>
@@ -167,14 +167,14 @@ export const BudgetTransactionModal: React.FC<{
               )}
               
               <div className="flex flex-col gap-1">
-                <label className="text-[10px] font-bold text-[#8c8c99] px-1" style={{ fontFamily: "'Google Sans', sans-serif" }}>
+                <label className="text-[12px] font-bold text-[#8c8c99] px-1" style={{ fontFamily: "'Google Sans', sans-serif" }}>
                   {t("budget_modal.amount", "Amount")}
                 </label>
                 <input type="text" value={amount} onChange={e => setAmount(e.target.value.replace(/[^0-9+\-*/.()]/g, ''))} onBlur={() => setAmount(prev => evaluateMathExpression(prev))} placeholder="0" className="w-full bg-[#f4f4f8] border border-[#d8d8e5] rounded-xl px-4 py-3 text-sm focus:border-[#a6ddb1] outline-none" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} />
               </div>
 
               <div className="flex flex-col gap-1">
-                <label className="text-[10px] font-bold text-[#8c8c99] px-1" style={{ fontFamily: "'Google Sans', sans-serif" }}>
+                <label className="text-[12px] font-bold text-[#8c8c99] px-1" style={{ fontFamily: "'Google Sans', sans-serif" }}>
                   {t("budget_modal.note", "Note")}
                 </label>
                 <input type="text" value={note} onChange={e => setNote(e.target.value)} placeholder={t("budget_modal.note_placeholder", "Note...")} className="w-full bg-[#f4f4f8] border border-[#d8d8e5] rounded-xl px-4 py-3 text-sm focus:border-[#a6ddb1] outline-none" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} />

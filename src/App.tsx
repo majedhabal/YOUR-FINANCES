@@ -26,10 +26,12 @@ import { SalaryBreakdownModal } from './components/SalaryBreakdownModal';
 import { StreakAnimation } from './components/StreakAnimation';
 import { MilestoneRewardBanner } from './components/MilestoneRewardBanner';
 import { FullMilestoneOverlay } from './components/FullMilestoneOverlay';
+import { PasscodeLockModal } from './components/PasscodeLockModal';
+import { hasPasscode } from './lib/passcode';
 import { NotificationManager } from './components/NotificationManager';
 import { DEFAULT_RATES, syncExchangeRates } from './lib/exchangeRates';
 import { calculateAccountBalances } from './lib/trendUtils';
-import { REWARDS } from './lib/badgeUtils';
+import { REWARDS, BADGES } from './lib/badgeUtils';
 
 export type Tab = 'essentials' | 'accounts' | 'ai' | 'activity' | 'analytics' | 'settings' | 'salary-breakdown';
 
@@ -59,6 +61,7 @@ function AppContent() {
   const [isAccountModalOpen, setIsAddAccountOpen] = useState(false);
   const [isMilestoneModalOpen, setIsMilestoneModalOpen] = useState(false);
   const [isDebtMilestoneModalOpen, setIsDebtMilestoneModalOpen] = useState(false);
+  const [isLocked, setIsLocked] = useState(hasPasscode());
   const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false);
   const [currentTourStep, setCurrentTourStep] = useState<number | null>(null);
 
@@ -149,6 +152,7 @@ function AppContent() {
 
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, async (currentUser) => {
+      console.log("onAuthStateChanged triggered. User:", currentUser ? currentUser.uid : "null");
       if (currentUser) {
         setUser(currentUser);
         
@@ -232,7 +236,7 @@ function AppContent() {
                       console.log("Streak lost!");
                   }
 
-                  // Handle rewards
+                  // Handle rewards and badges
                   const claimedRewards = profileData.claimedRewards || [];
                   const newRewards = profileData.rewardHistory || [];
                   const todayStr = getSimulatedDate().toISOString().split('T')[0];
@@ -263,6 +267,18 @@ function AppContent() {
                           }
                           setIsBonusStreak(true); // Trigger animation for reward
                           setRewardNotification(reward);
+                      }
+                  });
+                  
+                  // Handle badges
+                  BADGES.forEach(badge => {
+                      if (newStreak >= badge.threshold && !claimedRewards.includes(`badge_${badge.id}`)) {
+                          claimedRewards.push(`badge_${badge.id}`);
+                          setRewardNotification({
+                              title: `${badge.title} Unlocked!`,
+                              type: 'badge',
+                              image: badge.image
+                          });
                       }
                   });
                   updateData.claimedRewards = claimedRewards;
@@ -418,7 +434,13 @@ function AppContent() {
           onComplete={() => setShowStreakAnimation(false)} 
         />
       )}
-      <NotificationManager />
+      <NotificationManager uid={user.uid} />
+      {isLocked && (
+        <PasscodeLockModal
+          isOpen={isLocked}
+          onSuccess={() => setIsLocked(false)}
+        />
+      )}
      <AnimatePresence mode="wait">
   {activeTab === 'essentials' && (
     <motion.div key="essentials" {...animation}>

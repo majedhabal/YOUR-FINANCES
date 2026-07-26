@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, setPersistence, browserLocalPersistence } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, setPersistence, browserLocalPersistence, indexedDBLocalPersistence, inMemoryPersistence } from 'firebase/auth';
 import { 
   initializeFirestore, 
   memoryLocalCache
@@ -22,9 +22,20 @@ export const auth = getAuth(app);
 export const messaging = getMessaging(app);
 
 // Explicitly set browser-based local persistence for Firebase Auth
-setPersistence(auth, browserLocalPersistence).catch((err) => {
-  console.warn("Explicit Firebase Auth persistence configuration failed:", err);
-});
+// We try browserLocalPersistence, then indexedDBLocalPersistence. If all fail, we default to inMemoryPersistence
+// to avoid auth errors in restricted environments.
+setPersistence(auth, browserLocalPersistence)
+  .catch((err) => {
+    console.warn("browserLocalPersistence failed, trying indexedDBLocalPersistence:", err);
+    return setPersistence(auth, indexedDBLocalPersistence);
+  })
+  .catch((err) => {
+    console.warn("indexedDBLocalPersistence failed, falling back to inMemoryPersistence:", err);
+    return setPersistence(auth, inMemoryPersistence);
+  })
+  .catch((err) => {
+    console.error("All persistence methods failed:", err);
+  });
 
 let googleProvider: GoogleAuthProvider | null = null;
 export const getGoogleProvider = () => {

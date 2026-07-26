@@ -130,7 +130,7 @@ export const DebtBreakdownModal: React.FC<DebtBreakdownModalProps> = ({
                   </h3>
                   <p 
                     style={{ fontWeight: 400, fontFamily: "'Google Sans', sans-serif" }}
-                    className="text-neutral-500 text-[11px]"
+                    className="text-neutral-500 text-[12px]"
                   >
                     {t('debt_breakdown.subtitle')}
                   </p>
@@ -146,8 +146,8 @@ export const DebtBreakdownModal: React.FC<DebtBreakdownModalProps> = ({
               {/* Calculations Summary Card */}
               <div className="p-4 rounded-xl bg-white/40 border border-neutral-100/50 flex flex-col gap-3 shrink-0">
                 <div className="flex justify-between items-center">
-                  <span style={{ fontWeight: 400, fontFamily: "'Google Sans', sans-serif" }} className="text-neutral-500 text-[11px]">{t('debt_breakdown.liability_summary')}</span>
-                  <span style={{ fontWeight: 500, fontFamily: "'Google Sans', sans-serif" }} className="text-rose-600 text-[10px] bg-rose-50/50 px-2 py-0.5 rounded-full">
+                  <span style={{ fontWeight: 400, fontFamily: "'Google Sans', sans-serif" }} className="text-neutral-500 text-[12px]">{t('debt_breakdown.liability_summary')}</span>
+                  <span style={{ fontWeight: 500, fontFamily: "'Google Sans', sans-serif" }} className="text-rose-600 text-[12px] bg-rose-50/50 px-2 py-0.5 rounded-full">
                     {t('debt_breakdown.outstanding_debt_label')}
                   </span>
                 </div>
@@ -160,7 +160,7 @@ export const DebtBreakdownModal: React.FC<DebtBreakdownModalProps> = ({
                   flexWrap: 'nowrap',
                   width: '100%'
                 }} className="flex items-center justify-between flex-nowrap w-full">
-                  <span style={{ fontWeight: 400, fontFamily: "'Google Sans', sans-serif", color: '#1E2229' }} className="text-[11px]">{t('debt_breakdown.total_outstanding_debt', { currency: primaryCurrency })}</span>
+                  <span style={{ fontWeight: 400, fontFamily: "'Google Sans', sans-serif", color: '#1E2229' }} className="text-[12px]">{t('debt_breakdown.total_outstanding_debt', { currency: primaryCurrency })}</span>
                   <span 
                     style={{ 
                       fontWeight: 600, 
@@ -190,12 +190,12 @@ export const DebtBreakdownModal: React.FC<DebtBreakdownModalProps> = ({
                     >
                       {t('debt_breakdown.liability_accounts_title')}
                     </span>
-                    <span className="text-[10px] text-neutral-400 font-normal">({debtList.length})</span>
+                    <span className="text-[12px] text-neutral-400 font-normal">({debtList.length})</span>
                   </div>
 
                   <div className="space-y-1.5">
                     {debtList.length === 0 ? (
-                      <div className="text-neutral-400 text-[11px] font-normal py-4 text-center border border-dashed border-neutral-100/50 rounded-xl">
+                      <div className="text-neutral-400 text-[12px] font-normal py-4 text-center border border-dashed border-neutral-100/50 rounded-xl">
                         {t('debt_breakdown.no_accounts_found')}
                       </div>
                     ) : (
@@ -225,7 +225,7 @@ export const DebtBreakdownModal: React.FC<DebtBreakdownModalProps> = ({
                               WebkitBackdropFilter: 'blur(22px)',
                               borderRadius: '20px',
                               border: '1px solid rgba(30, 34, 41, 0.08)',
-                              boxShadow: '0 8px 32px 0 rgba(166, 221, 177, 0.12)'
+                              boxShadow: '0 12px 32px 0 rgba(166, 221, 177, 0.12)'
                             }}
                             className="hover:bg-white/60 transition-colors w-full min-w-0"
                           >
@@ -320,7 +320,7 @@ export const DebtBreakdownModal: React.FC<DebtBreakdownModalProps> = ({
               </div>
               
               {/* Disclaimer text footer */}
-              <div style={{ fontWeight: 400, fontFamily: "'Google Sans', sans-serif" }} className="text-[10px] text-neutral-400 text-center border-t border-neutral-200/55 pt-2 leading-tight shrink-0">
+              <div style={{ fontWeight: 400, fontFamily: "'Google Sans', sans-serif" }} className="text-[12px] text-neutral-400 text-center border-t border-neutral-200/55 pt-2 leading-tight shrink-0">
                 {t('debt_breakdown.disclaimer')}
               </div>
             </motion.div>

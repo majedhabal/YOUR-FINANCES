@@ -1,18 +1,29 @@
 import { useEffect } from 'react';
+import { db } from '../lib/firebase';
+import { collection, onSnapshot, query, where, updateDoc, doc, arrayUnion } from 'firebase/firestore';
+import { getToken } from 'firebase/messaging';
 import { messaging } from '../lib/firebase';
-import { getToken, onMessage } from 'firebase/messaging';
 
-export const NotificationManager = () => {
+export const NotificationManager = ({ uid }: { uid: string }) => {
   useEffect(() => {
+    if (!uid) return;
+
     const requestPermission = async () => {
       try {
         const permission = await Notification.requestPermission();
         if (permission === 'granted') {
-          const token = await getToken(messaging, {
-            vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY // You need to set this in your .env
-          });
-          console.log('FCM Token:', token);
-          // Send this token to your server
+          console.log('Notification permission granted.');
+          try {
+            const token = await getToken(messaging);
+            if (token) {
+              await updateDoc(doc(db, `users/${uid}`), {
+                fcmTokens: arrayUnion(token)
+              });
+              console.log('FCM token stored.');
+            }
+          } catch (tokenErr) {
+            console.error('Error getting FCM token:', tokenErr);
+          }
         }
       } catch (err) {
         console.error('Error requesting notification permission:', err);
@@ -21,19 +32,27 @@ export const NotificationManager = () => {
 
     requestPermission();
 
-    const unsubscribe = onMessage(messaging, (payload) => {
-      console.log('Message received in foreground: ', payload);
-      // Handle foreground notification
-      if (payload.notification) {
-          new Notification(payload.notification.title!, {
-              body: payload.notification.body,
-              icon: '/logo.png'
-          });
-      }
+    const notificationsRef = collection(db, `users/${uid}/notifications`);
+    const q = query(notificationsRef, where('isRead', '==', false));
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      snapshot.docChanges().forEach((change) => {
+        if (change.type === 'added') {
+          const data = change.doc.data();
+          if (Notification.permission === 'granted') {
+            new Notification(data.title || 'New Notification', {
+              body: data.body,
+              icon: '/icons/Your_Finances_Logo.png'
+            });
+            // Mark as read
+            updateDoc(doc(db, `users/${uid}/notifications`, change.doc.id), { isRead: true });
+          }
+        }
+      });
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [uid]);
 
   return null;
 };

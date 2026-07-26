@@ -306,15 +306,15 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
                 {isInflow ? '+' : '-'}{amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </h2>
             )}
-            <span className="text-[11px] font-bold text-[#414941] mt-3 font-sans opacity-60">{t('transaction_detail_modal.verified_statement')}</span>
+            <span className="text-[12px] font-bold text-[#414941] mt-3 font-sans opacity-60">{t('transaction_detail_modal.verified_statement')}</span>
             <div className="w-full max-w-[280px] h-[1px] bg-gradient-to-r from-transparent via-neutral-100 to-transparent mt-6" />
           </div>
 
           {/* ITEM SCROLLABLE FIELD BENTO */}
           <div className="px-6 py-4 space-y-6 flex-1 overflow-y-auto custom-vantage-scrollbar box-border">
             <div className="flex flex-col gap-2">
-              <label className="text-[10px] font-bold text-[#414941] pl-1 font-sans opacity-70">{t('transaction_detail_modal.description_memo')}</label>
-              <div className="p-4 rounded-xl bg-white border border-[#F2F4F7] text-sm font-bold text-[#111c2d] flex items-center gap-3 shadow-[0_2px_8px_rgba(0,0,0,0.02)] min-h-[56px] box-border">
+              <label className="text-[12px] font-bold text-[#414941] pl-1 font-sans opacity-70">{t('transaction_detail_modal.description_memo')}</label>
+              <div className="p-4 rounded-xl bg-white border border-[#F2F4F7] text-sm font-bold text-[#111c2d] flex items-center gap-3 shadow-[0_2px_12px_rgba(0,0,0,0.02)] min-h-[56px] box-border">
                 <Menu size={18} className="text-[#366945] shrink-0" />
                 {isEditing ? (
                   <input type="text" value={notes} onChange={(e) => setNotes(e.target.value)} className="w-full border-none outline-none font-sans font-bold py-1" />
@@ -325,8 +325,8 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className="text-[10px] font-bold text-[#414941] pl-1 font-sans opacity-70">{t('transaction_detail_modal.tracking_envelope')}</label>
-              <div className="p-4 rounded-xl bg-white border border-[#F2F4F7] text-sm font-bold text-[#111c2d] flex items-center gap-3 shadow-[0_2px_8px_rgba(0,0,0,0.02)] min-h-[56px] box-border transition-all">
+              <label className="text-[12px] font-bold text-[#414941] pl-1 font-sans opacity-70">{t('transaction_detail_modal.tracking_envelope')}</label>
+              <div className="p-4 rounded-xl bg-white border border-[#F2F4F7] text-sm font-bold text-[#111c2d] flex items-center gap-3 shadow-[0_2px_12px_rgba(0,0,0,0.02)] min-h-[56px] box-border transition-all">
                 <Tag size={18} className="text-[#366945] shrink-0" />
                 {isEditing && tx.classification !== 'starting_balance' ? (
                   <select 
@@ -355,8 +355,8 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className="text-[10px] font-bold text-[#414941] pl-1 font-sans opacity-70">{t('transaction_detail_modal.sub_category')}</label>
-              <div className="p-4 rounded-xl bg-white border border-[#F2F4F7] text-sm font-bold text-[#111c2d] flex items-center gap-3 shadow-[0_2px_8px_rgba(0,0,0,0.02)] min-h-[56px] box-border">
+              <label className="text-[12px] font-bold text-[#414941] pl-1 font-sans opacity-70">{t('transaction_detail_modal.sub_category')}</label>
+              <div className="p-4 rounded-xl bg-white border border-[#F2F4F7] text-sm font-bold text-[#111c2d] flex items-center gap-3 shadow-[0_2px_12px_rgba(0,0,0,0.02)] min-h-[56px] box-border">
                 <Menu size={18} className="text-[#366945] shrink-0" />
                 {isEditing && tx.classification !== 'starting_balance' ? (
                   <select 
@@ -375,8 +375,8 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className="text-[10px] font-bold text-[#414941] pl-1 font-sans opacity-70">{t('transaction_detail_modal.salary_account')}</label>
-              <div className="p-4 rounded-xl bg-white border border-[#F2F4F7] text-sm font-bold text-[#111c2d] flex items-center gap-3 shadow-[0_2px_8px_rgba(0,0,0,0.02)] min-h-[56px] box-border">
+              <label className="text-[12px] font-bold text-[#414941] pl-1 font-sans opacity-70">{t('transaction_detail_modal.salary_account')}</label>
+              <div className="p-4 rounded-xl bg-white border border-[#F2F4F7] text-sm font-bold text-[#111c2d] flex items-center gap-3 shadow-[0_2px_12px_rgba(0,0,0,0.02)] min-h-[56px] box-border">
                 <Building2 size={18} className="text-[#366945] shrink-0" />
                 {isEditing ? (
                   <select 
@@ -401,8 +401,8 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className="text-[10px] font-bold text-[#414941] pl-1 font-sans opacity-70">{t('transaction_detail_modal.date', 'Date')}</label>
-              <div className="p-4 rounded-xl bg-white border border-[#F2F4F7] text-sm font-bold text-[#111c2d] flex items-center gap-3 shadow-[0_2px_8px_rgba(0,0,0,0.02)] min-h-[56px] box-border">
+              <label className="text-[12px] font-bold text-[#414941] pl-1 font-sans opacity-70">{t('transaction_detail_modal.date', 'Date')}</label>
+              <div className="p-4 rounded-xl bg-white border border-[#F2F4F7] text-sm font-bold text-[#111c2d] flex items-center gap-3 shadow-[0_2px_12px_rgba(0,0,0,0.02)] min-h-[56px] box-border">
                 <Calendar size={18} className="text-[#366945] shrink-0" />
                 {isEditing ? (
                   <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="w-full border-none outline-none font-sans font-bold py-1 bg-transparent" />
@@ -413,8 +413,8 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className="text-[10px] font-bold text-[#414941] pl-1 font-sans opacity-70">{t('transaction_detail_modal.time', 'Time')}</label>
-              <div className="p-4 rounded-xl bg-white border border-[#F2F4F7] text-sm font-bold text-[#111c2d] flex items-center gap-3 shadow-[0_2px_8px_rgba(0,0,0,0.02)] min-h-[56px] box-border">
+              <label className="text-[12px] font-bold text-[#414941] pl-1 font-sans opacity-70">{t('transaction_detail_modal.time', 'Time')}</label>
+              <div className="p-4 rounded-xl bg-white border border-[#F2F4F7] text-sm font-bold text-[#111c2d] flex items-center gap-3 shadow-[0_2px_12px_rgba(0,0,0,0.02)] min-h-[56px] box-border">
                 <Clock size={18} className="text-[#366945] shrink-0" />
                 {isEditing ? (
                   <input type="text" value={time} onChange={(e) => setTime(e.target.value)} className="w-full border-none outline-none font-sans font-bold py-1 bg-transparent" placeholder="09:41 AM" />
@@ -425,7 +425,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className="text-[10px] font-bold text-[#414941] pl-1 font-sans opacity-70">{t('transaction_detail_modal.confirmation_date')}</label>
+              <label className="text-[12px] font-bold text-[#414941] pl-1 font-sans opacity-70">{t('transaction_detail_modal.confirmation_date')}</label>
               <div className="p-4 rounded-xl bg-white border border-[#F2F4F7] text-sm font-bold text-[#111c2d] flex items-center gap-3 shadow-[0_2px_8_rgba(0,0,0,0.02)] min-h-[56px] box-border">
                 <Calendar size={18} className="text-[#366945] shrink-0" />
                 {isEditing ? (

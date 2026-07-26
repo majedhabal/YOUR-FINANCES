@@ -29,10 +29,10 @@ export const DebtSection: React.FC<{
       {/* Total Debt Card */}
       <div className="bg-white rounded-2xl border border-[#E1E8ED] p-5 mb-6 shadow-sm">
         <div className="flex justify-between items-center mb-2">
-          <div className="text-[10px] text-neutral-400">
+          <div className="text-[12px] text-neutral-400">
             {t('debt_section.total_combined_debt', 'Total combined debt')}
           </div>
-          <div className="bg-[#E8F5E9] text-[#2E7D32] px-2 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-0.5">
+          <div className="bg-[#E8F5E9] text-[#2E7D32] px-2 py-0.5 rounded-full text-[12px] font-bold flex items-center gap-0.5">
               <TrendingDown size={10} /> -2.4%
           </div>
         </div>
@@ -45,7 +45,7 @@ export const DebtSection: React.FC<{
         <div className="w-full bg-neutral-100 rounded-full h-1.5 mb-2">
           <div className="bg-[#A6DDB1] h-1.5 rounded-full" style={{ width: `${progress}%` }}></div>
         </div>
-        <div className="flex justify-between text-[10px] text-neutral-400">
+        <div className="flex justify-between text-[12px] text-neutral-400">
           <span>{currency} {paid.toLocaleString(undefined, { maximumFractionDigits: 0 })} {t('debt_section.paid', 'paid')}</span>
           <span>{currency} {startingTotal.toLocaleString(undefined, { maximumFractionDigits: 0 })} {t('debt_section.total', 'total')}</span>
         </div>
@@ -94,7 +94,7 @@ export const DebtSection: React.FC<{
                      </div>
                   </div>
                 </div>
-                <div className="text-[10px] text-neutral-400 mb-1">{t('debt_section.payoff_progress', 'Payoff progress')}</div>
+                <div className="text-[12px] text-neutral-400 mb-1">{t('debt_section.payoff_progress', 'Payoff progress')}</div>
                 <div className="w-full bg-neutral-100 rounded-full h-1">
                   <div className="bg-[#A6DDB1] h-1 rounded-full" style={{ width: `${payoffProgress}%` }}></div>
                 </div>

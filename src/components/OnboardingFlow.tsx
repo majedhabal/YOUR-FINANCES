@@ -2554,139 +2554,34 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
             {/* Educational Recommendation Card outlining 50/30/20 rule */}
             <div className="w-full bg-white border border-[#E1E8ED] rounded-2xl p-4 shadow-sm flex flex-col gap-4 mt-1 animate-fadeIn" id="budget-recommendation-card">
                 
-                {/* Header Information */}
-                {incomeTrackingType === 'payroll' ? (
-                  <div className="flex flex-col gap-1.5 pb-2.5 border-b border-neutral-100 hidden">
-                    <div className="flex justify-between items-center flex-wrap gap-2">
-                      <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700, fontSize: "15px" }} className="text-sm text-black font-bold">
+                {/* Static 50/30/20 Recommendation */}
+                <div className="flex flex-col gap-3 pb-2.5 border-b border-neutral-100">
+                    <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700, fontSize: "15px" }} className="text-sm text-black font-bold">
                         {t("onboarding.ideal_budget_heading", "The Ideal Budget")}
-                      </span>
-                      
-                      {/* Dynamic calculation counter row */}
-                      <div 
-                        className={`flex items-center gap-1.5 px-3 py-1 rounded-xl border transition-all duration-200 ${
-                          isOverAllocated 
-                            ? 'bg-amber-50 border-amber-200 text-amber-700' 
-                            : 'bg-neutral-50 border-[#E1E8ED] text-neutral-600'
-                        }`}
-                      >
-                        <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[10px] leading-tight">
-                          {isOverAllocated ? t("onboarding.allocations_exceeded_warning", "⚠️ Allocations Exceeded:") : t("onboarding.allocated_label", "Allocated:")}
-                        </span>
-                        <span 
-                          style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} 
-                          className={`text-[11px] font-bold font-mono leading-tight ${isOverAllocated ? 'text-amber-700' : 'text-black'}`}
-                        >
-                          {totalAllocated.toLocaleString('en-US')} / {evalSalary.toLocaleString('en-US')} {currency || 'AED'}
-                        </span>
+                    </span>
+                    <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: "13px" }} className="text-neutral-600">
+                        {t("onboarding.ideal_budget_description", "A recommended allocation strategy for your monthly income:")}
+                    </p>
+
+                    <div className="text-xs text-neutral-500 font-normal mb-1">
+                      {t("onboarding.total_monthly_salary", "Total Monthly Salary:")} {evalSalary.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {currency || 'AED'}
+                    </div>
+                    <div className="flex flex-col gap-1 mt-2">
+                      <div className="flex justify-between items-center py-1">
+                        <span className="text-xs text-neutral-600 font-normal">50% Needs</span>
+                        <span className="text-xs font-bold text-black">{(evalSalary * 0.5).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {currency || 'AED'}</span>
+                      </div>
+                      <div className="flex justify-between items-center py-1">
+                        <span className="text-xs text-neutral-600 font-normal">30% Wants</span>
+                        <span className="text-xs font-bold text-black">{(evalSalary * 0.3).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {currency || 'AED'}</span>
+                      </div>
+                      <div className="flex justify-between items-center py-1">
+                        <span className="text-xs text-neutral-600 font-normal">20% Savings & Debt</span>
+                        <span className="text-xs font-bold text-black">{(evalSalary * 0.2).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {currency || 'AED'}</span>
                       </div>
                     </div>
-
-                    {/* Warning Banner on Mobile */}
-                    {isOverAllocated && (
-                      <div className="block md:hidden mt-1.5 animate-fadeIn">
-                        <div className="p-3 bg-white border border-amber-200 rounded-xl flex flex-col gap-1 shadow-sm text-left">
-                          <span 
-                            style={{ 
-                              fontFamily: "'Google Sans', sans-serif", 
-                              fontWeight: 500, 
-                              fontSize: "clamp(0.9rem, 2.5vw, 1.2rem)" 
-                            }} 
-                            className="text-amber-700 leading-snug"
-                          >
-                            {t("onboarding.budget_notice_warning_heading", "Budget Notice")}
-                          </span>
-                          <p 
-                            style={{ 
-                              fontFamily: "'Google Sans', sans-serif", 
-                              fontWeight: 400, 
-                              fontSize: "clamp(0.8rem, 1.8vw, 1rem)" 
-                            }} 
-                            className="text-neutral-600 leading-normal"
-                          >
-                            {t("onboarding.budget_notice_exceeded_detail", "Budget Notice: Total budget allocations exceeds your incoming salary. This is perfectly fine if you plan to cover the difference using your linked liquid cash reserves!")}
-                          </p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="flex flex-col gap-3 pb-1 border-b border-neutral-100 hidden">
-                    <div className="flex justify-between items-center">
-                      <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700, fontSize: "15px" }} className="text-sm text-black font-bold">
-                        {t("onboarding.ideal_budget_heading", "The Ideal Budget")}
-                      </span>
-                    </div>
-
-                    {/* Mobile: Replace comparative card completely with a single highly stylized row container on pure white */}
-                    <div className="block md:hidden w-full">
-                      <div 
-                        className="w-full bg-white border border-[#E1E8ED] rounded-xl p-3 flex justify-between items-center animate-fadeIn shadow-sm"
-                        style={{ fontFamily: "'Google Sans', sans-serif" }}
-                      >
-                        <span 
-                          style={{ 
-                            fontFamily: "'Google Sans', sans-serif", 
-                            fontWeight: 500, 
-                            fontSize: "12px" 
-                          }} 
-                          className="text-neutral-500 font-medium"
-                        >
-                          {t("onboarding.total_planned_allocations_label", "Total Planned Allocations:")}
-                        </span>
-                        <span 
-                          style={{ 
-                            fontFamily: "'Google Sans', sans-serif", 
-                            fontWeight: 700, 
-                            fontSize: "13px",
-                            color: "#A6DDB1"
-                          }} 
-                          className="font-bold font-mono"
-                        >
-                          {totalAllocated.toLocaleString('en-US')} {currency || 'AED'}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Tablet/Desktop: Centered full-width (100%) aggregation card on pure white above the row grid */}
-                    <div className="hidden md:block w-full hidden">
-                      <div 
-                        className="flex flex-col items-center justify-center text-center p-6 bg-white border border-[#E1E8ED] rounded-2xl w-full mx-auto animate-fadeIn gap-1.5 shadow-sm"
-                        style={{ fontFamily: "'Google Sans', sans-serif" }}
-                      >
-                        <span 
-                          style={{ 
-                            fontFamily: "'Google Sans', sans-serif", 
-                            fontWeight: 500, 
-                            fontSize: "clamp(1.1rem, 3vw, 1.6rem)" 
-                          }} 
-                          className="text-neutral-500 font-medium"
-                        >
-                          {t("onboarding.total_planned_allocations_title", "Total Planned Allocations")}
-                        </span>
-                        <span 
-                          style={{ 
-                            fontFamily: "'Google Sans', sans-serif", 
-                            fontWeight: 700, 
-                            fontSize: "clamp(1.5rem, 5vw, 2.5rem)" 
-                          }} 
-                          className="text-black font-bold font-mono"
-                        >
-                          {totalAllocated.toLocaleString('en-US')} {currency || 'AED'}
-                        </span>
-                        <span 
-                          style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} 
-                          className="text-xs text-neutral-400 mt-1 leading-normal"
-                        >
-                          {t("onboarding.ideal_budget_description_detail", "These envelopes represent your active tracking segments, funding your upcoming budget allocation plan recursively.")}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Interactive Customizable UI */}
-                <div className="flex flex-col md:flex-row gap-4 justify-center items-stretch w-full px-4 md:px-0 mt-4 select-none">
+                </div>
+                <div className="flex flex-col md:flex-row gap-4 justify-center items-stretch w-full px-4 md:px-0 mt-4 select-none hidden">
                   {blueprintEnvelopes.length === 0 ? (
                     <div className="text-center p-6 bg-neutral-50 rounded-xl border border-dashed border-neutral-200 w-full animate-fadeIn">
                       <span className="text-[11px] text-neutral-500 font-normal" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}>
@@ -2728,15 +2623,7 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                                   {pctLabel}
                                 </span>
                               </div>
-                              <button
-                                type="button"
-                                onClick={() => handleDeleteEnvelope(bp.id)}
-                                style={{ backgroundColor: "#ffffff" }}
-                                className="p-1 text-neutral-400 hover:text-red-500 hover:bg-neutral-50 rounded transition-all cursor-pointer shrink-0"
-                                title={t("onboarding.remove_envelope", "Remove Envelope")}
-                              >
-                                <Trash2 size={13} />
-                              </button>
+
                             </div>
 
                             {/* Crisp Fluid Fluid Display of Calculated Amount */}
@@ -2841,14 +2728,14 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                                                   ? (prev[bp.id] || []).filter(c => c !== cat.name)
                                                   : [...(prev[bp.id] || []), cat.name] 
                                           }))}
-                                          className="text-neutral-400 hover:text-black transition-colors"
+                                          className="text-neutral-400 hover:text-black transition-colors hidden"
                                         >
                                           <span className="text-[10px]">{isExpanded ? '▲' : '▼'}</span>
                                         </button>
                                       </div>
 
                                       {isExpanded && (
-                                        <div className="flex flex-col gap-1 ml-5 pl-2 border-l border-neutral-100">
+                                        <div className="hidden flex flex-col gap-1 ml-5 pl-2 border-l border-neutral-100">
                                           {cat.subcategories.map(sub => {
                                             const isSubSelected = bp.mappedSubCategories.includes(sub);
                                             return (
@@ -3150,27 +3037,6 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
                 
                 {/* Additional controls and submission Button */}
                 <div className="flex justify-between items-center mt-3 pt-2 border-t border-neutral-100">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const newEnvelope = {
-                        id: 'custom-' + Math.random().toString(36).substr(2, 9),
-                        categoryTitle: 'Custom Budget Segment',
-                        categoryGroup: 'wants' as const,
-                        allocatedAmount: '1000',
-                        iconAsset: 'pocket',
-                        emoji: '📂',
-                        mappedCategories: [],
-                        mappedSubCategories: []
-                      };
-                      setBlueprintEnvelopes(prev => [...prev, newEnvelope]);
-                    }}
-                    style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
-                    className="h-[32px] px-3.5 bg-neutral-100 hover:bg-neutral-200 text-black hover:text-neutral-800 text-[10px] rounded-xl flex items-center justify-center gap-1 transition-all active:scale-95 cursor-pointer font-bold"
-                  >
-                    <Plus size={11} />
-                    {t("onboarding.add_manually_button", "Add manually")}
-                  </button>
 
                   <button
                     type="button"
@@ -3285,11 +3151,8 @@ export const OnboardingFlow: React.FC<OnboardingFlowProps> = ({ uid, profile, on
               {/* Huge let's go action button */}
               <button
                 type="button"
-                onClick={() => {
-                  setActiveStep(12);
-                  setTimeout(() => {
-                    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-                  }, 100);
+                onClick={async () => {
+                  await handleFinalizeOnboarding(false);
                 }}
                 disabled={!privacyChecked || !termsChecked || isSaving}
                 style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, backgroundColor: "#A6DDB1" }}

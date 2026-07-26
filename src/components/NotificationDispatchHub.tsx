@@ -579,8 +579,8 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
           navigator.serviceWorker.ready.then((registration) => {
             registration.showNotification(title, {
               body: body,
-              icon: '/icons/Your_Finances_Logo.png',
-              badge: '/icons/Your_Finances_Logo.png',
+              icon: '/icons/Your_Finances_Logo_192x192.png',
+              badge: '/icons/Your_Finances_Logo_192x192.png',
               tag: 'vantage-push-notification',
               data: {
                 url: '/?tab=daily_log&subTab=daily'
@@ -588,7 +588,7 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
             }).catch(() => {
               const n = new Notification(title, {
                 body: body,
-                icon: '/icons/Your_Finances_Logo.png'
+                icon: '/icons/Your_Finances_Logo_192x192.png'
               });
               if (onClick) {
                 n.onclick = () => {
@@ -600,7 +600,7 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
           }).catch(() => {
             const n = new Notification(title, {
               body: body,
-              icon: '/icons/Your_Finances_Logo.png'
+              icon: '/icons/Your_Finances_Logo_192x192.png'
             });
             if (onClick) {
               n.onclick = () => {
@@ -613,7 +613,7 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
           try {
             const n = new Notification(title, {
               body: body,
-              icon: '/icons/Your_Finances_Logo.png'
+              icon: '/icons/Your_Finances_Logo_192x192.png'
             });
             if (onClick) {
               n.onclick = () => {
@@ -629,7 +629,7 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
         Notification.requestPermission().then(permission => {
           if (permission === 'granted') {
             try {
-              const n = new Notification(title, { body: body, icon: '/icons/Your_Finances_Logo.png' });
+              const n = new Notification(title, { body: body, icon: '/icons/Your_Finances_Logo_192x192.png' });
               if (onClick) {
                 n.onclick = () => {
                   window.focus();
@@ -696,7 +696,7 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
         
         // Native lock screen push simulation via HTML5 Web notification
         sendDeviceNotification(
-          `🔔 VANTAGE LEDGER DISPATCH`, 
+          '', 
           `${getChecklistText(item)}`
         );
         // Alert chime playing
@@ -711,7 +711,7 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
         toastEl.innerHTML = `
           <div class="text-[#A6DDB1] text-lg font-bold">🔔</div>
           <div class="flex flex-col text-left">
-            <span class="text-[9px] font-bold text-[#A6DDB1]">Dispatch Live Alert</span>
+            <span class="text-[12px] font-bold text-[#A6DDB1]">Dispatch Live Alert</span>
             <span class="text-xs font-normal text-neutral-100 mt-0.5">${getChecklistText(item)}</span>
           </div>
         `;
@@ -967,7 +967,7 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
     toastEl.innerHTML = `
       <div class="text-[#A6DDB1] text-lg font-bold">${emoji}</div>
       <div class="flex flex-col text-left">
-        <span class="text-[9px] font-bold text-[#A6DDB1]">${header}</span>
+        <span class="text-[12px] font-bold text-[#A6DDB1]">${header}</span>
         <span class="text-xs font-normal text-neutral-100 mt-0.5">${body}</span>
       </div>
     `;
@@ -1295,7 +1295,21 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
 
   return (
     <React.Fragment>
+      <style>{`
+        /* Hide Upcoming Payday Alert */
+        div#root:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > div#dispatch-hub-overlay-drawer:nth-of-type(3) > div:nth-of-type(3) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) {
+          display: none !important;
+        }
+        div#root:nth-of-type(1) > div:nth-of-type(1) > header:nth-of-type(1) > div:nth-of-type(2) > div:nth-of-type(2) > div#dispatch-hub-overlay-drawer:nth-of-type(3) > div:nth-of-type(3) > div:nth-of-type(2) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > span:nth-of-type(1) {
+          display: none !important;
+        }
+        /* Style for Quick Append Input */
+        div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(3) > div:nth-of-type(2) > div:nth-of-type(1) > input:nth-of-type(1) {
+          width: 150px;
+        }
+      `}</style>
       {/* Floating Action Bell Button Node */}
+
       <motion.button
          id="tour-notification-bell"
          key="dispatch-fab-bell"
@@ -1319,7 +1333,7 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
               animate={{ scale: 1 }}
               exit={{ scale: 0 }}
               id="dispatch-badge-counter"
-              className="absolute -top-1 -right-1 bg-rose-600 text-white rounded-full text-[10px] font-bold h-5 w-5 flex items-center justify-center border-2 border-[#FFFFFF] shadow-md px-1"
+              className="absolute -top-1 -right-1 bg-rose-600 text-white rounded-full text-[12px] font-bold h-5 w-5 flex items-center justify-center border-2 border-[#FFFFFF] shadow-md px-1"
             >
               <span className="font-sans font-bold leading-none">{totalCount}</span>
             </motion.div>
@@ -1372,14 +1386,14 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
               <div className="flex border-b border-neutral-150 px-4 gap-4">
                 <button 
                   onClick={() => setActiveHubTab('notifications')} 
-                  className={`py-2 text-[10px] font-bold ${activeHubTab === 'notifications' ? 'text-[#A6DDB1] border-b-2 border-[#A6DDB1]' : 'text-neutral-500'}`} 
+                  className={`py-2 text-[12px] font-bold ${activeHubTab === 'notifications' ? 'text-[#A6DDB1] border-b-2 border-[#A6DDB1]' : 'text-neutral-500'}`} 
                   style={{ fontFamily: "'Google Sans', sans-serif" }}
                 >
                   {'Notifications'}
                 </button>
                 <button 
                   onClick={() => setActiveHubTab('shopping')} 
-                  className={`py-2 text-[10px] font-bold ${activeHubTab === 'shopping' ? 'text-[#A6DDB1] border-b-2 border-[#A6DDB1]' : 'text-neutral-500'}`} 
+                  className={`py-2 text-[12px] font-bold ${activeHubTab === 'shopping' ? 'text-[#A6DDB1] border-b-2 border-[#A6DDB1]' : 'text-neutral-500'}`} 
                   style={{ fontFamily: "'Google Sans', sans-serif" }}
                 >
                   {'Shopping Cart'}
@@ -1391,7 +1405,7 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
                 <div style={{ display: activeHubTab === 'shopping' ? 'block' : 'none' }}>
                   <div className="flex flex-col gap-2">
                     <span 
-                      className="text-[10px] font-bold text-[#A6DDB1] dark:text-emerald-700"
+                      className="text-[12px] font-bold text-[#A6DDB1] dark:text-emerald-700"
                       style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
                     >
                       {'Shopping Cart'}
@@ -1406,7 +1420,7 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
                    <div className="flex flex-col gap-2">
                      <div className="flex items-center justify-between">
                        <span 
-                         className="text-[11px] text-neutral-500 font-bold tracking-wide animate-pulse"
+                         className="text-[12px] text-neutral-500 font-bold tracking-wide animate-pulse"
                          style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
                        >
                          {t('notification_dispatch_hub.upcoming_payday')}
@@ -1450,12 +1464,12 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
                    <div className="flex flex-col gap-2">
                      <div className="flex items-center justify-between">
                        <span 
-                         className="text-[11px] text-neutral-500 font-bold tracking-wide"
+                         className="text-[12px] text-neutral-500 font-bold tracking-wide"
                          style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
                        >
                          {t('notification_dispatch_hub.upcoming_allocations')}
                        </span>
-                       <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-650 border border-indigo-100 font-bold">
+                       <span className="text-[12px] font-mono px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-650 border border-indigo-100 font-bold">
                          {t('notification_dispatch_hub.pending_count', { count: maturedPendingSalaryBreakdowns.length })}
                        </span>
                      </div>
@@ -1521,10 +1535,10 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
                                  ) : (
                                    <div className="w-full text-left mt-2 border-t border-neutral-100 pt-3 animate-fade-in">
                                      <div className="flex items-center justify-between mb-2">
-                                       <span className="text-[11px] text-neutral-500 font-bold" style={{ fontWeight: 700 }}>
+                                       <span className="text-[12px] text-neutral-500 font-bold" style={{ fontWeight: 700 }}>
                                          {t('notification_dispatch_hub.allocation_checklist')}
                                        </span>
-                                       <span className="text-[11px] text-indigo-600 font-bold" style={{ fontWeight: 700 }}>
+                                       <span className="text-[12px] text-indigo-600 font-bold" style={{ fontWeight: 700 }}>
                                          {t('notification_dispatch_hub.allocations_done', { count: activeAllocableKeys.filter(k => sb.confirmedAllocations?.[k] === true).length, total: activeAllocableKeys.length })}
                                        </span>
                                      </div>
@@ -1563,7 +1577,7 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
                                              </div>
 
                                              {isLineConfirmed ? (
-                                               <span className="text-[10px] text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full font-normal flex items-center gap-0.5" style={{ fontWeight: 400 }}>
+                                               <span className="text-[12px] text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full font-normal flex items-center gap-0.5" style={{ fontWeight: 400 }}>
                                                  <Check size={10} className="stroke-[3]" />
                                                  {t('notification_dispatch_hub.confirmed')}
                                                </span>
@@ -1579,7 +1593,7 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
                                                    label, 
                                                    sb.selectedDbRecurringIncomes?.[0]?.accountId || sb.selectedIncomes?.[0] || accounts[0]?.id || ''
                                                  )}
-                                                 className="text-[10px] text-indigo-650 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1 rounded-lg transition-colors cursor-pointer font-bold"
+                                                 className="text-[12px] text-indigo-650 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-2.5 py-1 rounded-lg transition-colors cursor-pointer font-bold"
                                                  style={{ fontWeight: 700 }}
                                                >
                                                  {t('notification_dispatch_hub.confirm_btn')}
@@ -1604,12 +1618,12 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center justify-between">
                     <span 
-                      className="text-[10px] text-neutral-500 font-bold"
+                      className="text-[12px] text-neutral-500 font-bold"
                       style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
                     >
                       {t('notification_dispatch_hub.pending_approvals')}
                     </span>
-                    <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-rose-50 text-rose-650 border border-rose-100 font-bold font-sans">
+                    <span className="text-[12px] font-mono px-2 py-0.5 rounded-full bg-rose-50 text-rose-650 border border-rose-100 font-bold font-sans">
                       {t('notification_dispatch_hub.actions_count', { count: eligibleDrafts.length })}
                     </span>
                   </div>
@@ -1617,7 +1631,7 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
                   {eligibleDrafts.length === 0 ? (
                     <div className="py-5 px-3 bg-neutral-50/70 rounded-xl border border-neutral-200/80 text-center flex flex-col items-center justify-center gap-1.5">
                       <ShieldCheck size={18} className="text-[#A6DDB1] dark:text-emerald-600 opacity-80" />
-                      <span className="text-[11px] text-neutral-500 leading-relaxed font-normal" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}>{t('notification_dispatch_hub.approval_queue_empty')}</span>
+                      <span className="text-[12px] text-neutral-500 leading-relaxed font-normal" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}>{t('notification_dispatch_hub.approval_queue_empty')}</span>
                     </div>
                   ) : (
                     <div className="flex flex-col gap-2">
@@ -1641,11 +1655,11 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
                                   <div className="flex flex-col min-w-0 flex-1">
                                     <span 
                                       className="text-neutral-800 leading-tight truncate font-sans"
-                                      style={{ fontFamily: "'Google Sans', sans-serif", fontSize: "clamp(11px, 2.8vw, 13px)", fontWeight: 400 }}
+                                      style={{ fontFamily: "'Google Sans', sans-serif", fontSize: "clamp(12px, 2.8vw, 13px)", fontWeight: 400 }}
                                     >
                                       {tx.notes || t('notification_dispatch_hub.scheduled_tx')}
                                     </span>
-                                    <span className="text-[9px] text-neutral-500 mt-0.5 font-bold">
+                                    <span className="text-[12px] text-neutral-500 mt-0.5 font-bold">
                                       {associatedAccount?.name || t('notification_dispatch_hub.vantage_account')} ({associatedAccount?.currency || 'AED'})
                                     </span>
                                   </div>
@@ -1657,19 +1671,19 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
                                   >
                                     {tx.type === 'income' ? '+' : '-'}{associatedAccount?.currency || 'AED'} {Number(tx.amount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                                   </span>
-                                  <span className="text-[8.5px] text-neutral-400 mt-0.5" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}>
+                                  <span className="text-[12px] text-neutral-400 mt-0.5" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}>
                                     {t('notification_dispatch_hub.sched_label', { date: tx.date || '07/05/2026' })}
                                   </span>
                                 </div>
                               </div>
 
-                              <div className="flex items-center gap-2 mt-0.5 text-[11px]">
+                              <div className="flex items-center gap-2 mt-0.5 text-[12px]">
                                 <button
                                   type="button"
                                   disabled={isProcessing === tx.id}
                                   onClick={() => handleApproveDraft(tx)}
                                   style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
-                                  className="flex-1 h-[32px] bg-[#A6DDB1] text-neutral-900 rounded-lg text-[10px] hover:bg-[#A6DDB1]/90 hover:brightness-105 active:scale-95 transition-all flex items-center justify-center gap-1 cursor-pointer disabled:opacity-40"
+                                  className="flex-1 h-[32px] bg-[#A6DDB1] text-neutral-900 rounded-lg text-[12px] hover:bg-[#A6DDB1]/90 hover:brightness-105 active:scale-95 transition-all flex items-center justify-center gap-1 cursor-pointer disabled:opacity-40"
                                 >
                                   {isProcessing === tx.id ? t('notification_dispatch_hub.processing') : t('notification_dispatch_hub.approve')}
                                 </button>
@@ -1678,7 +1692,7 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
                                   disabled={isProcessing === tx.id}
                                   onClick={() => handleDismissDraftWithConfirm(tx)}
                                   style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
-                                  className="px-3 h-[32px] bg-transparent border border-rose-250 hover:bg-rose-50 hover:text-rose-700 text-rose-600 rounded-lg text-[10px] active:scale-95 transition-all flex items-center justify-center cursor-pointer disabled:opacity-40"
+                                  className="px-3 h-[32px] bg-transparent border border-rose-250 hover:bg-rose-50 hover:text-rose-700 text-rose-600 rounded-lg text-[12px] active:scale-95 transition-all flex items-center justify-center cursor-pointer disabled:opacity-40"
                                 >
                                   {t('notification_dispatch_hub.dismiss')}
                                 </button>
@@ -1696,12 +1710,12 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
                   <div className="flex flex-col gap-2">
                     <div className="flex items-center justify-between">
                       <span 
-                        className="text-[10px] font-bold text-[#A6DDB1] dark:text-emerald-700"
+                        className="text-[12px] font-bold text-[#A6DDB1] dark:text-emerald-700"
                         style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
                       >
                         {t('notification_dispatch_hub.dispatch_push_logs')}
                       </span>
-                      <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-rose-50 text-rose-600 border border-rose-100 font-bold animate-pulse">
+                      <span className="text-[12px] font-mono px-2 py-0.5 rounded-full bg-rose-50 text-rose-600 border border-rose-100 font-bold animate-pulse">
                         {t('notification_dispatch_hub.active_alerts_count', { count: activeNotifications.length + activeBudgetAlerts.length })}
                       </span>
                     </div>
@@ -1740,7 +1754,7 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
                                 >
                                   {displayName}
                                 </span>
-                                <span className="text-[10px] text-neutral-500 dark:text-neutral-400 mt-1 font-sans" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}>
+                                <span className="text-[12px] text-neutral-500 dark:text-neutral-400 mt-1 font-sans" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}>
                                   {isDailySpendsAlert 
                                     ? t('notification_dispatch_hub.daily_warning_desc') 
                                     : (isWarning ? t('notification_dispatch_hub.warning_desc') : t('notification_dispatch_hub.critical_desc'))}
@@ -1752,7 +1766,7 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
                                     {node.currency} {node.limit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                   </span>
                                 </span>
-                                <span className={`text-[8.5px] mt-0.5 font-sans font-normal ${
+                                <span className={`text-[12px] mt-0.5 font-sans font-normal ${
                                   isDailySpendsAlert || isWarning ? 'text-amber-500' : 'text-rose-500'
                                 }`}>
                                   {t('notification_dispatch_hub.fired_label', { date: node.date, time: node.time })}
@@ -1764,7 +1778,7 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
                               <button
                                 onClick={() => handleClearBudgetAlert(node.id)}
                                 style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, backgroundColor: '#A6DDB1', color: '#1E293B' }}
-                                className="h-[28px] px-2.5 rounded-lg text-[10px] transition-all flex items-center justify-center gap-1 cursor-pointer shrink-0 active:scale-95 hover:opacity-90 border border-[#A6DDB1]/10 font-sans"
+                                className="h-[28px] px-2.5 rounded-lg text-[12px] transition-all flex items-center justify-center gap-1 cursor-pointer shrink-0 active:scale-95 hover:opacity-90 border border-[#A6DDB1]/10 font-sans"
                               >
                                 {t('notification_dispatch_hub.clear')}
                               </button>
@@ -1786,11 +1800,11 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
                             <div className="flex flex-col min-w-0 text-left">
                               <span 
                                 className="text-neutral-800 leading-tight truncate"
-                                style={{ fontFamily: "'Google Sans', sans-serif", fontSize: "clamp(11px, 2.8vw, 13px)", fontWeight: 405 }}
+                                style={{ fontFamily: "'Google Sans', sans-serif", fontSize: "clamp(12px, 2.8vw, 13px)", fontWeight: 405 }}
                               >
                                 {noti.text}
                               </span>
-                              <span className="text-[8.5px] text-neutral-500 mt-1" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}>
+                              <span className="text-[12px] text-neutral-500 mt-1" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}>
                                 {t('notification_dispatch_hub.fired_label', { date: noti.date, time: noti.time })}
                               </span>
                             </div>
@@ -1800,7 +1814,7 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
                             type="button"
                             onClick={() => handleToggleChecklist(noti.id)}
                             style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
-                            className="h-[28px] px-3 bg-neutral-100 hover:bg-neutral-200 border border-neutral-250 text-neutral-850 rounded-lg text-[10px] transition-all flex items-center justify-center gap-1 cursor-pointer shrink-0"
+                            className="h-[28px] px-3 bg-neutral-100 hover:bg-neutral-200 border border-neutral-250 text-neutral-850 rounded-lg text-[12px] transition-all flex items-center justify-center gap-1 cursor-pointer shrink-0"
                           >
                             <Check size={11} strokeWidth={3} /> {t('notification_dispatch_hub.clear')}
                           </button>
@@ -1813,7 +1827,7 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
                 {/* 2. SECTION: Reminders & Milestones */}
                 <div className="flex flex-col gap-2">
                   <span 
-                    className="text-[10px] font-bold text-[#A6DDB1] dark:text-emerald-700"
+                    className="text-[12px] font-bold text-[#A6DDB1] dark:text-emerald-700"
                     style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
                   >
                     {t('notification_dispatch_hub.reminders_milestones')}
@@ -1822,7 +1836,7 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
                   {allRemindersAndMilestones.length === 0 ? (
                     <div className="py-5 px-3 bg-neutral-50 rounded-xl border border-neutral-200/60 text-center flex flex-col items-center justify-center gap-1.5">
                       <TrendingUp size={18} className="text-[#A6DDB1] dark:text-emerald-600 opacity-80" />
-                      <span className="text-[11px] text-neutral-500 leading-relaxed font-normal" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}>{t('notification_dispatch_hub.no_active_milestones')}</span>
+                      <span className="text-[12px] text-neutral-500 leading-relaxed font-normal" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}>{t('notification_dispatch_hub.no_active_milestones')}</span>
                     </div>
                   ) : (
                     <div className="flex flex-col gap-2">
@@ -1847,7 +1861,7 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
                             </span>
                             <p 
                               className="text-neutral-600 mt-0.5 leading-relaxed font-normal"
-                              style={{ fontFamily: "'Google Sans', sans-serif", fontSize: "clamp(11px, 2.8vw, 13px)", fontWeight: 400 }}
+                              style={{ fontFamily: "'Google Sans', sans-serif", fontSize: "clamp(12px, 2.8vw, 13px)", fontWeight: 400 }}
                             >
                               {reminder.text}
                             </p>
@@ -1859,12 +1873,12 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center justify-between">
                     <span 
-                      className="text-[10px] font-bold text-[#A6DDB1] dark:text-emerald-700"
+                      className="text-[12px] font-bold text-[#A6DDB1] dark:text-emerald-700"
                       style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
                     >
                       {t('notification_dispatch_hub.personal_checklist')}
                     </span>
-                    <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-650 border border-neutral-200 font-bold">
+                    <span className="text-[12px] font-mono px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-650 border border-neutral-200 font-bold">
                       {t('notification_dispatch_hub.checklist_pending', { count: pendingChecklistsCount })}
                     </span>
                   </div>
@@ -1892,7 +1906,7 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
                                 <span 
                                   style={{ 
                                     fontFamily: "'Google Sans', sans-serif", 
-                                    fontSize: "clamp(11px, 2.8vw, 13px)",
+                                    fontSize: "clamp(12px, 2.8vw, 13px)",
                                     fontWeight: 400 
                                   }}
                                   className="truncate text-neutral-800"
@@ -1900,7 +1914,7 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
                                   {getChecklistText(item)}
                                 </span>
                                 {isScheduled && (
-                                  <span className="text-[8.5px] text-[#A6DDB1]/80 dark:text-emerald-700 font-bold mt-0.5 flex items-center gap-1">
+                                  <span className="text-[12px] text-[#A6DDB1]/80 dark:text-emerald-700 font-bold mt-0.5 flex items-center gap-1">
                                     <span>{t('notification_dispatch_hub.scheduled_at', { date: item.date, time: item.time })}</span>
                                   </span>
                                 )}
@@ -1959,7 +1973,7 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
                         <div className="flex items-center justify-between">
                           <span 
                             style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
-                            className="text-[9px] text-[#A6DDB1] dark:text-emerald-700 font-bold"
+                            className="text-[12px] text-[#A6DDB1] dark:text-emerald-700 font-bold"
                           >
                             {t('notification_dispatch_hub.automated_dispatch_time')}
                           </span>
@@ -1974,7 +1988,7 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
                               onChange={(e) => setSchedDate(e.target.value)}
                               required={showScheduler}
                               style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
-                              className="w-full h-[32px] bg-white border border-neutral-200 rounded-lg px-2 text-[11px] text-neutral-800 outline-none focus:border-[#A6DDB1] transition-colors text-center font-sans select-none"
+                              className="w-full h-[32px] bg-white border border-neutral-200 rounded-lg px-2 text-[12px] text-neutral-800 outline-none focus:border-[#A6DDB1] transition-colors text-center font-sans select-none"
                             />
                           </div>
                           
@@ -1986,7 +2000,7 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
                               onChange={(e) => setSchedTime(e.target.value)}
                               required={showScheduler}
                               style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
-                              className="w-full h-[32px] bg-white border border-neutral-200 rounded-lg px-2 text-[11px] text-neutral-800 outline-none focus:border-[#A6DDB1] transition-colors text-center font-sans select-none"
+                              className="w-full h-[32px] bg-white border border-neutral-200 rounded-lg px-2 text-[12px] text-neutral-800 outline-none focus:border-[#A6DDB1] transition-colors text-center font-sans select-none"
                             />
                           </div>
                         </div>
@@ -2002,12 +2016,12 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
                       type="button"
                       onClick={() => setIsCompletedExpanded(!isCompletedExpanded)}
                       style={{ fontFamily: "'Google Sans', sans-serif" }}
-                      className="flex items-center justify-between w-full text-[10px] font-bold text-neutral-500 hover:text-neutral-800 transition-colors cursor-pointer outline-none"
+                      className="flex items-center justify-between w-full text-[12px] font-bold text-neutral-500 hover:text-neutral-800 transition-colors cursor-pointer outline-none"
                     >
                       <span className="flex items-center gap-1.5 font-sans" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}>
                         🗄️ {t('notification_dispatch_hub.completed_reminders')}
                       </span>
-                      <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-600 border border-neutral-200 font-bold flex items-center gap-1">
+                      <span className="text-[12px] font-mono px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-600 border border-neutral-200 font-bold flex items-center gap-1">
                         {t('notification_dispatch_hub.completed_count', { count: completedReminders.length })} {isCompletedExpanded ? '▲' : '▼'}
                       </span>
                     </button>
@@ -2044,7 +2058,7 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
                                       <span 
                                         style={{ 
                                           fontFamily: "'Google Sans', sans-serif", 
-                                          fontSize: "clamp(11px, 2.8vw, 13px)",
+                                          fontSize: "clamp(12px, 2.8vw, 13px)",
                                           fontWeight: 400,
                                           textDecoration: 'line-through' 
                                         }}
@@ -2066,7 +2080,7 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
                                       type="button"
                                       onClick={() => handleToggleChecklist(item.id)}
                                       title={t('notification_dispatch_hub.restore_tooltip')}
-                                      className="px-2 h-7 rounded-md hover:bg-neutral-100 flex items-center justify-center text-neutral-400 hover:text-[#A6DDB1] opacity-0 group-hover/comp:opacity-100 transition-opacity cursor-pointer text-[10px]"
+                                      className="px-2 h-7 rounded-md hover:bg-neutral-100 flex items-center justify-center text-neutral-400 hover:text-[#A6DDB1] opacity-0 group-hover/comp:opacity-100 transition-opacity cursor-pointer text-[12px]"
                                       style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
                                     >
                                       {t('notification_dispatch_hub.restore')}
@@ -2152,14 +2166,14 @@ export const NotificationDispatchHub: React.FC<NotificationDispatchHubProps> = (
                     setConfirmModal(prev => ({ ...prev, isOpen: false }));
                   }}
                   style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
-                  className="flex-1 h-[38px] bg-rose-500 hover:bg-rose-600 transition-colors text-white text-[10px] rounded-xl hover:brightness-105 active:scale-95 cursor-pointer"
+                  className="flex-1 h-[38px] bg-rose-500 hover:bg-rose-600 transition-colors text-white text-[12px] rounded-xl hover:brightness-105 active:scale-95 cursor-pointer"
                 >
                   {t('notification_dispatch_hub.proceed')}
                 </button>
                 <button
                   onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
                   style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
-                  className="flex-1 h-[38px] bg-transparent hover:bg-neutral-800 transition-all border border-[#2F3542] text-neutral-300 text-[10px] rounded-xl cursor-pointer"
+                  className="flex-1 h-[38px] bg-transparent hover:bg-neutral-800 transition-all border border-[#2F3542] text-neutral-300 text-[12px] rounded-xl cursor-pointer"
                 >
                   {t('notification_dispatch_hub.cancel')}
                 </button>

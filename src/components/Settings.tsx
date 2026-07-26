@@ -5,6 +5,8 @@ import { User, Shield, Bell, CreditCard, LogOut, ChevronRight, Moon, Globe, Spar
 import { LanguageSelector } from './LanguageSelector';
 import { BadgesModal } from './BadgesModal';
 import { BADGES } from '../lib/badgeUtils';
+import { PasscodeSetupModal } from './PasscodeSetupModal';
+import { hasPasscode, removePasscode } from '../lib/passcode';
 
 import { doc, updateDoc, getDoc, setDoc, writeBatch, collection, getDocs } from 'firebase/firestore';
 import { db } from '../lib/firebase';
@@ -63,6 +65,8 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
 
   const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false);
   const [isBadgesModalOpen, setIsBadgesModalOpen] = useState(false);
+  const [isPasscodeModalOpen, setIsPasscodeModalOpen] = useState(false);
+  const [isPasscodeSet, setIsPasscodeSet] = useState(hasPasscode());
   const [isRestoring, setIsRestoring] = useState(false);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [currencySearch, setCurrencySearch] = useState('');
@@ -81,11 +85,19 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
   const [dob, setDob] = useState(profile?.dob || '');
   const [maritalStatus, setMaritalStatus] = useState(profile?.maritalStatus || 'Single');
   const [hasKids, setHasKids] = useState(profile?.hasKids || false);
+
+  useEffect(() => {
+    setHasKids(!!(profile?.hasKids || (profile?.dependents && profile.dependents.length > 0)));
+  }, [profile?.hasKids, profile?.dependents]);
+
   const [financialGoals, setFinancialGoals] = useState(profile?.financialGoals || '');
   const [theme, setTheme] = useState(profile?.theme || 'dark');
   const [fontSize, setFontSizeState] = useState(profile?.fontSize || localStorage.getItem('vantage_font_size') || 'normal');
   const [fontFamily, setFontFamilyState] = useState(profile?.fontFamily || localStorage.getItem('vantage_font_family') || 'Google Sans');
   const [isSaving, setIsSaving] = useState(false);
+  const [isAddDependentDropdownOpen, setIsAddDependentDropdownOpen] = useState(false);
+  const [newDependentRelation, setNewDependentRelation] = useState("Son");
+  const [newDependentAge, setNewDependentAge] = useState<number | string>(0);
 
   // Premium Feature Toggles
   const [calendarSyncEnabled, setCalendarSyncEnabled] = useState(profile?.calendarSyncEnabled || false);
@@ -467,6 +479,19 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
           value: isRestoring ? t('settings.querying_dashboard') : t('settings.restore'),
           action: handleRestorePurchases,
         },
+        {
+          icon: Lock,
+          label: 'App Passcode',
+          value: isPasscodeSet ? 'Change' : 'Set',
+          action: () => {
+             if (isPasscodeSet) {
+                 removePasscode();
+                 setIsPasscodeSet(false);
+             } else {
+                 setIsPasscodeModalOpen(true);
+             }
+          }
+        },
       ]
     },
     {
@@ -541,12 +566,13 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
         { 
           icon: Sparkles, 
           label: t('settings.north_star_goal'), 
-          value: profile?.financialGoals ? t('settings.set') : t('settings.not_set'),
+          value: profile?.financialGoals ? profile.financialGoals : t('settings.not_set'),
           isInput: true,
-          type: 'textarea',
+          type: 'select',
+          options: ['Emergency Shield', 'Save for Retirement', 'Buy Property', 'Settle Liabilities', 'Minimize Taxes'],
           currentValue: financialGoals,
           setter: setFinancialGoals,
-          placeholder: 'Describe your primary financial goal...'
+          placeholder: 'Select your primary financial goal...'
         },
       ]
     },
@@ -598,46 +624,7 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
     {
       title: t('settings.graphics'),
       items: [
-        { 
-          icon: Moon, 
-          label: t('settings.visual_interface'), 
-          value: theme === 'system' ? t('settings.theme_system_sync') : theme === 'dark' ? t('settings.theme_midnight') : t('settings.theme_arctic'),
-          isInput: true,
-          type: 'select',
-          options: [
-            { label: 'Midnight (Dark)', value: 'dark' },
-            { label: 'Arctic (Light)', value: 'light' },
-            { label: 'System Protocol', value: 'system' }
-          ],
-          currentValue: theme,
-          setter: setTheme
-        },
-        {
-          icon: ZoomIn,
-          label: t('settings.app_font_size'),
-          value: fontSize === 'small' ? t('settings.font_size_small') : fontSize === 'normal' ? t('settings.font_size_normal') : fontSize === 'large' ? t('settings.font_size_large') : t('settings.font_size_xlarge'),
-          isInput: true,
-          type: 'select',
-          options: [
-            { label: t('settings.font_size_small'), value: 'small' },
-            { label: t('settings.font_size_normal'), value: 'normal' },
-            { label: t('settings.font_size_large'), value: 'large' },
-            { label: t('settings.font_size_xlarge'), value: 'xlarge' }
-          ],
-          currentValue: fontSize,
-          setter: (v: any) => {
-            setFontSizeState(v);
-            localStorage.setItem('vantage_font_size', v);
-            const root = window.document.documentElement;
-            let sizePx = '16px';
-            if (v === 'small') sizePx = '14px';
-            else if (v === 'normal') sizePx = '16px';
-            else if (v === 'large') sizePx = '18px';
-            else if (v === 'xlarge') sizePx = '20px';
-            root.style.fontSize = sizePx;
-            root.style.setProperty('--app-base-font-size', sizePx);
-          }
-        },
+
         {
           icon: Type,
           label: t('settings.app_font'),
@@ -809,7 +796,7 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
         
         div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > p:nth-of-type(1),
         div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(4) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > p:nth-of-type(1) {
-          margin-left: 20px !important;
+          display: none !important;
         }
         
 
@@ -832,6 +819,16 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
         }
 
         div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(7) {
+          display: none !important;
+        }
+
+        /* Hide Data Region button */
+        div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(4) > div:nth-of-type(2) > div:nth-of-type(3) {
+          display: none !important;
+        }
+
+        /* Hide Fix Transaction Types button */
+        div#root:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(3) > div:nth-of-type(2) > div:nth-of-type(2) > div:nth-of-type(3) {
           display: none !important;
         }
 
@@ -908,6 +905,10 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
         profile={profile}
         onSuccess={onUpdateProfile}
       />
+      <PasscodeSetupModal 
+        isOpen={isPasscodeModalOpen} 
+        onClose={() => { setIsPasscodeModalOpen(false); setIsPasscodeSet(hasPasscode()); }} 
+      />
 
       {/* Gemini Insights One-Time Consent Modal */}
       <AnimatePresence>
@@ -931,15 +932,15 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
                 <div className="w-9 h-9 rounded-xl bg-vantage-green/10 flex items-center justify-center shrink-0">
                   <Brain size={16} className="text-vantage-green" />
                 </div>
-                <h3 style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[clamp(13px,3.8vw,15px)] font-bold tracking-wide text-black mt-1 leading-tight">
+                <h3 style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[clamp(13px,3.8vw,14px)] font-bold tracking-wide text-black mt-1 leading-tight">
                   {t('settings.consent_request_title')}
                 </h3>
-                <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[clamp(11px,2.8vw,13px)] text-neutral-600 leading-normal mt-0.5">
+                <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[clamp(12px,2.8vw,13px)] text-neutral-600 leading-normal mt-0.5">
                   {t('settings.consent_request_p')}
                 </p>
               </div>
 
-              <div style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[clamp(8px,2vw,10px)] text-neutral-500 tracking-wide leading-normal border-t border-neutral-100 pt-3">
+              <div style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} className="text-[clamp(12px,2vw,12px)] text-neutral-500 tracking-wide leading-normal border-t border-neutral-100 pt-3">
                 {t('settings.consent_request_div')}
               </div>
 
@@ -948,7 +949,7 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
                   type="button"
                   onClick={() => setShowConsentModal(false)}
                   style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}
-                  className="flex-1 h-[38px] md:h-[42px] bg-neutral-100 hover:bg-neutral-200 text-neutral-600 tracking-wider rounded-xl text-[clamp(11px,2.8vw,13px)] transition-all active:scale-95 flex items-center justify-center cursor-pointer border border-transparent outline-none select-none"
+                  className="flex-1 h-[38px] md:h-[42px] bg-neutral-100 hover:bg-neutral-200 text-neutral-600 tracking-wider rounded-xl text-[clamp(12px,2.8vw,13px)] transition-all active:scale-95 flex items-center justify-center cursor-pointer border border-transparent outline-none select-none"
                 >
                   {t('settings.decline')}
                 </button>
@@ -964,7 +965,7 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
                     backgroundColor: '#A6DDB1',
                     color: '#1E293B'
                   }}
-                  className="flex-1 h-[38px] md:h-[42px] hover:brightness-95 text-[#1E293B] tracking-wider rounded-xl text-[clamp(11px,2.8vw,13px)] transition-all active:scale-95 flex items-center justify-center cursor-pointer border border-transparent outline-none select-none shadow-sm"
+                  className="flex-1 h-[38px] md:h-[42px] hover:brightness-95 text-[#1E293B] tracking-wider rounded-xl text-[clamp(12px,2.8vw,13px)] transition-all active:scale-95 flex items-center justify-center cursor-pointer border border-transparent outline-none select-none shadow-sm"
                 >
                   {t('settings.allow')}
                 </button>
@@ -982,14 +983,14 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
       {/* High-density User Profile Card */}
       <div className="p-3 bg-[#FFFFFF] rounded-2xl border border-neutral-200 shadow-sm flex items-center justify-between gap-3 mx-4 leading-none select-none">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-9 h-9 rounded-full bg-vantage-green/10 flex items-center justify-center text-vantage-green select-none shrink-0" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700, fontSize: 'clamp(12px, 3.2vw, 15px)' }}>
+          <div className="w-9 h-9 rounded-full bg-vantage-green/10 flex items-center justify-center text-vantage-green select-none shrink-0" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700, fontSize: 'clamp(12px, 3.2vw, 14px)' }}>
             {(profile?.fullName || randomPlaceholder).charAt(0).toUpperCase()}
           </div>
           <div className="flex flex-col min-w-0">
             <span className="text-vantage-text dark:text-neutral-100 truncate" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: '18px', lineHeight: '1.2' }}>
               {profile?.fullName || randomPlaceholder}
             </span>
-            <span className="text-vantage-muted truncate" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: '12px', height: '16px', lineHeight: '14px', width: '160px' }}>
+            <span className="text-vantage-muted truncate" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: '12px', height: '14px', lineHeight: '14px', width: '160px' }}>
               {profile?.email || 'vantage.user@private.com'}
             </span>
           </div>
@@ -1023,7 +1024,7 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
             <div key={section.title} className="flex flex-col gap-1.5">
               <div className="flex items-center justify-between px-4 mt-1">
                 <span 
-                  style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: '16px' }}
+                  style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: '14px' }}
                   className="items-center text-[#1E293B] dark:text-neutral-100 shrink-0"
                 >
                   {section.title}
@@ -1038,7 +1039,7 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
                     }}
                     disabled={isSaving}
                     className="text-[#065F46] dark:text-vantage-green hover:opacity-80 transition-opacity active:scale-95 shrink-0"
-                    style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: '15px' }}
+                    style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: '14px' }}
                   >
                     {isSaving ? t('settings.syncing') : isEditingProfile ? t('settings.commit') : t('settings.edit_profile')}
                   </button>
@@ -1071,7 +1072,7 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
                     }}
                     disabled={isSaving}
                     className="text-[#065F46] dark:text-vantage-green hover:opacity-80 transition-opacity active:scale-95 shrink-0"
-                    style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: '15px' }}
+                    style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: '14px' }}
                   >
                     {isSaving ? t('settings.syncing') : isEditingAesthetic ? t('settings.commit') : t('settings.edit_aesthetic')}
                   </button>
@@ -1105,7 +1106,7 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
                     }}
                     disabled={isSaving}
                     className="text-[#065F46] dark:text-vantage-green hover:opacity-80 transition-opacity active:scale-95 shrink-0"
-                    style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: '15px' }}
+                    style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400, fontSize: '14px' }}
                   >
                     {isSaving ? t('settings.syncing') : isEditingGraphics ? t('settings.commit') : t('settings.edit_graphics')}
                   </button>
@@ -1140,7 +1141,7 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
                             <item.icon size={18} strokeWidth={1.5} className={item.label === 'Restore Purchase History' && isRestoring ? 'animate-spin' : ''} />
                           </div>
                           <span 
-                            style={{ fontFamily: "'Google Sans', sans-serif", fontSize: '16px', fontWeight: 400 }}
+                            style={{ fontFamily: "'Google Sans', sans-serif", fontSize: '14px', fontWeight: 400 }}
                             className={`truncate leading-tight ${item.highlight ? 'text-[#065F46] dark:text-vantage-green' : 'text-[#1E293B] dark:text-neutral-100'}`}
                           >
                             {item.label}
@@ -1151,7 +1152,7 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
                           <div className="flex items-center gap-3 min-w-0 shrink-0">
                             {item.value && (
                               <span 
-                                style={{ fontFamily: "'Google Sans', sans-serif", fontSize: '15px', fontWeight: 400 }}
+                                style={{ fontFamily: "'Google Sans', sans-serif", fontSize: '14px', fontWeight: 400 }}
                                 className={`truncate max-w-[140px] text-right ${item.highlight ? 'text-[#065F46] dark:text-vantage-green' : 'text-[#94A3B8] dark:text-neutral-500'}`}
                               >
                                 {item.value}
@@ -1220,19 +1221,80 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
                         </select>
                       )}
                       {item.type === 'toggle' && (
-                        <button 
-                          type="button"
-                          onClick={() => item.setter(!item.currentValue)}
-                          style={{ fontFamily: "'Google Sans', sans-serif', sans-serif", fontWeight: 400 }}
-                          className={`w-full flex items-center justify-between px-3 py-2 rounded-xl border transition-all ${item.currentValue ? 'bg-vantage-green/10 border-vantage-green/30 text-[#065F46]' : 'bg-white dark:bg-[#1A1B1F] border-neutral-200 dark:border-white/10 text-neutral-500'}`}
-                        >
-                          <span className="text-sm">
-                            {item.currentValue ? t('settings.active_status') : t('settings.inactive_status')}
-                          </span>
-                          <div className={`w-8 h-4 rounded-full relative transition-all ${item.currentValue ? 'bg-[#065F46] dark:bg-vantage-green' : 'bg-vantage-text/20'}`}>
-                            <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all ${item.currentValue ? 'right-0.5 shadow-sm' : 'left-0.5'}`}></div>
+                        item.icon === PackageOpen ? (
+                          <div className="flex flex-col gap-2 w-full" style={{ fontFamily: "'Google Sans', sans-serif" }}>
+                            {profile?.dependents?.map((dep: any, index: number) => (
+                              <div key={index} className="text-sm text-neutral-600 font-normal">
+                                {dep.relationship}: {dep.age} years old
+                              </div>
+                            ))}
+                            {isAddDependentDropdownOpen ? (
+                              <div className="flex flex-col gap-2 p-3 bg-neutral-50 rounded-xl border border-neutral-200 mt-2">
+                                <select 
+                                  className="text-sm p-2 rounded-lg border border-neutral-300"
+                                  value={newDependentRelation}
+                                  onChange={(e) => setNewDependentRelation(e.target.value)}
+                                >
+                                  {["Father", "Mother", "Son", "Daughter", "Friend", "Others"].map(rel => (
+                                    <option key={rel} value={rel}>{rel}</option>
+                                  ))}
+                                </select>
+                                <input 
+                                  type="number"
+                                  placeholder="Age"
+                                  className="text-sm p-2 rounded-lg border border-neutral-300"
+                                  value={newDependentAge}
+                                  onChange={(e) => setNewDependentAge(e.target.value)}
+                                />
+                                <div className="flex gap-2">
+                                  <button 
+                                    className="text-xs text-neutral-600 bg-neutral-200 px-3 py-1.5 rounded-lg"
+                                    onClick={() => setIsAddDependentDropdownOpen(false)}
+                                  >
+                                    Cancel
+                                  </button>
+                                  <button 
+                                    className="text-xs text-white bg-emerald-600 px-3 py-1.5 rounded-lg font-bold"
+                                    onClick={() => {
+                                      const age = parseInt(newDependentAge as string) || 0;
+                                      if (age > 0) {
+                                        const newDependents = [...(profile?.dependents || []), { relationship: newDependentRelation, age }];
+                                        updateDoc(doc(db, 'users', profile.uid), { dependents: newDependents, hasKids: true });
+                                        onUpdateProfile({ ...profile, dependents: newDependents, hasKids: true });
+                                        setHasKids(true);
+                                        setIsAddDependentDropdownOpen(false);
+                                      }
+                                    }}
+                                  >
+                                    Save
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <button 
+                                type="button" 
+                                className="text-xs text-emerald-600 font-bold hover:underline mt-2"
+                                onClick={() => setIsAddDependentDropdownOpen(true)}
+                              >
+                                + Add Dependent
+                              </button>
+                            )}
                           </div>
-                        </button>
+                        ) : (
+                          <button 
+                            type="button"
+                            onClick={() => item.setter(!item.currentValue)}
+                            style={{ fontFamily: "'Google Sans', sans-serif', sans-serif", fontWeight: 400 }}
+                            className={`w-full flex items-center justify-between px-3 py-2 rounded-xl border transition-all ${item.currentValue ? 'bg-vantage-green/10 border-vantage-green/30 text-[#065F46]' : 'bg-white dark:bg-[#1A1B1F] border-neutral-200 dark:border-white/10 text-neutral-500'}`}
+                          >
+                            <span className="text-sm">
+                              {item.currentValue ? t('settings.active_status') : t('settings.inactive_status')}
+                            </span>
+                            <div className={`w-8 h-4 rounded-full relative transition-all ${item.currentValue ? 'bg-[#065F46] dark:bg-vantage-green' : 'bg-vantage-text/20'}`}>
+                              <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all ${item.currentValue ? 'right-0.5 shadow-sm' : 'left-0.5'}`}></div>
+                            </div>
+                          </button>
+                        )
                       )}
                       {item.type === 'textarea' && (
                         <textarea 
@@ -1257,7 +1319,7 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
         <div className="flex flex-col gap-1.5 md:col-span-2 w-full mt-2">
           <div className="flex items-center justify-between px-3">
             <span 
-               style={{ fontSize: 'clamp(11px, 3.2vw, 13px)' }}
+               style={{ fontSize: 'clamp(12px, 3.2vw, 13px)' }}
               className="font-bold text-vantage-muted tracking-wide"
             >
               {t('settings.currency_config')}
@@ -1267,12 +1329,12 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
           <div className="mx-4 bg-neutral-950 text-[#F8F9FA] rounded-2xl border border-white/10 p-3.5 sm:p-5 shadow-2xl flex flex-col gap-4">
             <div className="flex flex-col gap-0.5 pb-1 border-b border-white/5">
               <h3 className="font-bold tracking-tight text-white" style={{ fontSize: 'clamp(12px, 3.2vw, 14px)' }}>{t('settings.system_currencies')}</h3>
-              <p className="text-[#999999] tracking-wide leading-none font-medium" style={{ fontSize: 'clamp(8px, 1.8vw, 9px)' }}>{t('settings.preference_protocols')}</p>
+              <p className="text-[#999999] tracking-wide leading-none font-medium" style={{ fontSize: 'clamp(12px, 1.8vw, 12px)' }}>{t('settings.preference_protocols')}</p>
             </div>
 
             {/* Base Currency Selector */}
             <div className="flex flex-col gap-1">
-              <label className="font-bold text-neutral-400 tracking-wide px-1" style={{ fontSize: 'clamp(9px, 2.2vw, 11px)' }}>{t('settings.base_reporting_currency')}</label>
+              <label className="font-bold text-neutral-400 tracking-wide px-1" style={{ fontSize: 'clamp(12px, 2.2vw, 12px)' }}>{t('settings.base_reporting_currency')}</label>
               <div className="relative">
                 <select
                   value={baseCurrency}
@@ -1287,14 +1349,14 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
                   <ChevronRight size={12} className="rotate-90" />
                 </div>
               </div>
-              <p className="text-neutral-500 tracking-wide px-1 font-medium" style={{ fontSize: 'clamp(8px, 1.8vw, 9px)' }}>{t('settings.reporting_standard_desc')}</p>
+              <p className="text-neutral-500 tracking-wide px-1 font-medium" style={{ fontSize: 'clamp(12px, 1.8vw, 12px)' }}>{t('settings.reporting_standard_desc')}</p>
             </div>
 
             {/* Enable Currencies */}
             <div className="flex flex-col gap-2">
                <div className="flex items-center justify-between px-1">
-                  <label className="font-bold text-neutral-400 tracking-wide" style={{ fontSize: 'clamp(9px, 2.2vw, 11px)' }}>{t('settings.enabled_portfolios')}</label>
-                  <span className="text-vantage-green font-bold tracking-wide" style={{ fontSize: 'clamp(8px, 1.8vw, 9px)' }}>
+                  <label className="font-bold text-neutral-400 tracking-wide" style={{ fontSize: 'clamp(12px, 2.2vw, 12px)' }}>{t('settings.enabled_portfolios')}</label>
+                  <span className="text-vantage-green font-bold tracking-wide" style={{ fontSize: 'clamp(12px, 1.8vw, 12px)' }}>
                      {enabledCurrencies.length || 1} {t('settings.active')}
                   </span>
                </div>
@@ -1327,7 +1389,7 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
                                   ? 'bg-[#111111] border-[#111111] text-white shadow-sm hover:opacity-90'
                                   : 'bg-white hover:bg-neutral-100 border-neutral-200 text-neutral-700'
                               }`}
-                              style={{ fontSize: 'clamp(8px, 1.8vw, 10px)' }}
+                              style={{ fontSize: 'clamp(12px, 1.8vw, 12px)' }}
                             >
                               {curr}
                             </button>
@@ -1335,11 +1397,11 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
                         })}
                      </div>
                      {filteredCurrencies.length === 0 && (
-                       <span className="text-[10px] text-neutral-400 italic text-center py-4 block font-sans">{t('settings.no_matching_currency')}</span>
+                       <span className="text-[12px] text-neutral-400 italic text-center py-4 block font-sans">{t('settings.no_matching_currency')}</span>
                      )}
                   </div>
                </div>
-               <p className="text-neutral-500 tracking-wide px-1 font-medium" style={{ fontSize: 'clamp(8px, 1.8vw, 9px)' }}>{t('settings.currency_usage_desc')}</p>
+               <p className="text-neutral-500 tracking-wide px-1 font-medium" style={{ fontSize: 'clamp(12px, 1.8vw, 12px)' }}>{t('settings.currency_usage_desc')}</p>
             </div>
           </div>
         </div>
@@ -1348,13 +1410,13 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
 
       <div className="flex flex-col items-center gap-1 mt-10 pb-16">
         <div 
-          style={{ fontFamily: "'Google Sans', sans-serif", fontSize: '10px', fontWeight: 400 }}
+          style={{ fontFamily: "'Google Sans', sans-serif", fontSize: '12px', fontWeight: 400 }}
           className="text-neutral-400 dark:text-neutral-500 tracking-wide"
         >
           {t('settings.vantage_version')}
         </div>
         <div 
-          style={{ fontFamily: "'Google Sans', sans-serif", fontSize: '9px', fontWeight: 400 }}
+          style={{ fontFamily: "'Google Sans', sans-serif", fontSize: '12px', fontWeight: 400 }}
           className="text-neutral-400/50 dark:text-neutral-500/50 tracking-wide text-center max-w-[250px]"
         >
           {t('settings.vantage_designed_for')}
@@ -1375,7 +1437,7 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
             window.location.reload();
           }}
           className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-neutral-200 dark:border-white/10 text-vantage-text dark:text-neutral-200 font-bold tracking-wide hover:bg-neutral-50 dark:hover:bg-white/5 transition-colors active:scale-95 cursor-pointer w-full mb-8" 
-          style={{ fontSize: 'clamp(10px, 2.8vw, 12px)' }}
+          style={{ fontSize: 'clamp(12px, 2.8vw, 12px)' }}
         >
           <LogOut size={14} className="shrink-0" />
           <span className="truncate">{t('settings.sign_out_vantage')}</span>
@@ -1387,7 +1449,7 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
              setDeleteInputVerify('');
           }}
           className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-red-500/20 bg-red-50 text-red-600 font-bold tracking-wide hover:bg-red-100 transition-colors active:scale-95 cursor-pointer w-full mb-8 font-bold" 
-          style={{ fontSize: 'clamp(10px, 2.8vw, 12px)', fontFamily: "'Google Sans', sans-serif" }}
+          style={{ fontSize: 'clamp(12px, 2.8vw, 12px)', fontFamily: "'Google Sans', sans-serif" }}
         >
           <ZapIcon size={14} className="shrink-0" />
           <span className="truncate font-bold">{t('settings.delete_profile')}</span>
@@ -1423,7 +1485,7 @@ export const Settings: React.FC<SettingsProps> = ({ profile, accounts, onUpdateP
                   </div>
                   <div>
                     <h3 className="text-base font-bold text-neutral-900 leading-tight font-bold">{t('settings.delete_profile')}</h3>
-                    <p className="text-[10px] text-red-500 font-normal">This action is permanent and irreversible</p>
+                    <p className="text-[12px] text-red-500 font-normal">This action is permanent and irreversible</p>
                   </div>
                 </div>
 

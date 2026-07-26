@@ -36,7 +36,7 @@ export const SavingsSection: React.FC<{
       
       {/* Total Saved Card */}
       <div className="bg-white rounded-2xl border border-[#E1E8ED] p-5 mb-6 shadow-sm">
-        <div className="text-[10px] font-bold text-gray-500 mb-1" style={{ fontFamily: "'Google Sans', sans-serif" }}>
+        <div className="text-[12px] font-bold text-gray-500 mb-1" style={{ fontFamily: "'Google Sans', sans-serif" }}>
           {t('savings_section.total_saved')}
         </div>
         <div className="text-3xl font-bold text-[#111C2D] mb-2" style={{ fontFamily: "'Google Sans', sans-serif" }}>
@@ -99,7 +99,7 @@ export const SavingsSection: React.FC<{
                     </div>
                     <div>
                       <div className="text-sm font-bold text-[#111C2D]">{(translateCategoryOrSubcategory(m.name, t) || t('savings_section.unnamed_goal')) as string}</div>
-                      <div className="text-[10px] text-gray-500">
+                      <div className="text-[12px] text-gray-500">
                         {t('savings_section.est_completion')} <span className="font-bold text-gray-900">{estCompletionDate ? estCompletionDate.toLocaleDateString(undefined, { month: 'short', year: 'numeric' }) : t('common.na', 'N/A')}</span>
                       </div>
                     </div>
@@ -107,7 +107,7 @@ export const SavingsSection: React.FC<{
                   <div className="text-right flex items-center gap-2">
                     <div className="text-right">
                       <div className="text-sm font-bold text-[#111C2D]">{currency} {effectiveCurrentValue.toLocaleString()}</div>
-                      <div className="text-[10px] text-gray-400">{t('savings_section.of_target')} {currency} {tar.toLocaleString()}</div>
+                      <div className="text-[12px] text-gray-400">{t('savings_section.of_target')} {currency} {tar.toLocaleString()}</div>
                     </div>
                     <div className="flex flex-col gap-1 -mt-2">
                       <button onClick={() => onAddTransaction(m)} className="text-gray-400 hover:text-[#111C2D] transition-colors cursor-pointer bg-transparent border-none">
@@ -128,7 +128,7 @@ export const SavingsSection: React.FC<{
                   />
                 </div>
                 
-                <div className="text-[10px] font-bold text-[#366945]">
+                <div className="text-[12px] font-bold text-[#366945]">
                   {progress.toFixed(0)}% {t('savings_section.reached')}
                 </div>
               </div>

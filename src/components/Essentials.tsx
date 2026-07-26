@@ -743,7 +743,7 @@ useEffect(() => {
         {/* Header Info */}
         <div className="flex items-center justify-between border-b border-neutral-100 pb-2.5">
           <div className="flex flex-col">
-            <span className="text-[10px] text-[#57606F] font-normal" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}>
+            <span className="text-[12px] text-[#57606F] font-normal" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}>
               {budget.period === 'daily' || budget.title?.toLowerCase().includes('daily') || budget.category?.toLowerCase().includes('daily') ? t('essentials.daily_spends_overview', 'DAILY SPENDS OVERVIEW') : t('essentials.associated_ledger', 'ASSOCIATED LEDGER')}
             </span>
             <h5 className="text-[13px] text-black font-bold" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}>
@@ -754,7 +754,7 @@ useEffect(() => {
             <button
               type="button"
               onClick={() => setEditingBudget(budget)}
-              className="px-2.5 py-1 text-[10px] hover:bg-neutral-50 active:scale-95 text-neutral-600 font-bold border border-neutral-200 rounded-lg transition-all cursor-pointer"
+              className="px-2.5 py-1 text-[12px] hover:bg-neutral-50 active:scale-95 text-neutral-600 font-bold border border-neutral-200 rounded-lg transition-all cursor-pointer"
               style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
             >
               {t('essentials.edit_limit', 'Edit Limit')}
@@ -800,13 +800,13 @@ useEffect(() => {
                         style={{ 
                           fontFamily: "'Google Sans', sans-serif", 
                           fontWeight: 400,
-                          fontSize: 'clamp(11px, 2.5vw, 13px)'
+                          fontSize: 'clamp(12px, 2.5vw, 13px)'
                         }}
                       >
                         {tx.notes || tx.title || t('essentials.untitled_expense', 'Untitled Expense')}
                       </span>
                       <span 
-                        className="text-[9px] text-neutral-400 block leading-none mt-0.5"
+                        className="text-[12px] text-neutral-400 block leading-none mt-0.5"
                         style={{ 
                           fontFamily: "'Google Sans', sans-serif", 
                           fontWeight: 400
@@ -823,7 +823,7 @@ useEffect(() => {
                       style={{ 
                         fontFamily: "'Google Sans', sans-serif", 
                         fontWeight: 700,
-                        fontSize: 'clamp(11px, 2.5vw, 13px)'
+                        fontSize: 'clamp(12px, 2.5vw, 13px)'
                       }}
                     >
                       {formattedAmount}
@@ -834,7 +834,7 @@ useEffect(() => {
             })
           ) : (
             <div className="py-8 text-center">
-              <span className="text-[11px] text-[#57606F] font-normal opacity-50" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}>
+              <span className="text-[12px] text-[#57606F] font-normal opacity-50" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }}>
                 {t('essentials.no_past_transactions', 'No past transactions logged for this period')}
               </span>
             </div>
@@ -843,7 +843,7 @@ useEffect(() => {
 
         {/* Summary Row */}
         <div className="border-t border-neutral-150 pt-2 flex items-center justify-between">
-          <span className="text-[10px] font-bold text-neutral-400" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}>
+          <span className="text-[12px] font-bold text-neutral-400" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}>
             {t('essentials.total_transaction_values', 'Total Transaction Values')}
           </span>
           <span className="text-[13px] text-neutral-800 font-bold" style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}>
@@ -1118,7 +1118,7 @@ useEffect(() => {
                     backgroundColor: '#A6DDB1',
                     color: '#1E293B'
                   }}
-                  className="w-full h-[38px] md:h-[42px] text-[clamp(11px,2.8vw,13px)] flex items-center justify-center rounded-xl shadow-sm uppercase tracking-[0.1em] hover:brightness-95 active:scale-95 transition-all text-center cursor-pointer font-normal border-none outline-none"
+                  className="w-full h-[38px] md:h-[42px] text-[clamp(12px,2.8vw,13px)] flex items-center justify-center rounded-xl shadow-sm uppercase tracking-[0.1em] hover:brightness-95 active:scale-95 transition-all text-center cursor-pointer font-normal border-none outline-none"
                 >
                   {isLoading ? t('common.processing', 'Processing...') : t('common.proceed', 'PROCEED')}
                 </button>
@@ -1130,7 +1130,7 @@ useEffect(() => {
                     fontFamily: "'Google Sans', sans-serif",
                     fontWeight: 400
                   }}
-                  className="w-full flex items-center justify-center text-neutral-500 hover:text-black transition-colors font-normal cursor-pointer bg-transparent border-none outline-none text-[clamp(11px,2.8vw,13px)]"
+                  className="w-full flex items-center justify-center text-neutral-500 hover:text-black transition-colors font-normal cursor-pointer bg-transparent border-none outline-none text-[clamp(12px,2.8vw,13px)]"
                 >
                   {t('common.cancel', 'CANCEL')}
                 </button>
@@ -1194,7 +1194,7 @@ useEffect(() => {
                     backgroundColor: '#A6DDB1',
                     color: '#1E293B'
                   }}
-                  className="w-full h-[38px] md:h-[42px] text-[clamp(11px,2.8vw,13px)] flex items-center justify-center rounded-xl shadow-sm uppercase tracking-[0.1em] hover:brightness-95 active:scale-95 transition-all text-center cursor-pointer font-normal border-none outline-none"
+                  className="w-full h-[38px] md:h-[42px] text-[clamp(12px,2.8vw,13px)] flex items-center justify-center rounded-xl shadow-sm uppercase tracking-[0.1em] hover:brightness-95 active:scale-95 transition-all text-center cursor-pointer font-normal border-none outline-none"
                 >
                   {isLoading ? t('common.processing', 'Processing...') : t('common.proceed', 'PROCEED')}
                 </button>
@@ -1206,7 +1206,7 @@ useEffect(() => {
                     fontFamily: "'Google Sans', sans-serif",
                     fontWeight: 400
                   }}
-                  className="w-full flex items-center justify-center text-neutral-500 hover:text-black transition-colors font-normal cursor-pointer bg-transparent border-none outline-none text-[clamp(11px,2.8vw,13px)] uppercase tracking-[0.1em]"
+                  className="w-full flex items-center justify-center text-neutral-500 hover:text-black transition-colors font-normal cursor-pointer bg-transparent border-none outline-none text-[clamp(12px,2.8vw,13px)] uppercase tracking-[0.1em]"
                 >
                   {t('common.cancel', 'CANCEL')}
                 </button>
@@ -1271,7 +1271,7 @@ useEffect(() => {
                     backgroundColor: '#A6DDB1',
                     color: '#1E293B'
                   }}
-                  className="w-full h-[38px] md:h-[42px] text-[clamp(11px,2.8vw,13px)] flex items-center justify-center rounded-xl shadow-sm uppercase tracking-[0.1em] hover:brightness-95 active:scale-95 transition-all text-center cursor-pointer font-normal border-none outline-none"
+                  className="w-full h-[38px] md:h-[42px] text-[clamp(12px,2.8vw,13px)] flex items-center justify-center rounded-xl shadow-sm uppercase tracking-[0.1em] hover:brightness-95 active:scale-95 transition-all text-center cursor-pointer font-normal border-none outline-none"
                 >
                   {isLoading ? t('common.processing', 'Processing...') : t('common.proceed', 'PROCEED')}
                 </button>
@@ -1283,7 +1283,7 @@ useEffect(() => {
                     fontFamily: "'Google Sans', sans-serif",
                     fontWeight: 400
                   }}
-                  className="w-full flex items-center justify-center text-neutral-500 hover:text-black transition-colors font-normal cursor-pointer bg-transparent border-none outline-none text-[clamp(11px,2.8vw,13px)] uppercase tracking-[0.1em]"
+                  className="w-full flex items-center justify-center text-neutral-500 hover:text-black transition-colors font-normal cursor-pointer bg-transparent border-none outline-none text-[clamp(12px,2.8vw,13px)] uppercase tracking-[0.1em]"
                 >
                   {t('common.cancel', 'CANCEL')}
                 </button>
@@ -1362,7 +1362,7 @@ useEffect(() => {
                 {/* Body message in regular 400 with high-density line constraints */}
                 <p 
                   style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} 
-                  className="text-[10px] text-[#57606F] leading-snug tracking-normal mb-4 font-normal max-w-[280px]"
+                  className="text-[12px] text-[#57606F] leading-snug tracking-normal mb-4 font-normal max-w-[280px]"
                 >
                   {t('essentials.linked_account_warning', 'This active repayment milestone is linked to the liability node: ')}<span className="text-black">{linkedAcc?.name || 'Unknown'}</span>{t('essentials.linked_account_question', '. Would you like to wipe its overall balance-sheet node or keep/archive the ledger logs?')}
                 </p>
@@ -1373,7 +1373,7 @@ useEffect(() => {
                     onClick={() => handleManageLinkedAccount('delete')}
                     disabled={isLoading}
                     style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} 
-                    className="w-full h-8.5 bg-red-600 hover:bg-red-700 text-white font-normal rounded-xl transition-colors cursor-pointer border-none text-[10px] uppercase tracking-wider"
+                    className="w-full h-8.5 bg-red-600 hover:bg-red-700 text-white font-normal rounded-xl transition-colors cursor-pointer border-none text-[12px] uppercase tracking-wider"
                   >
                     {t('essentials.delete_account', 'Delete Account')}
                   </button>
@@ -1381,7 +1381,7 @@ useEffect(() => {
                     onClick={() => handleManageLinkedAccount('archive')}
                     disabled={isLoading}
                     style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} 
-                    className="w-full h-8.5 bg-[#f1f2f6] hover:bg-neutral-200 text-neutral-800 font-normal rounded-xl transition-colors cursor-pointer border-none text-[10px] uppercase tracking-wider"
+                    className="w-full h-8.5 bg-[#f1f2f6] hover:bg-neutral-200 text-neutral-800 font-normal rounded-xl transition-colors cursor-pointer border-none text-[12px] uppercase tracking-wider"
                   >
                     {t('essentials.archive_account', 'Archive Account')}
                   </button>
@@ -1389,7 +1389,7 @@ useEffect(() => {
                     onClick={() => handleManageLinkedAccount('keep')}
                     disabled={isLoading}
                     style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 400 }} 
-                    className="w-full h-8.5 bg-vantage-green/10 hover:bg-vantage-green/20 text-vantage-green font-normal rounded-xl transition-colors cursor-pointer border-none text-[10px] uppercase tracking-wider"
+                    className="w-full h-8.5 bg-vantage-green/10 hover:bg-vantage-green/20 text-vantage-green font-normal rounded-xl transition-colors cursor-pointer border-none text-[12px] uppercase tracking-wider"
                   >
                     {t('essentials.keep_active', 'Keep Active')}
                   </button>
@@ -1599,19 +1599,19 @@ const BudgetConfigModal: React.FC<{
                  style={{ 
                    fontFamily: "'Google Sans', sans-serif", 
                    fontWeight: 400, 
-                   fontSize: 'clamp(9px, 2.2vw, 11px)' 
+                   fontSize: 'clamp(12px, 2.2vw, 12px)' 
                  }}>
                 {editingBudget ? 'Adjustment Phase' : 'Configuration Phase'}
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-[clamp(10px,2.8vw,14px)]">
+            <form onSubmit={handleSubmit} className="space-y-[clamp(12px,2.8vw,14px)]">
               {/* Budget Title */}
               <div className="space-y-1 text-left flex flex-col justify-start items-stretch">
                 <label className="px-1 leading-none text-slate-500 font-normal"
                        style={{ 
                          fontFamily: "'Google Sans', sans-serif", 
-                         fontSize: 'clamp(9px, 2.5vw, 11px)' 
+                         fontSize: 'clamp(12px, 2.5vw, 12px)' 
                        }}>
                   Budget Title
                 </label>
@@ -1623,7 +1623,7 @@ const BudgetConfigModal: React.FC<{
                   style={{ 
                     fontFamily: "'Google Sans', sans-serif", 
                     fontWeight: 400, 
-                    fontSize: 'clamp(11px, 2.8vw, 13px)', 
+                    fontSize: 'clamp(12px, 2.8vw, 13px)', 
                     height: 'clamp(34px, 9vw, 38px)' 
                   }}
                 />
@@ -1634,7 +1634,7 @@ const BudgetConfigModal: React.FC<{
                 <label className="px-1 leading-none text-slate-500 font-normal"
                        style={{ 
                          fontFamily: "'Google Sans', sans-serif", 
-                         fontSize: 'clamp(9px, 2.5vw, 11px)' 
+                         fontSize: 'clamp(12px, 2.5vw, 12px)' 
                        }}>
                   Category Selections
                 </label>
@@ -1646,7 +1646,7 @@ const BudgetConfigModal: React.FC<{
                   style={{ 
                     fontFamily: "'Google Sans', sans-serif", 
                     fontWeight: 400,
-                    fontSize: 'clamp(11px, 2.8vw, 13px)', 
+                    fontSize: 'clamp(12px, 2.8vw, 13px)', 
                     height: 'clamp(34px, 9vw, 38px)' 
                   }}
                 >
@@ -1655,7 +1655,7 @@ const BudgetConfigModal: React.FC<{
                       ? "Select Tracking Categories ▼" 
                       : `${mappedCategories.length} Categories, ${mappedSubCategories.length} Selected`}
                   </span>
-                  <span className="text-neutral-400 text-[10px] shrink-0">
+                  <span className="text-neutral-400 text-[12px] shrink-0">
                     {isDropdownOpen ? '▲' : '▼'}
                   </span>
                 </button>
@@ -1753,13 +1753,13 @@ const BudgetConfigModal: React.FC<{
               </div>
 
               {/* Space-optimized grid for Max Amount and Currency */}
-              <div className="grid grid-cols-2" style={{ gap: 'clamp(10px, 2.8vw, 14px)' }}>
+              <div className="grid grid-cols-2" style={{ gap: 'clamp(12px, 2.8vw, 14px)' }}>
                 {/* Max Amount */}
                 <div className="space-y-1 text-left flex flex-col justify-start items-stretch">
                   <label className="px-1 leading-none text-slate-500 font-normal"
                          style={{ 
                            fontFamily: "'Google Sans', sans-serif", 
-                           fontSize: 'clamp(9px, 2.5vw, 11px)' 
+                           fontSize: 'clamp(12px, 2.5vw, 12px)' 
                          }}>
                     Max Amount
                   </label>
@@ -1773,7 +1773,7 @@ const BudgetConfigModal: React.FC<{
                     style={{ 
                       fontFamily: "'Google Sans', sans-serif", 
                       fontWeight: 400, 
-                      fontSize: 'clamp(11px, 2.8vw, 13px)', 
+                      fontSize: 'clamp(12px, 2.8vw, 13px)', 
                       height: 'clamp(34px, 9vw, 38px)' 
                     }}
                   />
@@ -1784,7 +1784,7 @@ const BudgetConfigModal: React.FC<{
                   <label className="px-1 leading-none text-slate-500 font-normal"
                          style={{ 
                            fontFamily: "'Google Sans', sans-serif", 
-                           fontSize: 'clamp(9px, 2.5vw, 11px)' 
+                           fontSize: 'clamp(12px, 2.5vw, 12px)' 
                          }}>
                     Currency
                   </label>
@@ -1795,7 +1795,7 @@ const BudgetConfigModal: React.FC<{
                     style={{ 
                       fontFamily: "'Google Sans', sans-serif", 
                       fontWeight: 400, 
-                      fontSize: 'clamp(11px, 2.8vw, 13px)', 
+                      fontSize: 'clamp(12px, 2.8vw, 13px)', 
                       height: 'clamp(34px, 9vw, 38px)' 
                     }}
                   >
@@ -1812,7 +1812,7 @@ const BudgetConfigModal: React.FC<{
                 <label className="px-1 leading-none text-slate-500 font-normal"
                        style={{ 
                          fontFamily: "'Google Sans', sans-serif", 
-                         fontSize: 'clamp(9px, 2.5vw, 11px)' 
+                         fontSize: 'clamp(12px, 2.5vw, 12px)' 
                        }}>
                   Budget Period
                 </label>
@@ -1823,7 +1823,7 @@ const BudgetConfigModal: React.FC<{
                   style={{ 
                     fontFamily: "'Google Sans', sans-serif", 
                     fontWeight: 400, 
-                    fontSize: 'clamp(11px, 2.8vw, 13px)', 
+                    fontSize: 'clamp(12px, 2.8vw, 13px)', 
                     height: 'clamp(34px, 9vw, 38px)' 
                   }}
                 >
@@ -1840,7 +1840,7 @@ const BudgetConfigModal: React.FC<{
                 className="w-full h-[38px] md:h-[42px] bg-[#A6DDB1] rounded-lg text-slate-900 active:scale-95 transition-all disabled:opacity-50 mt-4 flex items-center justify-center cursor-pointer shadow-lg shadow-[#A6DDB1]/20 font-bold"
                 style={{
                   fontFamily: "'Google Sans', sans-serif",
-                  fontSize: 'clamp(11px, 2.8vw, 13px)'
+                  fontSize: 'clamp(12px, 2.8vw, 13px)'
                 }}
               >
                 {editingBudget ? 'Update Protocol' : 'Establish Budget'}
@@ -1992,7 +1992,7 @@ export const QuickTransactionModal: React.FC<{
               Submit Transaction
             </h4>
             <p className="text-emerald-700 font-black mt-1"
-               style={{ fontSize: 'clamp(9px, 2vw, 11px)' }}>
+               style={{ fontSize: 'clamp(12px, 2vw, 12px)' }}>
               {budget.title} Control
             </p>
           </div>
@@ -2000,7 +2000,7 @@ export const QuickTransactionModal: React.FC<{
           <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
             <div className="space-y-1.5">
               <label className="font-black text-[#57606F] uppercase tracking-widest px-1 leading-none"
-                     style={{ fontSize: 'clamp(9px, 2vw, 10.5px)' }}>
+                     style={{ fontSize: 'clamp(12px, 2vw, 12px)' }}>
                 Source Account ({budget.currency})
               </label>
               <select 
@@ -2017,7 +2017,7 @@ export const QuickTransactionModal: React.FC<{
 
             <div className="space-y-1.5">
               <label className="font-black text-[#57606F] uppercase tracking-widest px-1 leading-none"
-                     style={{ fontSize: 'clamp(9px, 2vw, 10.5px)' }}>
+                     style={{ fontSize: 'clamp(12px, 2vw, 12px)' }}>
                 Category
               </label>
               <select 
@@ -2034,7 +2034,7 @@ export const QuickTransactionModal: React.FC<{
 
             <div className="space-y-1.5">
               <label className="font-black text-[#57606F] uppercase tracking-widest px-1 leading-none"
-                     style={{ fontSize: 'clamp(9px, 2vw, 10.5px)' }}>
+                     style={{ fontSize: 'clamp(12px, 2vw, 12px)' }}>
                 Sub-category
               </label>
               <select 
@@ -2051,7 +2051,7 @@ export const QuickTransactionModal: React.FC<{
 
             <div className="space-y-1.5">
               <label className="font-black text-[#57606F] uppercase tracking-widest px-1 leading-none"
-                     style={{ fontSize: 'clamp(9px, 2vw, 10.5px)' }}>
+                     style={{ fontSize: 'clamp(12px, 2vw, 12px)' }}>
                 Interaction Amount
               </label>
               <div className="relative">
@@ -2064,7 +2064,7 @@ export const QuickTransactionModal: React.FC<{
                   className="w-full bg-vantage-text/5 border border-[#E1E8ED] rounded-lg pl-3 pr-12 font-mono text-black focus:border-vantage-green outline-none transition-all h-[36px] max-h-[36px] md:h-[40px] md:max-h-[40px] text-[14px] md:text-[15px]"
                 />
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-black/40 font-black uppercase pointer-events-none"
-                      style={{ fontSize: 'clamp(10px, 2.5vw, 12px)' }}>
+                      style={{ fontSize: 'clamp(12px, 2.5vw, 12px)' }}>
                   {budget.currency}
                 </span>
               </div>
@@ -2072,7 +2072,7 @@ export const QuickTransactionModal: React.FC<{
 
             <div className="space-y-1.5">
               <label className="font-black text-[#57606F] uppercase tracking-widest px-1 leading-none"
-                     style={{ fontSize: 'clamp(9px, 2vw, 10.5px)' }}>
+                     style={{ fontSize: 'clamp(12px, 2vw, 12px)' }}>
                 Interaction Note
               </label>
               <input 
@@ -2215,7 +2215,7 @@ export const MilestoneConfigModal: React.FC<{
               <h4 style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-gray-900 tracking-tight text-center leading-tight text-lg">
                 {editingMilestone ? t('essentials.refilling_milestone_goal', 'Refilling Milestone Goal') : t('essentials.configure_milestone_goal', 'Configure Milestone Goal')}
               </h4>
-              <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-gray-400 tracking-[0.2em] text-[10px]">
+              <p style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-gray-400 tracking-[0.2em] text-[12px]">
                 {t('essentials.savings_target_setup', 'Savings Target Setup')}
               </p>
             </div>
@@ -2224,7 +2224,7 @@ export const MilestoneConfigModal: React.FC<{
 
               {/* Goal name */}
               <div className="space-y-2">
-                <label style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[10px] text-gray-500 tracking-widest px-1 block">
+                <label style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[12px] text-gray-500 tracking-widest px-1 block">
                   {t('essentials.goal_name_label', 'Goal Name / Label')}
                 </label>
                 <input 
@@ -2240,12 +2240,12 @@ export const MilestoneConfigModal: React.FC<{
 
               {/* Selection categories / accounts linked */}
               <div className="space-y-2">
-                <label style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[10px] text-gray-500 tracking-widest px-1 block leading-relaxed">
+                <label style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[12px] text-gray-500 tracking-widest px-1 block leading-relaxed">
                   {t('essentials.select_ledger_sources', 'Select Quantum Ledger Sources (Cash, Bank & Savings)')}
                 </label>
                 <div className="max-h-[140px] overflow-y-auto border border-gray-100 rounded-[0.5rem] p-2 space-y-1.5 bg-[#f1f5f9]/50">
                   {savingsAccounts.length === 0 ? (
-                    <div style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[10px] text-gray-400 uppercase tracking-wider text-center py-4">No active accounts to link</div>
+                    <div style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[12px] text-gray-400 uppercase tracking-wider text-center py-4">No active accounts to link</div>
                   ) : (
                     savingsAccounts.map((acc, idx) => {
                       const isChecked = linkedAccountIds.includes(acc.id);
@@ -2264,11 +2264,11 @@ export const MilestoneConfigModal: React.FC<{
                               style={{ accentColor: '#A6DDB1' }}
                               className="w-5 h-5 rounded border-none text-brand focus:ring-brand"
                             />
-                            <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[11px] text-gray-700">
+                            <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[12px] text-gray-700">
                               {acc.name}
                             </span>
                           </div>
-                          <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 600 }} className="text-[11px] text-gray-500">
+                          <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 600 }} className="text-[12px] text-gray-500">
                             {acc.currency} {balanceVal < 0 ? '-' : ''}{Math.abs(balanceVal).toLocaleString('en-US', { maximumFractionDigits: 0 })}
                           </span>
                         </div>
@@ -2280,7 +2280,7 @@ export const MilestoneConfigModal: React.FC<{
 
               {/* Target amount */}
               <div className="space-y-2">
-                <label style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[10px] text-gray-500 tracking-widest px-1 block">
+                <label style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[12px] text-gray-500 tracking-widest px-1 block">
                   {t('essentials.target_amount', 'Target Amount')}
                 </label>
                 <div className="relative">
@@ -2294,7 +2294,7 @@ export const MilestoneConfigModal: React.FC<{
                     style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 500 }}
                     className="w-full bg-[#f1f5f9] border-none rounded-[0.5rem] py-3 px-4 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-[#A6DDB1] outline-none transition-all text-xs"
                   />
-                  <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-[10px] tracking-widest pointer-events-none">
+                  <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-[12px] tracking-widest pointer-events-none">
                     {activeBaseCurr}
                   </span>
                 </div>
@@ -2303,7 +2303,7 @@ export const MilestoneConfigModal: React.FC<{
               {/* Slider target months */}
               <section className="mb-8" data-purpose="deadline-section">
                 <div className="flex justify-between items-center mb-4">
-                  <label style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[10px] text-gray-500 tracking-widest">
+                  <label style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[12px] text-gray-500 tracking-widest">
                     {t('essentials.deadline_months_remaining', 'Deadline (Months Remaining)')}
                   </label>
                   <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-xs text-gray-900">{monthsToTarget} {t('essentials.months', 'Months')}</span>
@@ -2318,7 +2318,7 @@ export const MilestoneConfigModal: React.FC<{
                     style={{ accentColor: '#A6DDB1' }}
                     className="w-full h-2 bg-[#f1f5f9] rounded-lg appearance-none cursor-pointer"
                   />
-                  <div className="bg-[#f1f5f9] px-4 py-2 rounded-[0.5rem] text-[10px] font-bold text-gray-700 w-12 text-center">
+                  <div className="bg-[#f1f5f9] px-4 py-2 rounded-[0.5rem] text-[12px] font-bold text-gray-700 w-12 text-center">
                     {monthsToTarget}
                   </div>
                 </div>
@@ -2326,7 +2326,7 @@ export const MilestoneConfigModal: React.FC<{
 
               {/* Recommendation indicator card */}
               <section className="bg-[#f1f5f9]/80 rounded-[0.5rem] p-4 border border-[#e2e8f0]" data-purpose="allocation-card">
-                <h3 style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[10px] text-gray-500 mb-2">
+                <h3 style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[12px] text-gray-500 mb-2">
                   {t('essentials.vantage_recommended_allocation', 'Vantage Recommended Allocation:')}
                 </h3>
                 <div className="flex justify-between items-baseline mt-1 block">
@@ -2340,17 +2340,17 @@ export const MilestoneConfigModal: React.FC<{
                         <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-gray-900 text-sm leading-none">
                           {activeBaseCurr} {recommendedVal < 0 ? '-' : ''}{Math.abs(recommendedVal).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
                         </span>
-                        <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[10px] text-gray-500">
+                        <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[12px] text-gray-500">
                           {t('essentials.per_month', 'per month')}
                         </span>
                       </div>
-                      <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700, color: '#366945' }} className="text-[10px] mt-1 block">
+                      <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700, color: '#366945' }} className="text-[12px] mt-1 block">
                         {t('essentials.pooled_funding_status', 'Pooled Funding Status: {{percentage}}% Secured', { percentage: parsedTarget > 0 ? Math.round((linkedBalancesSum / parsedTarget) * 100) : 0 })}
                       </span>
                     </div>
                   )}
                 </div>
-                <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[9px] text-gray-400 mt-2 block">
+                <span style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }} className="text-[12px] text-gray-400 mt-2 block">
                   {t('essentials.based_on_currently_linked', 'Based on {{currency}} {{amount}} currently linked', { currency: activeBaseCurr, amount: Math.abs(linkedBalancesSum).toLocaleString('en-US', { maximumFractionDigits: 0 }) })}
                 </span>
               </section>
@@ -2360,7 +2360,7 @@ export const MilestoneConfigModal: React.FC<{
                   type="button" 
                   onClick={onClose}
                   style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
-                  className="flex-1 h-[42px] bg-gray-100 hover:bg-gray-200 rounded-[0.5rem] text-gray-900 text-[10px] transition-all cursor-pointer border-none"
+                  className="flex-1 h-[42px] bg-gray-100 hover:bg-gray-200 rounded-[0.5rem] text-gray-900 text-[12px] transition-all cursor-pointer border-none"
                 >
                   {t('essentials.cancel', 'Cancel')}
                 </button>
@@ -2368,7 +2368,7 @@ export const MilestoneConfigModal: React.FC<{
                   type="submit" 
                   disabled={isLoading || !name || !targetAmount || linkedAccountIds.length === 0}
                   style={{ fontFamily: "'Google Sans', sans-serif", fontWeight: 700 }}
-                  className="flex-1 h-[42px] bg-[#A6DDB1] text-gray-900 rounded-[0.5rem] text-[10px] shadow-sm transition-all disabled:opacity-50 cursor-pointer border-none"
+                  className="flex-1 h-[42px] bg-[#A6DDB1] text-gray-900 rounded-[0.5rem] text-[12px] shadow-sm transition-all disabled:opacity-50 cursor-pointer border-none"
                 >
                   {isLoading ? t('essentials.saving', 'Saving...') : t('essentials.save_updates', 'Save Updates')}
                 </button>

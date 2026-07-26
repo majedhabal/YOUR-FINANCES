@@ -179,7 +179,7 @@ export const NetWorthBreakdownModal: React.FC<NetWorthBreakdownModalProps> = ({
                   </h3>
                   <p 
                     style={{ fontWeight: 400, fontFamily: "'Google Sans', sans-serif" }}
-                    className="text-neutral-500 text-[11px]"
+                    className="text-neutral-500 text-[12px]"
                   >
                     {t('net_worth_breakdown_modal.subtitle', 'Accounts included under assets and liabilities')}
                   </p>
@@ -195,15 +195,15 @@ export const NetWorthBreakdownModal: React.FC<NetWorthBreakdownModalProps> = ({
               {/* Calculations Breakdown Summary Card */}
               <div className="p-4 rounded-xl bg-white/40 border border-neutral-100/50 flex flex-col gap-3 shrink-0">
                 <div className="flex justify-between items-center">
-                  <span style={{ fontWeight: 400, fontFamily: "'Google Sans', sans-serif" }} className="text-neutral-500 text-[11px]">{t('net_worth_breakdown_modal.formula', 'Formula')}</span>
-                  <span style={{ fontWeight: 500, fontFamily: "'Google Sans', sans-serif" }} className="text-neutral-600 text-[10px] bg-neutral-200/40 px-2 py-0.5 rounded-full">
+                  <span style={{ fontWeight: 400, fontFamily: "'Google Sans', sans-serif" }} className="text-neutral-500 text-[12px]">{t('net_worth_breakdown_modal.formula', 'Formula')}</span>
+                  <span style={{ fontWeight: 500, fontFamily: "'Google Sans', sans-serif" }} className="text-neutral-600 text-[12px] bg-neutral-200/40 px-2 py-0.5 rounded-full">
                     {t('net_worth_breakdown_modal.formula_text', 'Confirmed income - Total Debt')}
                   </span>
                 </div>
                 
                 <div className="grid grid-cols-3 gap-2 items-center text-center">
                   <div className="flex flex-col p-2 bg-white/50 rounded-lg border border-neutral-100/50">
-                    <span style={{ fontWeight: 400, fontFamily: "'Google Sans', sans-serif", color: '#57606F' }} className="text-[10px]">{t('net_worth_breakdown_modal.total_assets', 'Confirmed income')}</span>
+                    <span style={{ fontWeight: 400, fontFamily: "'Google Sans', sans-serif", color: '#57606F' }} className="text-[12px]">{t('net_worth_breakdown_modal.total_assets', 'Confirmed income')}</span>
                     <span 
                       style={{ 
                         fontWeight: 600,
@@ -217,7 +217,7 @@ export const NetWorthBreakdownModal: React.FC<NetWorthBreakdownModalProps> = ({
                   </div>
                   <div className="text-neutral-300 font-g-sans">-</div>
                   <div className="flex flex-col p-2 bg-white/50 rounded-lg border border-neutral-100/50">
-                    <span style={{ fontWeight: 400, fontFamily: "'Google Sans', sans-serif", color: '#57606F' }} className="text-[10px]">{t('net_worth_breakdown_modal.total_liabilities', 'Total Debt')}</span>
+                    <span style={{ fontWeight: 400, fontFamily: "'Google Sans', sans-serif", color: '#57606F' }} className="text-[12px]">{t('net_worth_breakdown_modal.total_liabilities', 'Total Debt')}</span>
                     <span 
                       style={{ 
                         fontWeight: 600,
@@ -232,7 +232,7 @@ export const NetWorthBreakdownModal: React.FC<NetWorthBreakdownModalProps> = ({
                 </div>
 
                 <div className="border-t border-dashed border-neutral-200/50 pt-2.5 flex items-center justify-between">
-                  <span style={{ fontWeight: 400, fontFamily: "'Google Sans', sans-serif", color: '#1E2229' }} className="text-[11px]">{t('net_worth_breakdown_modal.net_worth_label', 'Net Worth ({{currency}})', { currency: primaryCurrency })}</span>
+                  <span style={{ fontWeight: 400, fontFamily: "'Google Sans', sans-serif", color: '#1E2229' }} className="text-[12px]">{t('net_worth_breakdown_modal.net_worth_label', 'Net Worth ({{currency}})', { currency: primaryCurrency })}</span>
                   <span 
                     style={{ 
                       fontWeight: 600, 
@@ -262,12 +262,12 @@ export const NetWorthBreakdownModal: React.FC<NetWorthBreakdownModalProps> = ({
                     >
                       {t('net_worth_breakdown_modal.asset_accounts', 'Asset Accounts')}
                     </span>
-                    <span className="text-[10px] text-neutral-400 font-normal">({assetsList.length})</span>
+                    <span className="text-[12px] text-neutral-400 font-normal">({assetsList.length})</span>
                   </div>
 
                   <div className="space-y-1.5">
                     {assetsList.length === 0 ? (
-                      <div className="text-neutral-400 text-[11px] font-normal py-4 text-center border border-dashed border-neutral-100/50 rounded-xl">
+                      <div className="text-neutral-400 text-[12px] font-normal py-4 text-center border border-dashed border-neutral-100/50 rounded-xl">
                         {t('net_worth_breakdown_modal.no_assets', 'No active asset accounts found.')}
                       </div>
                     ) : (
@@ -289,7 +289,7 @@ export const NetWorthBreakdownModal: React.FC<NetWorthBreakdownModalProps> = ({
                             WebkitBackdropFilter: 'blur(22px)',
                             borderRadius: '20px',
                             border: '1px solid rgba(30, 34, 41, 0.08)',
-                            boxShadow: '0 8px 32px 0 rgba(166, 221, 177, 0.12)'
+                            boxShadow: '0 12px 32px 0 rgba(166, 221, 177, 0.12)'
                           }}
                           className="hover:bg-white/60 transition-colors w-full min-w-0"
                         >
@@ -395,12 +395,12 @@ export const NetWorthBreakdownModal: React.FC<NetWorthBreakdownModalProps> = ({
                     >
                       {t('net_worth_breakdown_modal.liability_accounts', 'Liability Accounts')}
                     </span>
-                    <span className="text-[10px] text-neutral-400 font-normal">({liabilitiesList.length})</span>
+                    <span className="text-[12px] text-neutral-400 font-normal">({liabilitiesList.length})</span>
                   </div>
 
                   <div className="space-y-1.5">
                     {liabilitiesList.length === 0 ? (
-                      <div className="text-neutral-400 text-[11px] font-normal py-4 text-center border border-dashed border-neutral-100/50 rounded-xl">
+                      <div className="text-neutral-400 text-[12px] font-normal py-4 text-center border border-dashed border-neutral-100/50 rounded-xl">
                         {t('net_worth_breakdown_modal.no_liabilities', 'No active liability accounts found.')}
                       </div>
                     ) : (
@@ -422,7 +422,7 @@ export const NetWorthBreakdownModal: React.FC<NetWorthBreakdownModalProps> = ({
                             WebkitBackdropFilter: 'blur(22px)',
                             borderRadius: '20px',
                             border: '1px solid rgba(30, 34, 41, 0.08)',
-                            boxShadow: '0 8px 32px 0 rgba(166, 221, 177, 0.12)'
+                            boxShadow: '0 12px 32px 0 rgba(166, 221, 177, 0.12)'
                           }}
                           className="hover:bg-white/60 transition-colors w-full min-w-0"
                         >
@@ -516,7 +516,7 @@ export const NetWorthBreakdownModal: React.FC<NetWorthBreakdownModalProps> = ({
               </div>
               
               {/* Disclaimer text footer */}
-              <div style={{ fontWeight: 400, fontFamily: "'Google Sans', sans-serif" }} className="text-[10px] text-neutral-400 text-center border-t border-neutral-200/55 pt-2 leading-tight shrink-0">
+              <div style={{ fontWeight: 400, fontFamily: "'Google Sans', sans-serif" }} className="text-[12px] text-neutral-400 text-center border-t border-neutral-200/55 pt-2 leading-tight shrink-0">
                 {t('net_worth_breakdown_modal.footer', 'Only active non-archived accounts are evaluated under standard Net Worth rules.')}
               </div>
             </motion.div>
