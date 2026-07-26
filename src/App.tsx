@@ -175,51 +175,56 @@ function AppContent() {
             
             // Streak Calculation Logic
             const today = getSimulatedDate().toISOString().split('T')[0];
-            const lastLoginDate = profileData.lastLoginDate || "";
+            const lastLoginDate = profileData.lastLoginDate;
             
             console.log("Streak check:", { today, lastLoginDate, dailyStreak: profileData.dailyStreak });
             
             try {
                 if (lastLoginDate !== today) {
-                  const yesterday = getSimulatedDate();
-                  yesterday.setDate(yesterday.getDate() - 1);
-                  const yesterdayStr = yesterday.toISOString().split('T')[0];
-                  
-                  let newStreak = (profileData.dailyStreak || 0) + 1;
+                  let newStreak = 1;
                   let streakFreezes = profileData.streakFreezes || 0;
                   let usedFreeze = false;
 
-                  if (lastLoginDate === yesterdayStr) {
-                    // Normal streak increment
-                    newStreak = (profileData.dailyStreak || 0) + 1;
+                  if (!lastLoginDate) {
+                    // First login
+                    newStreak = 1;
                   } else {
-                    // A day (or more) was skipped.
-                    // Calculate days missed
-                    const lastLogin = new Date(lastLoginDate);
-                    const todayDate = getSimulatedDate();
-                    
-                    // Simple day difference
-                    const diffTime = Math.abs(todayDate.getTime() - lastLogin.getTime());
-                    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-                    
-                    const daysMissed = diffDays - 1; // e.g., if last login was yesterday, diff is 1 day, missed 0 days.
+                    const yesterday = getSimulatedDate();
+                    yesterday.setDate(yesterday.getDate() - 1);
+                    const yesterdayStr = yesterday.toISOString().split('T')[0];
 
-                    if (streakFreezes >= daysMissed) {
-                        // Use freezes
-                        streakFreezes -= daysMissed;
-                        newStreak = (profileData.dailyStreak || 0); // Keep streak
-                        usedFreeze = true;
+                    if (lastLoginDate === yesterdayStr) {
+                      // Normal streak increment
+                      newStreak = (profileData.dailyStreak || 0) + 1;
                     } else {
-                        // No freezes, reset streak
-                        newStreak = 1;
-                        // Notify user about streak loss
-                        console.log("Streak lost! Not enough freezes.");
-                        if ('Notification' in window && Notification.permission === 'granted') {
-                            new Notification("Vantage Streak Lost", {
-                                body: "You missed too many days and didn't have enough streak freezes to cover it.",
-                                icon: '/icons/Your_Finances_Logo.png'
-                            });
-                        }
+                      // A day (or more) was skipped.
+                      // Calculate days missed
+                      const lastLogin = new Date(lastLoginDate);
+                      const todayDate = getSimulatedDate();
+                      
+                      // Simple day difference
+                      const diffTime = Math.abs(todayDate.getTime() - lastLogin.getTime());
+                      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                      
+                      const daysMissed = diffDays - 1; // e.g., if last login was yesterday, diff is 1 day, missed 0 days.
+
+                      if (streakFreezes >= daysMissed) {
+                          // Use freezes
+                          streakFreezes -= daysMissed;
+                          newStreak = (profileData.dailyStreak || 0) + 1; // Increment streak even with freeze
+                          usedFreeze = true;
+                      } else {
+                          // No freezes, reset streak
+                          newStreak = 1;
+                          // Notify user about streak loss
+                          console.log("Streak lost! Not enough freezes.");
+                          if ('Notification' in window && Notification.permission === 'granted') {
+                              new Notification("Vantage Streak Lost", {
+                                  body: "You missed too many days and didn't have enough streak freezes to cover it.",
+                                  icon: '/icons/Your_Finances_Logo.png'
+                              });
+                          }
+                      }
                     }
                   }
 

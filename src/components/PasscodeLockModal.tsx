@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { getPasscode } from '../lib/passcode';
+import { NumberPad } from './NumberPad';
 
 interface PasscodeLockModalProps {
   isOpen: boolean;
@@ -63,30 +64,7 @@ export const PasscodeLockModal: React.FC<PasscodeLockModalProps> = ({ isOpen, on
 
           {error && <p className="mb-4 text-sm text-red-500 font-['Google_Sans'] font-normal">{error}</p>}
 
-          <div className="grid grid-cols-3 gap-4">
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
-              <button
-                key={num}
-                onClick={() => handleNumber(num.toString())}
-                className="w-16 h-16 text-xl font-bold font-['Google_Sans'] text-neutral-900 bg-neutral-100 rounded-full hover:bg-neutral-200"
-              >
-                {num}
-              </button>
-            ))}
-            <div />
-            <button
-              onClick={() => handleNumber('0')}
-              className="w-16 h-16 text-xl font-bold font-['Google_Sans'] text-neutral-900 bg-neutral-100 rounded-full hover:bg-neutral-200"
-            >
-              0
-            </button>
-            <button
-              onClick={handleBackspace}
-              className="w-16 h-16 text-sm font-normal font-['Google_Sans'] text-neutral-600 rounded-full hover:bg-neutral-100"
-            >
-              Back
-            </button>
-          </div>
+          <NumberPad onNumberPress={handleNumber} onDelete={handleBackspace} />
         </div>
       </motion.div>
     </AnimatePresence>

@@ -1156,16 +1156,16 @@ Schema:
   const runStatementScheduler = async () => {
     console.log("[Vantage Statement Scheduler] Booting schedule auditor...");
     try {
+      const db = admin.firestore();
       const today = new Date();
       // On the 1st of each month (or simulated check for development)
       const currentMonthStr = today.toISOString().slice(0, 7); // e.g. "2026-06"
 
-      // Search users who have enabled monthly statements using client Firestore SDK
-      const usersQuery = clientQuery(
-        clientCollection(clientDb, "users"),
-        clientWhere("monthlyStatementEnabled", "==", true)
-      );
-      const usersSnap = await clientGetDocs(usersQuery);
+      // Search users who have enabled monthly statements using admin SDK
+      const usersSnap = await db.collection("users")
+        .where("monthlyStatementEnabled", "==", true)
+        .get();
+        
       if (usersSnap.empty) {
         console.log("[Vantage Statement Scheduler] No users have enabled automated monthly statements.");
         return;
@@ -1181,13 +1181,11 @@ Schema:
         const dob = userData.dob || "1995-01-01";
 
         // Check if statement already exists for this month
-        const existingQuery = clientQuery(
-          clientCollection(clientDb, `users/${uid}/sentStatements`),
-          clientWhere("month", "==", currentMonthStr),
-          clientWhere("isTest", "==", false),
-          clientLimit(1)
-        );
-        const existingSnap = await clientGetDocs(existingQuery);
+        const existingSnap = await db.collection(`users/${uid}/sentStatements`)
+          .where("month", "==", currentMonthStr)
+          .where("isTest", "==", false)
+          .limit(1)
+          .get();
 
         if (!existingSnap.empty) {
           console.log(`[Vantage Statement Scheduler] Statement for ${fullName} (${currentMonthStr}) already generated. Skipping.`);
@@ -1196,10 +1194,10 @@ Schema:
 
         console.log(`[Vantage Statement Scheduler] [AUTO RUN] Compiling 1st of month statement for ${fullName}...`);
         
-        // Retrieve accounts & transactions using client Firestore SDK
-        const accountsSnap = await clientGetDocs(clientCollection(clientDb, `users/${uid}/accounts`));
+        // Retrieve accounts & transactions using admin SDK
+        const accountsSnap = await db.collection(`users/${uid}/accounts`).get();
         const accounts = accountsSnap.docs.map(doc => doc.data());
-        const transactionsSnap = await clientGetDocs(clientCollection(clientDb, `users/${uid}/transactions`));
+        const transactionsSnap = await db.collection(`users/${uid}/transactions`).get();
         const monthTransactions = transactionsSnap.docs
           .map(doc => doc.data())
           .filter((tx: any) => tx.date && tx.date.startsWith(currentMonthStr));
@@ -1247,10 +1245,10 @@ Schema:
 
         const ciphertext = CryptoJS.AES.encrypt(JSON.stringify(statementPayload), statementPassword).toString();
 
-        await clientAddDoc(clientCollection(clientDb, `users/${uid}/sentStatements`), {
+        await db.collection(`users/${uid}/sentStatements`).add({
           month: currentMonthStr,
           encryptedData: ciphertext,
-          sentAt: clientServerTimestamp(),
+          sentAt: admin.firestore.FieldValue.serverTimestamp(),
           recipientEmail: email,
           isTest: false,
           passwordHint: `First 3 letters of name + birth year`

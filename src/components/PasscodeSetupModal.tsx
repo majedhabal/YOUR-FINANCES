@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { setPasscode } from '../lib/passcode';
+import { NumberPad } from './NumberPad';
 
 interface PasscodeSetupModalProps {
   isOpen: boolean;
@@ -49,30 +50,7 @@ export const PasscodeSetupModal: React.FC<PasscodeSetupModalProps> = ({ isOpen, 
             ))}
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
-              <button
-                key={num}
-                onClick={() => handleNumber(num.toString())}
-                className="w-16 h-16 text-xl font-bold font-['Google_Sans'] text-neutral-900 bg-neutral-100 rounded-full hover:bg-neutral-200"
-              >
-                {num}
-              </button>
-            ))}
-            <div />
-            <button
-              onClick={() => handleNumber('0')}
-              className="w-16 h-16 text-xl font-bold font-['Google_Sans'] text-neutral-900 bg-neutral-100 rounded-full hover:bg-neutral-200"
-            >
-              0
-            </button>
-            <button
-              onClick={handleBackspace}
-              className="w-16 h-16 text-sm font-normal font-['Google_Sans'] text-neutral-600 rounded-full hover:bg-neutral-100"
-            >
-              Back
-            </button>
-          </div>
+          <NumberPad onNumberPress={handleNumber} onDelete={handleBackspace} />
           <button
             onClick={handleSave}
             disabled={code.length !== 4}
