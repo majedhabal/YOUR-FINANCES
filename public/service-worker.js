@@ -13,7 +13,9 @@ const PRECACHE_ASSETS = [
 const BYPASS_HOSTS = [
   'firestore.googleapis.com',
   'identitytoolkit.googleapis.com',
-  'googleapis.com'
+  'googleapis.com',
+  'googlesyndication.com',
+  'googleads.g.doubleclick.net'
 ];
 
 // Install Event: Cache critical shell resources

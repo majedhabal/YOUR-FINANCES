@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Edit3, Trash2, Save, Calendar, Tag, GitBranch, ArrowDownLeft, ArrowUpRight, ArrowRightLeft, Building2, Menu, Clock } from 'lucide-react';
-import { doc, updateDoc, deleteDoc, serverTimestamp, collection, getDocs, query, where, writeBatch, increment } from 'firebase/firestore';
+import { doc, updateDoc, deleteDoc, serverTimestamp, collection, getDocs, query, where, writeBatch, increment, getDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { MASTER_CATEGORIES } from '../lib/constants';
 import { ConfirmationModal } from './ConfirmationModal';
@@ -30,13 +30,56 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
 
   // Balanced Form Fields
   const [notes, setNotes] = useState(tx?.notes || '');
-  const [category, setCategory] = useState(tx?.category || '');
-  const [subCategory, setSubCategory] = useState(tx?.subCategory || tx?.subcategory || '');
+  const [category, setCategory] = useState<string>(() => {
+    return initialTx?.category || MASTER_CATEGORIES[0]?.name || 'General';
+  });
+  const [subCategory, setSubCategory] = useState<string>(() => {
+    return initialTx?.subcategory || initialTx?.subCategory || '';
+  });
   const [selectedAccountId, setSelectedAccountId] = useState(tx?.accountId || '');
   const [time, setTime] = useState(tx?.time || '09:41 AM');
   const [confirmationDate, setConfirmationDate] = useState(tx?.confirmationDate || tx?.date || '');
   const [date, setDate] = useState(tx?.date || '');
   const [amount, setAmount] = useState(tx?.amount || 0);
+
+  // When the modal enters edit mode, verify category matching
+  useEffect(() => {
+    if (initialTx && isEditing) {
+      setCategory(initialTx.category || 'General');
+      setSubCategory(initialTx.subcategory || initialTx.subCategory || '');
+    }
+  }, [initialTx, isEditing]);
+
+  // Fetch fresh transaction data on open
+  useEffect(() => {
+    const fetchFreshTx = async () => {
+      if (!uid || !initialTx?.id) return;
+      try {
+        const txRef = doc(db, 'users', uid, 'transactions', initialTx.id);
+        const docSnap = await getDoc(txRef);
+        if (docSnap.exists()) {
+          const freshTx = { id: docSnap.id, ...docSnap.data() };
+          console.log('DEBUG: freshTx data:', freshTx);
+          setTx(freshTx);
+          setNotes(freshTx.notes || '');
+          
+          // Prioritize budget categoryTitle, fallback to freshTx.category
+          setCategory(budget?.categoryTitle || freshTx.category || '');
+          setSubCategory(freshTx.subcategory || freshTx.subCategory || budget?.subcategory || 'General');
+          setSelectedAccountId(freshTx.accountId || '');
+          setTime(freshTx.time || '09:41 AM');
+          setConfirmationDate(freshTx.confirmationDate || freshTx.date || '');
+          setDate(freshTx.date || '');
+          setAmount(freshTx.amount || 0);
+        }
+      } catch (e) {
+        console.error("Error fetching fresh transaction:", e);
+      }
+    };
+    if (isOpen) {
+      fetchFreshTx();
+    }
+  }, [isOpen, uid, initialTx?.id, budget]);
 
   useEffect(() => {
     const fetchAccounts = async () => {
@@ -58,9 +101,9 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
       if (!uid || !tx?.budgetId) return;
       try {
         const budgetRef = doc(db, 'users', uid, 'miniBudgets', tx.budgetId);
-        const snap = await getDocs(query(collection(db, 'users', uid, 'miniBudgets'), where('budgetId', '==', tx.budgetId)));
-        if (!snap.empty) {
-          setBudget(snap.docs[0].data());
+        const docSnap = await getDoc(budgetRef);
+        if (docSnap.exists()) {
+          setBudget(docSnap.data());
         }
       } catch (e) {
         console.error("Error fetching budget:", e);
@@ -69,19 +112,6 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
     fetchBudget();
   }, [uid, tx?.budgetId]);
 
-  useEffect(() => {
-    if (initialTx) {
-      setTx(initialTx);
-      setNotes(initialTx.notes || '');
-      setCategory(initialTx.category || budget?.category || '');
-      setSubCategory(initialTx.subCategory || initialTx.subcategory || budget?.subcategory || '');
-      setSelectedAccountId(initialTx.accountId || '');
-      setTime(initialTx.time || '09:41 AM');
-      setConfirmationDate(initialTx.confirmationDate || initialTx.date || '');
-      setDate(initialTx.date || '');
-      setAmount(initialTx.amount || 0);
-    }
-  }, [initialTx, budget]);
 
   useEffect(() => {
     if (isOpen) {
@@ -241,6 +271,7 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
   };
 
   const formatCategoryLabel = (categoryKey: string) => {
+    console.log('DEBUG: formatCategoryLabel categoryKey:', categoryKey);
     const raw = (categoryKey || 'Others');
     const label = raw.includes('__') ? raw.split('__').pop()! : 
                  raw.includes(' — ') ? raw.split(' — ').pop()! :
@@ -441,13 +472,13 @@ export const TransactionDetailModal: React.FC<TransactionDetailModalProps> = ({
           <div className="p-6 border-t border-[#F2F4F7] flex gap-4 select-none shrink-0 bg-white box-border">
             {isEditing ? (
               <>
-                <button type="button" onClick={() => setIsEditing(false)} className="flex-1 py-4 border border-neutral-200 rounded-xl bg-white text-[#414941] text-sm font-bold hover:bg-neutral-50 transition-all cursor-pointer font-sans">{t('transaction_detail_modal.cancel')}</button>
-                <button type="button" onClick={handleUpdateEntry} disabled={loading} className="flex-1 py-4 rounded-xl bg-[#366945] text-white text-sm font-bold hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer border-none font-sans"><Save size={16} /><span>{t('transaction_detail_modal.save')}</span></button>
+                <motion.button whileTap={{ scale: 0.95, opacity: 0.9 }} type="button" onClick={() => setIsEditing(false)} className="flex-1 py-4 border border-neutral-200 rounded-xl bg-white text-[#414941] text-sm font-bold hover:bg-neutral-50 transition-all cursor-pointer font-sans">{t('transaction_detail_modal.cancel')}</motion.button>
+                <motion.button whileTap={{ scale: 0.95, opacity: 0.9 }} type="button" onClick={handleUpdateEntry} disabled={loading} className="flex-1 py-4 rounded-xl bg-[#366945] text-white text-sm font-bold hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer border-none font-sans"><Save size={16} /><span>{t('transaction_detail_modal.save')}</span></motion.button>
               </>
             ) : (
               <>
-                <button type="button" onClick={() => setIsEditing(true)} className="flex-1 py-4 border-2 border-[#366945] rounded-xl bg-white text-[#366945] text-sm font-bold hover:bg-[#366945]/5 transition-colors cursor-pointer font-sans">{t('transaction_detail_modal.edit_transaction')}</button>
-                <button type="button" onClick={() => setIsDeleteConfirmOpen(true)} className="flex-1 py-4 rounded-xl border-2 border-[#ba1a1a] bg-white text-[#ba1a1a] text-sm font-bold hover:bg-[#ba1a1a]/5 transition-colors cursor-pointer font-sans">{t('transaction_detail_modal.delete_transaction')}</button>
+                <motion.button whileTap={{ scale: 0.95, opacity: 0.9 }} type="button" onClick={() => setIsEditing(true)} className="flex-1 py-4 border-2 border-[#366945] rounded-xl bg-white text-[#366945] text-sm font-bold hover:bg-[#366945]/5 transition-colors cursor-pointer font-sans">{t('transaction_detail_modal.edit_transaction')}</motion.button>
+                <motion.button whileTap={{ scale: 0.95, opacity: 0.9 }} type="button" onClick={() => setIsDeleteConfirmOpen(true)} className="flex-1 py-4 rounded-xl border-2 border-[#ba1a1a] bg-white text-[#ba1a1a] text-sm font-bold hover:bg-[#ba1a1a]/5 transition-colors cursor-pointer font-sans">{t('transaction_detail_modal.delete_transaction')}</motion.button>
               </>
             )}
           </div>

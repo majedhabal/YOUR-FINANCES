@@ -456,7 +456,7 @@ export const Transactions: React.FC<TransactionsProps> = ({
           <TransactionDetailModal key="tx-detail-modal" tx={selectedTx} uid={uid} isOpen={!!selectedTx} onClose={() => setSelectedTx(null)} />
         )}
         {isAddModalOpen && (
-          <AddTransactionModal key="tx-add-modal" isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} uid={uid} accounts={accounts} onSuccess={() => {}} />
+          <AddTransactionModal key="tx-add-modal" isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} uid={uid} accounts={accounts} onSuccess={() => {}} profile={profile} />
         )}
       </AnimatePresence>
     </div>

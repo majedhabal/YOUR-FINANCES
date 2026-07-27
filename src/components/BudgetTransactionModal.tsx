@@ -15,7 +15,8 @@ export const BudgetTransactionModal: React.FC<{
   budget: any; // The budget object
   accounts: any[]; 
   profile: any;
-}> = ({ isOpen, onClose, onSuccess, budget, accounts, profile }) => {
+  categories: any[];
+}> = ({ isOpen, onClose, onSuccess, budget, accounts, profile, categories }) => {
   const { t } = useTranslation();
   const [sourceAccountId, setSourceAccountId] = useState('');
   const [type, setType] = useState<'expense' | 'transfer'>('expense');
@@ -24,13 +25,27 @@ export const BudgetTransactionModal: React.FC<{
   const [note, setNote] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const rawTitle = budget?.categoryTitle?.includes(' > ') 
-    ? budget.categoryTitle.split(' > ').pop()?.trim() 
-    : (budget?.categoryTitle || budget?.name || budget?.category);
+  // Robustly resolve the category and subcategory from any budget format
+  const budgetCategory = budget?.category || '';
+  const budgetSubcategory = budget?.subcategory || '';
+  const categoryTitleRaw = budget?.categoryTitle || budget?.title || '';
 
-  const titleText = rawTitle 
-    ? translateCategoryOrSubcategory(rawTitle, t) 
-    : '';
+  let derivedCategory = budgetCategory;
+  let derivedSubcategory = budgetSubcategory;
+
+  if (categoryTitleRaw.includes(' > ')) {
+    const parts = categoryTitleRaw.split(' > ').map((s: string) => s.trim());
+    derivedCategory = derivedCategory || parts[0];
+    derivedSubcategory = derivedSubcategory || parts[1] || '';
+  } else if (categoryTitleRaw.includes('__')) {
+    const parts = categoryTitleRaw.split('__');
+    derivedCategory = derivedCategory || parts[0];
+    derivedSubcategory = derivedSubcategory || parts[1] || '';
+  }
+
+  const titleText = derivedSubcategory 
+    ? translateCategoryOrSubcategory(derivedSubcategory, t) 
+    : translateCategoryOrSubcategory(derivedCategory || 'General', t);
 
   useEffect(() => {
     window.dispatchEvent(new CustomEvent('budget-tx-modal-toggled', { detail: { isOpen } }));
@@ -88,8 +103,9 @@ export const BudgetTransactionModal: React.FC<{
           accountId: sourceAccountId,
           amount: txAmount,
           type: type === 'transfer' ? 'transfer' : 'expense',
-          category: budget.categoryTitle?.includes('Groceries') ? 'Food & Drinks' : (budget.category || 'General'),
-          subcategory: budget.categoryTitle?.includes('Groceries') ? 'Groceries' : (budget.subcategory || budget.categoryTitle || budget.name || 'General'),
+          category: derivedCategory || 'General',
+          subcategory: derivedSubcategory || '',
+          subCategory: derivedSubcategory || '', // Sync both keys
           destinationAccountId: type === 'transfer' ? destinationAccountId : null,
           notes: note || `${type === 'transfer' ? t("budget_modal.default_transfer_note", "Budget transfer") : t("budget_modal.default_expense_note", "Budget expense")}: ${titleText}`,
           date: new Date().toLocaleDateString('en-CA'),

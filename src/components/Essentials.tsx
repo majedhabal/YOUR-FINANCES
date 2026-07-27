@@ -44,6 +44,7 @@ import { BudgetCard } from './BudgetCard';
 import { MASTER_CATEGORIES, evaluateMathExpression } from '../lib/constants';
 import { formatLabel } from '../lib/stringUtils';
 import { DEFAULT_RATES, syncExchangeRates } from '../lib/exchangeRates';
+import { NativeAdBox } from './NativeAdBox';
 import { calculateAccountBalances } from '../lib/trendUtils';
 import { DebtMilestoneConfigModal } from './DebtMilestoneConfigModal';
 import { SalaryBreakdownModal } from './SalaryBreakdownModal';
@@ -919,6 +920,7 @@ useEffect(() => {
           isCurrentPeriod={selectedPeriod === getCurrentPeriodYearMonth()}
         />
 
+        <NativeAdBox adSlot="6836314157" profile={profile} />
 
         {/* Column 2: Savings Goals */}
         <SavingsSection milestones={milestones}
@@ -1006,6 +1008,7 @@ useEffect(() => {
           budget={activeBudgetForTx}
           accounts={accounts}
           profile={profile}
+          categories={effectiveCategories}
         />
       )}
 

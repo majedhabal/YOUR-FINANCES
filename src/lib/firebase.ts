@@ -26,15 +26,15 @@ export const messaging = getMessaging(app);
 // to avoid auth errors in restricted environments.
 setPersistence(auth, browserLocalPersistence)
   .catch((err) => {
-    console.warn("browserLocalPersistence failed, trying indexedDBLocalPersistence:", err);
+    console.warn("browserLocalPersistence failed, reason:", err.message, "trying indexedDBLocalPersistence");
     return setPersistence(auth, indexedDBLocalPersistence);
   })
   .catch((err) => {
-    console.warn("indexedDBLocalPersistence failed, falling back to inMemoryPersistence:", err);
+    console.warn("indexedDBLocalPersistence failed, reason:", err.message, "falling back to inMemoryPersistence");
     return setPersistence(auth, inMemoryPersistence);
   })
   .catch((err) => {
-    console.error("All persistence methods failed:", err);
+    console.error("All persistence methods failed, reason:", err.message);
   });
 
 let googleProvider: GoogleAuthProvider | null = null;

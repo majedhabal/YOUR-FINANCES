@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'motion/react';
 import { db, auth } from '../lib/firebase';
-import { collection, doc, query, onSnapshot, setDoc, deleteDoc, runTransaction, serverTimestamp } from 'firebase/firestore';
+import { collection, doc, query, onSnapshot, setDoc, deleteDoc, runTransaction, serverTimestamp, increment } from 'firebase/firestore';
 import { Plus, Trash2, Smartphone, HelpCircle, Check, Sparkles, Sliders, ChevronDown, ChevronUp, AlertCircle, Info, Landmark, Wallet, PlusCircle } from 'lucide-react';
 import { triggerHaptic, hapticPresets } from '../lib/haptics';
 import { HybridWidgetSimulator } from './HybridWidgetSimulator';
@@ -312,7 +312,10 @@ export const QuickAddWidget: React.FC<QuickAddWidgetProps> = ({ uid }) => {
         });
 
         // Step 2: Increment mini-budget spent accumulation
-        // (Removed spentAmount update: relying on ledger re-calculation)
+        trans.update(budgetRef, {
+          spentAmount: increment(txAmount),
+          updatedAt: serverTimestamp()
+        });
 
         // Step 3: Insert the actual transaction ledger document
         trans.set(transactionRef, {

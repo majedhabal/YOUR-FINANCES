@@ -12,6 +12,7 @@ import { AddTransactionModal } from './components/AddTransactionModal';
 import { AddAccountModal } from './components/AddAccountModal';
 import { PremiumModal } from './components/PremiumModal';
 import { VantageDataErrorBoundary } from './components/VantageDataErrorBoundary';
+import { PermissionRequestModal } from './components/PermissionRequestModal';
 import { RefreshCw } from 'lucide-react';
 import i18n from './lib/i18n';
 import { I18nextProvider, useTranslation } from 'react-i18next';
@@ -63,7 +64,16 @@ function AppContent() {
   const [isDebtMilestoneModalOpen, setIsDebtMilestoneModalOpen] = useState(false);
   const [isLocked, setIsLocked] = useState(hasPasscode());
   const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false);
+  const [isPermissionModalOpen, setIsPermissionModalOpen] = useState(false);
   const [currentTourStep, setCurrentTourStep] = useState<number | null>(null);
+
+  useEffect(() => {
+    const hasRequested = localStorage.getItem('vantage_permissions_requested');
+    if (!hasRequested) {
+      setIsPermissionModalOpen(true);
+      localStorage.setItem('vantage_permissions_requested', 'true');
+    }
+  }, []);
 
   // Synchronized state pools for analytics routing
   const [accounts, setAccounts] = useState<any[]>([]);
@@ -416,6 +426,7 @@ function AppContent() {
     <Layout
       activeTab={activeTab}
       setActiveTab={setActiveTab}
+      isLocked={isLocked}
       isPremium={!!(profile.isPremium || (profile.subscriptionTier && profile.subscriptionTier.toLowerCase() !== 'free') || (profile.vantageAiUnlockedUntil && new Date(profile.vantageAiUnlockedUntil).getTime() > Date.now()))}
       isAIModalOpen={isAIModalOpen}
       setIsAIModalOpen={setIsAIModalOpen}
@@ -440,6 +451,12 @@ function AppContent() {
         />
       )}
       <NotificationManager uid={user.uid} />
+      {isPermissionModalOpen && (
+        <PermissionRequestModal
+          isOpen={isPermissionModalOpen}
+          onClose={() => setIsPermissionModalOpen(false)}
+        />
+      )}
       {isLocked && (
         <PasscodeLockModal
           isOpen={isLocked}

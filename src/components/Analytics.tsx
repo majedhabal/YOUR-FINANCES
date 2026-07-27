@@ -77,6 +77,7 @@ import { RecurringBreakdownModal } from './RecurringBreakdownModal';
 import { SpendingTrends } from './SpendingTrends';
 import { TrajectoryVisualizer } from './TrajectoryVisualizer';
 import { QuickAddWidget } from './QuickAddWidget';
+import { NativeAdBox } from './NativeAdBox';
 
 
 // Sage green accent token
@@ -1354,6 +1355,8 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
           </div>
         </div>
 
+        <NativeAdBox adSlot="5543413785" profile={profile} />
+
         {/* Spending by Category Section */}
         <div>
           <div className="flex justify-between items-center mb-4 select-none">
@@ -2526,6 +2529,8 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
                 </div>
               </div>
 
+              <NativeAdBox adSlot="3273162026" profile={profile} />
+
               {/* Vantage Insight Card */}
               <div 
                 id="analytics-vantage-insight"
@@ -2840,6 +2845,8 @@ export const Analytics: React.FC<AnalyticsProps> = React.memo(({
                       </AnimatePresence>
                     </div>
                   </section>
+
+                  <NativeAdBox adSlot="6968864454" profile={profile} />
 
                   {/* Future Cash Flow Chart Card - md:col-span-12 */}
                   <section 

@@ -14,6 +14,7 @@ interface LayoutProps {
   children: React.ReactNode;
   activeTab: Tab;
   setActiveTab: (tab: Tab) => void;
+  isLocked?: boolean;
   isPremium?: boolean;
   isAIModalOpen?: boolean;
   setIsAIModalOpen?: (open: boolean) => void;
@@ -31,7 +32,7 @@ interface LayoutProps {
 }
 
 export const Layout: React.FC<LayoutProps> = ({ 
-  children, activeTab, setActiveTab, isAIModalOpen, setIsAIModalOpen, isTxModalOpen, setIsTxModalOpen, txMode, setTxMode, profile, accounts, transactions, accountBalances, streakUpdated, userLogins, receiptScanCount = 0
+  children, activeTab, setActiveTab, isLocked = false, isAIModalOpen, setIsAIModalOpen, isTxModalOpen, setIsTxModalOpen, txMode, setTxMode, profile, accounts, transactions, accountBalances, streakUpdated, userLogins, receiptScanCount = 0
 }) => {
   const { t } = useTranslation();
   const [isOffline, setIsOffline] = React.useState<boolean>(() => {
@@ -154,7 +155,7 @@ export const Layout: React.FC<LayoutProps> = ({
   const isAnyModalOpen = isSalaryModalOpen || isTxDetailModalOpen || isAccountModalOpen || isAccountDetailModalOpen || isBreakdownModalOpen || isDebtModalOpen || isTxModalOpen || isMilestoneModalOpen || isDebtMilestoneModalOpen || isGoalTxModalOpen || isDebtTxModalOpen || isAIModalOpen || isPremiumModalOpen || isStatementVaultOpen || isBudgetDetailOpen || isSettingsSubViewOpen || isBudgetTxModalOpen;
   
   const isGoalOrDebtTxModalOpen = isGoalTxModalOpen || isDebtTxModalOpen;
-  const shouldHideHeaderFooter = isAccountModalOpen || isGoalOrDebtTxModalOpen || isAccountDetailModalOpen || ((isAnyModalOpen || activeTab === 'ai') && activeTab !== 'accounts');
+  const shouldHideHeaderFooter = isLocked || isAccountModalOpen || isGoalOrDebtTxModalOpen || isAccountDetailModalOpen || ((isAnyModalOpen || activeTab === 'ai') && activeTab !== 'accounts');
 
   console.log('Layout debug:', { isPremiumModalOpen, shouldHideHeaderFooter });
 

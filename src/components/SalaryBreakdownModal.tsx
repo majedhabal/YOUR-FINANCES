@@ -871,38 +871,41 @@ export const SalaryBreakdownModal: React.FC<SalaryBreakdownModalProps> = ({
       return;
     }
 
-    // New logic: auto-create/update budget records in Firestore for the current month
-    // based on the successfully committed allocations.
     try {
       if (profile?.uid) {
         const batch = writeBatch(db);
         
-        // Loop through all active envelope allocations and create/update budget doc
+        // Loop through all active envelope allocations and create/update budget doc with explicit properties
         for (const [envelopeKey, amount] of Object.entries(allocations)) {
           if (Number(amount) > 0) {
-            // Envelope keys are "category__subcategory".
-            const [parent, leaf] = envelopeKey.includes('__') 
-              ? envelopeKey.split('__') 
-              : [envelopeKey, envelopeKey];
-            
-            // Use the full name for the categoryTitle.
-            const name = envelopeKey.replace('__', ' > ');
-            
-            // Map nature to categoryGroup
+            // Safely parse parent category and leaf subcategory from the envelope key
+            let parent = envelopeKey;
+            let leaf = 'General';
+
+            if (envelopeKey.includes('__')) {
+              const parts = envelopeKey.split('__');
+              parent = parts[0];
+              leaf = parts[1] || 'General';
+            }
+
+            // Format category names back to human-readable strings if needed
+            const formattedCategory = parent.replace(/_/g, ' ');
+            const formattedSubcategory = leaf.replace(/_/g, ' ');
+            const categoryTitle = `${formatLabel(formattedCategory)} > ${formatLabel(formattedSubcategory)}`;
+
             const envelopeInfo = allAvailableEnvelopesCatalog.find(e => e.key === envelopeKey);
             const nature = envelopeInfo?.nature || 'Want';
             const categoryGroup = nature.toLowerCase() === 'need' ? 'needs' : 
                                 nature.toLowerCase() === 'saving' ? 'savings' : 'wants';
 
-            // Use a deterministic ID to avoid duplicates for the same month/category
             const deterministicId = `${selectedYearMonth}_${envelopeKey.replace(/\s+/g, '_').toLowerCase()}`;
             const budRef = doc(db, `users/${profile.uid}/miniBudgets`, deterministicId);
             
             batch.set(budRef, {
               userId: profile.uid,
-              categoryTitle: name,
-              category: parent,
-              subcategory: leaf,
+              categoryTitle: categoryTitle,
+              category: formatLabel(formattedCategory),     // Explicitly set parent category
+              subcategory: formatLabel(formattedSubcategory), // Explicitly set leaf subcategory
               allocatedAmount: Number(amount),
               spentAmount: 0,
               currency: activeBaseCurrency,

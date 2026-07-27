@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, RefreshCw } from 'lucide-react';
-import { collection, addDoc, serverTimestamp, onSnapshot, query, doc, updateDoc, increment } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, onSnapshot, query, doc, updateDoc, increment, getDocs } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { formatLabel, translateCategoryOrSubcategory } from '../lib/stringUtils';
 import { getCachedAccessToken, createGoogleCalendarEvent, createGoogleTask, connectGoogleWorkspace } from '../lib/googleAuth';
@@ -72,14 +72,14 @@ export const AddTransactionModal: React.FC<any> = ({
     }
   }, [categories, category]);
 
-  const [subcategory, setSubcategory] = useState('General');
+  const [subcategory, setSubcategory] = useState('');
   useEffect(() => {
      if (categories.length > 0) {
          const currentCat = categories.find(c => c.name === category);
          if (currentCat && currentCat.subcategories && currentCat.subcategories.length > 0) {
              setSubcategory(currentCat.subcategories[0]);
          } else {
-             setSubcategory('General');
+             setSubcategory('');
          }
      }
   }, [category, categories]);
@@ -197,20 +197,40 @@ export const AddTransactionModal: React.FC<any> = ({
       } else {
         // --- STANDARD TRANSACTION LOGIC ---
         const transactionType = mode === 'income' ? 'Inflow' : 'Outflow';
-        
+        const currentMonthPeriod = new Date().toISOString().substring(0, 7); // e.g., "2026-07"
+
+        // Look up if an active budget envelope matches this category/subcategory for the current month
+        let matchedBudgetId = null;
+        try {
+          const miniBudgetsQuery = query(
+            collection(db, 'users', uid, 'miniBudgets'),
+            where('period', '==', currentMonthPeriod),
+            where('category', '==', category),
+            where('subcategory', '==', subcategory)
+          );
+          const miniBudgetsSnap = await getDocs(miniBudgetsQuery);
+          if (!miniBudgetsSnap.empty) {
+            matchedBudgetId = miniBudgetsSnap.docs[0].id;
+          }
+        } catch (lookupErr) {
+          console.warn("Could not bind budgetId automatically:", lookupErr);
+        }
+
         const transactionData = {
           amount: Number(amount),
           notes: notes.trim(),
           category,
           subcategory,
-          emoji: selectedCategoryEntry?.emoji || '📁',
+          subCategory: subcategory,
+          emoji: selectedCategoryEntry?.emoji || '💳',
           accountId,
           type: transactionType,
           date: today,
           time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
           createdAt: serverTimestamp(),
           status: 'confirmed',
-          isRecurring
+          isRecurring,
+          budgetId: matchedBudgetId // This ensures floating-button expenses tie directly into your budget pools
         };
         
         const shouldCreateNow = !isRecurring || (isRecurring && isStartingToday);
@@ -389,7 +409,7 @@ export const AddTransactionModal: React.FC<any> = ({
                             <option key={`${category}-${sub}`} value={sub}>
                               {translateCategoryOrSubcategory(sub, t)}
                             </option>
-                        )) || <option value="General">{translateCategoryOrSubcategory('General', t)}</option>}
+                        )) || <option value="">{t('add_transaction.no_subcategory', 'None')}</option>}
                     </select>
                   </div>
                 </>
