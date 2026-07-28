@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "677079437017",
+    "project_id": "gen-lang-client-0564104277",
+    "storage_bucket": "gen-lang-client-0564104277.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:677079437017:android:45acef88fc01df933338c8",
+        "android_client_info": {
+          "package_name": "me.yourfinances.app.twa"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "677079437017-6t9dmm64o7rpatlmns7fo6n5f5v0fjo7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAKHl1QREUrYyOFPYV-UKPPsKzNwWNa-ZU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "677079437017-6t9dmm64o7rpatlmns7fo6n5f5v0fjo7.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

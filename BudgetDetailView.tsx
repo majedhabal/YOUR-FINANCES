@@ -1,0 +1,243 @@
+import React, { useMemo } from 'react';
+import { motion } from 'motion/react';
+import { useTranslation } from 'react-i18next';
+import { formatLabel, translateCategoryOrSubcategory } from '../lib/stringUtils';
+import { 
+  ChevronLeft,
+  MoreHorizontal,
+  Home,
+  Zap,
+  Droplets,
+  CreditCard,
+} from 'lucide-react';
+import { TransactionDetailModal } from './TransactionDetailModal';
+import { ConfirmationModal } from './ConfirmationModal';
+import { doc, deleteDoc, writeBatch, query, collection, where, getDocs } from 'firebase/firestore';
+import { db } from '../lib/firebase';
+import { isTxMatchingBudget } from '../lib/transactionUtils';
+
+interface Transaction {
+  id: string;
+  amount: number;
+  date: string;
+  time?: string;
+  category: string;
+  subcategory?: string;
+  subCategory?: string;
+  isSplit?: boolean;
+  splitGroupId?: string | null;
+  accountId: string;
+  type: string;
+  status?: string;
+  isUpcomingSalaryAllocation?: boolean;
+  emoji?: string;
+  notes?: string;
+}
+
+interface Budget {
+  id: string;
+  categoryTitle: string; // Add this
+  categories: string[];
+  subcategories: string[];
+  accountIds: string[];
+  limit: number;
+  currency: string;
+  period: string;
+  allocatedAmount?: number;
+  spentAmount?: number;
+  iconAsset?: string;
+  isArchived?: boolean;
+}
+
+interface BudgetDetailViewProps {
+  budget: any;
+  transactions: Transaction[];
+  accounts: any[];
+  uid: string;
+  onBack: () => void;
+  onEdit: () => void;
+}
+
+const renderIcon = (asset: string | undefined) => {
+  switch (asset) {
+    case 'home': return <Home className="text-gray-800" size={24} />;
+    case 'zap': return <Zap className="text-gray-800" size={24} />;
+    case 'droplets': return <Droplets className="text-gray-800" size={24} />;
+    default: return <CreditCard className="text-gray-800" size={24} />;
+  }
+};
+
+export const BudgetDetailView: React.FC<BudgetDetailViewProps> = ({ 
+  budget, 
+  transactions, 
+  accounts, 
+  uid,
+  onBack,
+  onEdit
+}) => {
+  const { t, i18n } = useTranslation();
+  const [selectedTx, setSelectedTx] = React.useState<Transaction | null>(null);
+  const [txToDelete, setTxToDelete] = React.useState<any | null>(null);
+
+  React.useEffect(() => {
+    window.dispatchEvent(new CustomEvent('budget-detail-toggled', { detail: { isOpen: true } }));
+    return () => {
+      window.dispatchEvent(new CustomEvent('budget-detail-toggled', { detail: { isOpen: false } }));
+    };
+  }, []);
+
+  const activeCurrency = budget.currency || 'AED';
+
+  const rawTitle = budget.subcategory 
+    ? budget.subcategory 
+    : (budget.categoryTitle?.includes(' > ') 
+        ? budget.categoryTitle.split(' > ').pop()?.trim() 
+        : (budget.categoryTitle || budget.title || budget.category));
+
+  const translatedTitle = rawTitle 
+    ? translateCategoryOrSubcategory(rawTitle, t) 
+    : t('budget_card.allocation', 'Allocation');
+
+  const dueDateText = useMemo(() => {
+    if (budget.period) {
+      const [year, month] = budget.period.split('-').map(Number);
+      const date = new Date(year, month - 1, 1);
+      return date.toLocaleDateString(i18n.language, { month: 'short', day: 'numeric' });
+    }
+    return t('budget_detail.first_of_month', '1st of the month');
+  }, [budget.period, i18n.language, t]);
+  
+  const filterBudgetTransactions = (txs: Transaction[]) => {
+    const nowDate = new Date();
+
+    return txs.filter(tx => {
+      if (tx.status === 'draft' || tx.status === 'pending' || tx.status === 'upcoming' || tx.isUpcomingSalaryAllocation) return false;
+      if (tx.type !== 'expense') return false;
+      if (new Date(tx.date) > nowDate) return false;
+      
+      return isTxMatchingBudget(tx, budget);
+    });
+  };
+
+  const budgetTxs = useMemo(() => filterBudgetTransactions(transactions).sort((a,b) => {
+    const dateA = new Date(a.date).getTime();
+    const dateB = new Date(b.date).getTime();
+    if (dateA !== dateB) return dateB - dateA;
+    
+    const parseTime = (t: string | undefined) => {
+      if (!t) return 0;
+      const [time, modifier] = t.split(' ');
+      let [hours, minutes] = time.split(':').map(Number);
+      if (modifier === 'PM' && hours !== 12) hours += 12;
+      if (modifier === 'AM' && hours === 12) hours = 0;
+      return hours * 60 + minutes;
+    };
+    return parseTime(b.time) - parseTime(a.time);
+  }), [transactions, budget]);
+  
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+
+  const currentMonthTxs = budgetTxs.filter(tx => {
+    const d = new Date(tx.date);
+    return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+  });
+
+  const spentThisMonth = currentMonthTxs.reduce((sum, tx) => sum + (tx.amount || 0), 0);
+  const limit = budget.limit || budget.allocatedAmount || 0;
+  const spentUsage = limit > 0 ? (spentThisMonth / limit) * 100 : 0;
+
+  return (
+    <div className="bg-surface min-h-screen flex flex-col font-sans mt-0" style={{ fontFamily: "'Google Sans', sans-serif" }}>
+      {/* Navigation Bar */}
+      <div className="flex items-center justify-between px-6 pt-6 pb-2">
+        <button onClick={onBack} aria-label="Go back" className="p-2 rounded-full hover:bg-black/5 transition-colors text-[#111c2d]">
+          <ChevronLeft size={24} />
+        </button>
+      </div>
+
+      {/* Budget Header */}
+      <header className="mt-[50px] px-0 py-0 flex items-center justify-center">
+        <h1 className="text-[36px] font-bold text-[#111c2d] mt-[-70px]">
+          {translatedTitle}
+        </h1>
+      </header>
+
+      {/* Budget Summary Card */}
+      <section className="mx-[15px] pb-lg">
+        <div className="bg-white py-[20px] px-[12px] rounded-[15px] border border-[#F2F4F7] shadow-sm h-[150px] flex flex-col justify-between">
+          <div className="flex justify-between items-center mb-xs">
+            <span className="font-bold text-[#5f5e5e] text-xs">{t('budget_detail.total_spent')}</span>
+            <div className="bg-[#e6f7ef] text-[#366945] px-sm py-xs rounded-full text-xs font-bold">
+              {Math.min(spentUsage, 100).toFixed(0)}% {t('budget_detail.used')}
+            </div>
+          </div>
+
+          <h2 className="text-4xl font-extrabold text-[#111c2d]">
+            {activeCurrency} {spentThisMonth.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
+          </h2>
+
+          <div className="flex justify-between text-xs mb-xs">
+            <span className="text-[#5f5e5e]">{t('budget_detail.budget_limit')} {activeCurrency} {limit.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}</span>
+            <span className="font-bold text-[#111c2d]">{activeCurrency} {Math.max(0, limit - spentThisMonth).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })} {t('budget_detail.remaining')}</span>
+          </div>
+          
+          {/* Progress Bar */}
+          <div className="w-full bg-[#e6f7ef] h-3 rounded-full overflow-hidden">
+            <div 
+              className="bg-[#a6ddb1] h-full rounded-full" 
+              style={{ width: `${Math.min(spentUsage, 100)}%` }}
+            ></div>
+          </div>
+        </div>
+      </section>
+
+      {/* Auto-Pay & Due Date Cards */}
+      <section className="mx-[15px] pb-lg grid grid-cols-2 gap-md pt-[15px]">
+        <div className="bg-white p-md rounded-[20px] border border-[#F2F4F7] shadow-sm px-[12px] mr-[12px]">
+          <span className="font-label-md text-on-surface-variant text-xs mt-[5px]">{t('budget_detail.auto_pay')}</span>
+          <p className="text-lg font-bold text-on-surface mt-[5px]">{t('budget_detail.active')}</p>
+        </div>
+        <div className="bg-white p-md rounded-[20px] border border-[#F2F4F7] shadow-sm px-[12px] ml-[12px] h-[65px]">
+          <span className="font-label-md text-on-surface-variant text-xs mt-[5px]">{t('budget_detail.due_date')}</span>
+          <p className="text-lg font-bold text-on-surface mt-[5px]">{dueDateText}</p>
+        </div>
+      </section>
+
+      {/* Main Content List */}
+      <main className="content-area flex-1 bg-surface-container-lowest mx-[15px] px-[12px] mt-[15px]">
+        <div className="flex justify-between items-center mb-md">
+          <h3 className="text-lg font-bold text-on-surface">{t('budget_detail.recent_transactions')}</h3>
+          <span className="text-[#A6DDB1] font-bold text-sm cursor-pointer" onClick={() => window.dispatchEvent(new CustomEvent('switch-tab', { detail: { tab: 'activity' } }))}>{t('budget_detail.view_all')}</span>
+        </div>
+        <div className="space-y-md">
+          {currentMonthTxs.map((tx) => {
+            const txSubcategory = tx.subcategory || tx.subCategory;
+            const txSubcategoryText = txSubcategory ? t(`subcategories.${txSubcategory}`, formatLabel(txSubcategory)) : "";
+            
+            return (
+              <div key={tx.id} className="flex items-center gap-md">
+                <div className="w-12 h-12 rounded-xl bg-surface-container-low flex items-center justify-center border border-outline-variant/20">
+                  {renderIcon(tx.emoji)}
+                </div>
+                <div className="flex-1">
+                  <p className="text-base font-bold text-on-surface">{tx.notes || txSubcategoryText || t(`categories.${tx.category}`, formatLabel(tx.category))}</p>
+                  <p className="text-xs text-on-surface-variant">
+                    {new Date(tx.date).toLocaleDateString(i18n.language, { month: 'short', day: 'numeric' })}{txSubcategoryText ? ` • ${txSubcategoryText}` : ''}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-base font-bold text-on-surface">
+                    -{activeCurrency} {tx.amount.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
+          {currentMonthTxs.length === 0 && <p className="text-on-surface-variant">{t('budget_detail.no_transactions')}</p>}
+        </div>
+      </main>
+    </div>
+  );
+};
