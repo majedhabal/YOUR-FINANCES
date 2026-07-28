@@ -14,9 +14,12 @@ export const StreakTracker: React.FC<StreakTrackerProps> = ({ profile, streakUpd
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
 
-  // Calculate real streak
-  const toLocalDateString = (date: Date) => {
-    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  // Normalize dates safely to avoid UTC vs Local timezone off-by-one errors
+  const toLocalDateString = (dateInput: any) => {
+    const date = dateInput.toDate ? dateInput.toDate() : new Date(dateInput);
+    // Use UTC methods if your database stores UTC, or keep local if consistently local. 
+    // Best practice for date-only comparisons:
+    return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}-${String(date.getUTCDate()).padStart(2, '0')}`;
   };
 
   const loginDateStrings = new Set(
@@ -112,9 +115,10 @@ export const StreakTracker: React.FC<StreakTrackerProps> = ({ profile, streakUpd
               ))}
               {paddingDays.map((_, i) => <div key={`padding-${i}`} />)}
               {days.map((day) => {
-                const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const date = new Date(Date.UTC(year, month, day));
+                const dateString = toLocalDateString(date);
                 const isActive = loginDateStrings.has(dateString);
-                const isPast = new Date(year, month, day) < today;
+                const isPast = new Date(Date.UTC(year, month, day)) < today;
                 const isSkipped = isPast && !isActive;
                 const rewardId = rewardMap.get(dateString);
                 const upcomingRewardId = upcomingRewardMap.get(dateString);
